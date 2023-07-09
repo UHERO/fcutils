@@ -1,0 +1,36 @@
+Package: fcutils
+Title: Utility Functions for Time Series and Forecasting
+Version: 0.0.0.9000
+Authors@R: 
+    person("Peter", "Fuleky", , "fuleky@hawaii.edu", role = c("aut", "cre"),
+           comment = c(ORCID = "0000-0002-4094-2823"))
+Description: Manipulate time series. Retrieve and store data. Extend tsbox with additional frequency conversions and growth calculations. Plot time series data. Modify bimets models.
+License: MIT + file LICENSE
+Encoding: UTF-8
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.2.3
+Imports: 
+    dplyr,
+    dygraphs,
+    here,
+    htmltools,
+    httr,
+    jsonlite,
+    lubridate,
+    magrittr,
+    purrr,
+    readr,
+    rlang,
+    slider,
+    stringr,
+    tempdisagg,
+    tibble,
+    tidyr,
+    tsbox,
+    xts
+Suggests: 
+    bimets,
+    gets
+Depends: 
+    R (>= 2.10)
+LazyData: true
