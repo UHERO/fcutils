@@ -2,9 +2,9 @@
 "_PACKAGE"
 
 ## usethis namespace: start
-#' @importFrom magrittr %>%
 #' @importFrom rlang :=
 #' @importFrom rlang !!
+#' @importFrom rlang .data
 #' @importFrom rlang sym
 #' @importFrom tsbox %ts-%
 #' @importFrom tsbox %ts*%

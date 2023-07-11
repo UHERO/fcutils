@@ -7,13 +7,17 @@
 ptd_gr(long_tbl_in, per = "year", lag_length = "1 year", avg = TRUE)
 }
 \arguments{
-\item{long_tbl_in}{a long tibble of time series (produced by ts_long() for example)}
+\item{long_tbl_in}{a long tibble of time series (produced by ts_long() for
+example)}
 
-\item{per}{unit of time supplied to floor_date() (for ytd per = "year" (default), for mtd per = "month")}
+\item{per}{unit of time supplied to floor_date() (for ytd per = "year"
+(default), for mtd per = "month")}
 
-\item{lag_length}{period over which growth is calculated (e.g. "1 year" (default), "3 years", etc. See ?ts_lag() for options)}
+\item{lag_length}{period over which growth is calculated (e.g. "1 year"
+(default), "3 years", etc. See ?ts_lag() for options)}
 
-\item{avg}{if true, the year to date average, if false, the year to date sum for calculation}
+\item{avg}{if true, the year to date average, if false, the year to date sum
+for calculation}
 }
 \value{
 a long tibble of time series containing year to date growth rate

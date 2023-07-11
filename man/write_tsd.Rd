@@ -7,12 +7,14 @@
 write_tsd(x, file)
 }
 \arguments{
-\item{x}{an xts or a (wide) data frame with time series (only M, Q, A frequency)}
+\item{x}{an xts or a (wide) data frame with time series (only M, Q, A
+frequency)}
 
 \item{file}{string denoting the location and name of the output file}
 }
 \value{
-nothing (silently save the contents of the tsd file to a user defined location)
+nothing (silently save the contents of the tsd file to a user defined
+location)
 }
 \description{
 Save an xts or a wide data frame with time series in tsd format

@@ -5,12 +5,13 @@
 #
 # Author: Peter Fuleky
 # Date: October 1, 2019
-# To do: modify time series utilities so they accept xts, long and wide tbl (see ma())
+# To do: modify time series utilities
+# so they accept xts, long and wide tbl (see ma())
 
-# generate help files for these functions
-# d <- document::document(file_name = here::here("R", "util_funs.R"), output_directory = here::here("man"))
 
+# eliminate warning about .
 utils::globalVariables(".")
+
 
 # **************************
 # data retrieval and manipulation ----
@@ -19,14 +20,15 @@ utils::globalVariables(".")
 #' Download a single series from udaman using series name
 #'
 #' @param ser_id udaman series name
-#' @param expand "true" or "raw" ("true" downloads formatted data, "raw" downloads raw units)
-#' @param rename "compact" (default), "full", "no". "compact": @ replaced by _ and no frequency;
-#'                                                  "full": @ replaced by __ and . by _;
-#'                                                  "no": no renaming, keep UDAMAN names
-#' @param descr if TRUE add to the udaman series name the series description in parentheses
+#' @param expand "true" or "raw" ("true" downloads formatted data, "raw"
+#'   downloads raw units)
+#' @param rename "compact" (default), "full", "no". "compact": @ replaced by _
+#'   and no frequency; "full": @ replaced by __ and . by _; "no": no renaming,
+#'   keep UDAMAN names
+#' @param descr if TRUE add to the udaman series name the series description in
+#'   parentheses
 #'
 #' @return time and data for a single series combined in a tibble
-#' @importFrom magrittr %>%
 #' @export
 #'
 #' @examples
@@ -71,16 +73,18 @@ get_series_1 <- function(ser_id, expand = "true", rename = "compact", descr = FA
 #'
 #' @param ser_id_vec vector of series names
 #' @param format "wide" (default) or "long" or "xts"
-#' @param expand "true" (default) or "raw" ("true" downloads formatted data, "raw" downloads raw units)
-#' @param rename "compact" (default), "full", "no". "compact": @ replaced by _ and no frequency;
-#'                                                  "full": @ replaced by __ and . by _;
-#'                                                  "no": no renaming, keep UDAMAN names
-#' @param freq if frequency is missing from series names (or want to modify freq in existing names) specify frequency, e.g. "M".
-#' @param descr if TRUE add to the udaman series name the series description in parentheses
+#' @param expand "true" (default) or "raw" ("true" downloads formatted data,
+#'   "raw" downloads raw units)
+#' @param rename "compact" (default), "full", "no". "compact": @ replaced by _
+#'   and no frequency; "full": @ replaced by __ and . by _; "no": no renaming,
+#'   keep UDAMAN names
+#' @param freq if frequency is missing from series names (or want to modify freq
+#'   in existing names) specify frequency, e.g. "M".
+#' @param descr if TRUE add to the udaman series name the series description in
+#'   parentheses
 #'
-#' @return time and data for all series combined in an object specified by the format option
-#' @importFrom magrittr %>%
-#' @importFrom rlang .data
+#' @return time and data for all series combined in an object specified by the
+#'   format option
 #' @export
 #'
 #' @examples
@@ -114,15 +118,17 @@ get_series <- function(ser_id_vec, format = "wide", expand = "true", rename = "c
 #'
 #' @param exp_id export id
 #' @param format "wide" (default) or "long" or "xts"
-#' @param save_loc location to save the csv of the retrieved data, set to NULL to avoid saving
-#' @param expand "true" or "raw" ("true" downloads formatted data, "raw" downloads raw units)
-#' @param rename "compact" (default), "full", "no". "compact": @ replaced by _ and no frequency;
-#'                                                  "full": @ replaced by __ and . by _;
-#'                                                  "no": no renaming, keep UDAMAN names
-#' @param descr if TRUE add to the udaman series name the series description in parentheses
+#' @param save_loc location to save the csv of the retrieved data, set to NULL
+#'   to avoid saving
+#' @param expand "true" or "raw" ("true" downloads formatted data, "raw"
+#'   downloads raw units)
+#' @param rename "compact" (default), "full", "no". "compact": @ replaced by _
+#'   and no frequency; "full": @ replaced by __ and . by _; "no": no renaming,
+#'   keep UDAMAN names
+#' @param descr if TRUE add to the udaman series name the series description in
+#'   parentheses
 #'
 #' @return time and data for all series combined in a tibble
-#' @importFrom magrittr %>%
 #' @export
 #'
 #' @examples
@@ -216,7 +222,6 @@ get_series_exp <- function(exp_id, format = "wide", save_loc = "data/raw", expan
 #' @param val values to fill in (scalar or vector)
 #'
 #' @return an xts series
-#' @importFrom magrittr %>%
 #' @export
 #'
 #' @examples
@@ -237,8 +242,6 @@ make_xts <- function(start = bnk_start, end = bnk_end, per = "year", val = NA_re
 # #' @param xts_in the xts matrix to be split into individual xts vectors
 # #'
 # #' @return nothing (silently store split series in global environment)
-# #' @importFrom magrittr %>%
-# #' @importFrom rlang .data
 # #' @export
 # #'
 # #' @examples
@@ -266,7 +269,6 @@ make_xts <- function(start = bnk_start, end = bnk_end, per = "year", val = NA_re
 #' @param env environment where the expression should be evaluated
 #'
 #' @return variable
-#' @importFrom magrittr %>%
 #' @export
 #'
 #' @examples
@@ -285,10 +287,10 @@ get_var <- function(ser_in, env = parent.frame()) {
 #' Format series names to udaman format (mnemonic@loc.freq)
 #'
 #' @param ser_in series name (string "mnemonic_loc", "mnemonic__loc_freq")
-#' @param freq frequency of the series, required if not contained in the series name (string "D", "W", "M", "Q", "S", "A")
+#' @param freq frequency of the series, required if not contained in the series
+#'   name (string "D", "W", "M", "Q", "S", "A")
 #'
 #' @return series name following udaman convention "mnemonic@loc.freq"
-#' @importFrom magrittr %>%
 #' @export
 #'
 #' @examples
@@ -334,12 +336,12 @@ rename_udaman <- function(ser_in, freq = NULL) {
 
 #' Save an xts or a wide data frame with time series in tsd format
 #'
-#' @param x an xts or a (wide) data frame with time series (only M, Q, A frequency)
+#' @param x an xts or a (wide) data frame with time series (only M, Q, A
+#'   frequency)
 #' @param file string denoting the location and name of the output file
 #'
-#' @return nothing (silently save the contents of the tsd file to a user defined location)
-#' @importFrom magrittr %>%
-#' @importFrom rlang .data
+#' @return nothing (silently save the contents of the tsd file to a user defined
+#'   location)
 #' @export
 #'
 #' @examples
@@ -465,6 +467,8 @@ write_tsd <- function(x, file) {
   # save the contents of the tsd file to a user defined location
   to_save %>% readr::write_file(file)
 }
+
+
 # **************************
 # time series utility functions ----
 # **************************
@@ -473,10 +477,10 @@ write_tsd <- function(x, file) {
 #'
 #' @param var_q vector containing a single variable at quarterly freq
 #' @param ts_start starting period as c(year, quarter) e.g. c(2001, 1)
-#' @param conv_type match the quarterly value via "first", "last", "sum", "average"
+#' @param conv_type match the quarterly value via "first", "last", "sum",
+#'   "average"
 #'
 #' @return vector containing a single variable at monthly freq
-#' @importFrom magrittr %>%
 #' @export
 #'
 #' @examples
@@ -498,13 +502,12 @@ QtoM_1 <- function(var_q, ts_start, conv_type) {
 
 #' Interpolate a tibble of series from quaterly to monthly freq
 #'
-#' @param data_q tibble containing variables at quarterly freq
-#           the first column of data_q named "time" contains dates
-#' @param conv_type match the quarterly value via "first", "last", "sum", "average"
+#' @param data_q tibble containing variables at quarterly freq the first column
+#'   of data_q named "time" contains dates
+#' @param conv_type match the quarterly value via "first", "last", "sum",
+#'   "average"
 #'
 #' @return tibble containing variables at monthly freq
-#' @importFrom magrittr %>%
-#' @importFrom rlang .data
 #' @export
 #'
 #' @examples
@@ -538,8 +541,6 @@ QtoM <- function(data_q, conv_type) {
 #' @param aggr interpolation method: aggregate via mean (default) or sum
 #'
 #' @return interpolated xts series (freq = q)
-#' @importFrom magrittr %>%
-#' @importFrom rlang .data
 #' @export
 #'
 #' @examples
@@ -577,7 +578,6 @@ AtoQ <- function(ser_in, aggr = "mean") {
 #' @param	aggr aggregate via mean (default) or sum
 #'
 #' @return converted xts series (freq = a)
-#' @importFrom magrittr %>%
 #' @export
 #'
 #' @examples
@@ -598,12 +598,11 @@ QtoA <- function(ser_in, aggr = "mean") {
 
 #' Year to date sum or average
 #'
-#' @param long_tbl_in a long tibble of time series (produced by ts_long() for example)
+#' @param long_tbl_in a long tibble of time series (produced by ts_long() for
+#'   example)
 #' @param avg if true, the year to date average, if false, the year to date sum
 #'
 #' @return a long tibble of time series containing year to date sum or average
-#' @importFrom magrittr %>%
-#' @importFrom rlang .data
 #' @export
 #'
 #' @examples
@@ -625,11 +624,12 @@ ytd_cum <- function(long_tbl_in, avg = TRUE) {
 
 #' Year to date growth rate
 #'
-#' @param long_tbl_in a long tibble of time series (produced by ts_long() for example)
-#' @param avg if true, the year to date average, if false, the year to date sum for calculation
+#' @param long_tbl_in a long tibble of time series (produced by ts_long() for
+#'   example)
+#' @param avg if true, the year to date average, if false, the year to date sum
+#'   for calculation
 #'
 #' @return a long tibble of time series containing year to date growth rate
-#' @importFrom magrittr %>%
 #' @export
 #'
 #' @examples
@@ -649,13 +649,11 @@ ytd_gr <- function(long_tbl_in, avg = TRUE) {
 
 #' Month to date sum or average
 #'
-#' @param long_tbl_in a long tibble of time series (produced by ts_long() for example)
+#' @param long_tbl_in a long tibble of time series (produced by ts_long() for
+#'   example)
 #' @param avg if true, the year to date average, if false, the year to date sum
 #'
 #' @return a long tibble of time series containing year to date sum or average
-#' @importFrom magrittr %>%
-#' @importFrom rlang .data
-#' @importFrom tsbox %ts/%
 #' @export
 #'
 #' @examples
@@ -681,11 +679,12 @@ mtd_cum <- function(long_tbl_in, avg = TRUE) {
 
 #' Month to date growth rate
 #'
-#' @param long_tbl_in a long tibble of time series (produced by ts_long() for example)
-#' @param avg if true, the year to date average, if false, the year to date sum for calculation
+#' @param long_tbl_in a long tibble of time series (produced by ts_long() for
+#'   example)
+#' @param avg if true, the year to date average, if false, the year to date sum
+#'   for calculation
 #'
 #' @return a long tibble of time series containing year to date growth rate
-#' @importFrom magrittr %>%
 #' @export
 #'
 #' @examples
@@ -705,13 +704,14 @@ mtd_gr <- function(long_tbl_in, avg = TRUE) {
 
 #' Period to date sum or average
 #'
-#' @param long_tbl_in a long tibble of time series (produced by ts_long() for example)
-#' @param per unit of time supplied to floor_date() (for ytd per = "year" (default), for mtd per = "month")
-#' @param avg if true (default), the year to date average, if false, the year to date sum
+#' @param long_tbl_in a long tibble of time series (produced by ts_long() for
+#'   example)
+#' @param per unit of time supplied to floor_date() (for ytd per = "year"
+#'   (default), for mtd per = "month")
+#' @param avg if true (default), the year to date average, if false, the year to
+#'   date sum
 #'
 #' @return a long tibble of time series containing year to date sum or average
-#' @importFrom magrittr %>%
-#' @importFrom rlang .data
 #' @export
 #'
 #' @examples
@@ -733,16 +733,16 @@ ptd_cum <- function(long_tbl_in, per = "year", avg = TRUE) {
 
 #' Period to date growth rate
 #'
-#' @param long_tbl_in a long tibble of time series (produced by ts_long() for example)
-#' @param per unit of time supplied to floor_date() (for ytd per = "year" (default), for mtd per = "month")
-#' @param lag_length period over which growth is calculated (e.g. "1 year" (default), "3 years", etc. See ?ts_lag() for options)
-#' @param avg if true, the year to date average, if false, the year to date sum for calculation
+#' @param long_tbl_in a long tibble of time series (produced by ts_long() for
+#'   example)
+#' @param per unit of time supplied to floor_date() (for ytd per = "year"
+#'   (default), for mtd per = "month")
+#' @param lag_length period over which growth is calculated (e.g. "1 year"
+#'   (default), "3 years", etc. See ?ts_lag() for options)
+#' @param avg if true, the year to date average, if false, the year to date sum
+#'   for calculation
 #'
 #' @return a long tibble of time series containing year to date growth rate
-#' @importFrom magrittr %>%
-#' @importFrom tsbox %ts/%
-#' @importFrom tsbox %ts-%
-#' @importFrom tsbox %ts*%
 #' @export
 #'
 #' @examples
@@ -771,7 +771,6 @@ ptd_gr <- function(long_tbl_in, per = "year", lag_length = "1 year", avg = TRUE)
 #' @param ser_in the series containing annualized growth (in percent)
 #'
 #' @return series containing quarterly growth (in percent)
-#' @importFrom magrittr %>%
 #' @export
 #'
 #' @examples
@@ -789,7 +788,6 @@ pca_to_pc <- function(ser_in) {
 #' @param ser_in series containing quarterly growth (in percent)
 #'
 #' @return the series containing annualized growth (in percent)
-#' @importFrom magrittr %>%
 #' @export
 #'
 #' @examples
@@ -808,7 +806,6 @@ pc_to_pca <- function(ser_in) {
 #' @param lag_in length of period over which growth is calculated
 #'
 #' @return series containing the average growth of ser_in (in percent)
-#' @importFrom magrittr %>%
 #' @export
 #'
 #' @examples
@@ -834,8 +831,6 @@ pcmp <- function(ser_in, lag_in = 1) {
 #' @param ser_in an xts series
 #'
 #' @return date associated with first observation
-#' @importFrom magrittr %>%
-#' @importFrom rlang .data
 #' @export
 #'
 #' @examples
@@ -855,8 +850,6 @@ find_start <- function(ser_in) {
 #' @param ser_in an xts series
 #'
 #' @return date associated with last observation
-#' @importFrom magrittr %>%
-#' @importFrom rlang .data
 #' @export
 #'
 #' @examples
@@ -877,7 +870,6 @@ find_end <- function(ser_in) {
 #' @param dat2 date of period end (string: yyyy-mm-dd)
 #'
 #' @return string containing date range
-#' @importFrom magrittr %>%
 #' @export
 #'
 #' @examples
@@ -894,7 +886,6 @@ p <- function(dat1 = "", dat2 = "") {
 #' @param dat2 date of period end (string: yyyyMm or yyyy.m)
 #'
 #' @return string containing date range
-#' @importFrom magrittr %>%
 #' @export
 #'
 #' @examples
@@ -913,7 +904,6 @@ pm <- function(dat1 = "", dat2 = "") {
 #' @param dat2 date of period end (string: yyyyQq or yyyy.q)
 #'
 #' @return string containing date range
-#' @importFrom magrittr %>%
 #' @export
 #'
 #' @examples
@@ -925,13 +915,13 @@ pq <- function(dat1 = "", dat2 = "") {
   stringr::str_c(if (dat1 != "") dat1 %>% lubridate::yq(), "/", if (dat2 != "") dat2 %>% lubridate::yq())
 }
 
+
 #' Concatenate date formatted as yyyyQq or yyyy.q to obtain single period
 #' DON'T USE!!! USE lubridate::yq() INSTEAD
 #'
 #' @param dat1 date of period start (string: yyyyQq or yyyy.q)
 #'
 #' @return string containing date range
-#' @importFrom magrittr %>%
 #' @export
 #'
 #' @examples
@@ -946,7 +936,6 @@ pq_1 <- function(dat1 = "") {
 #' @param dat2 year of period end (string or numeric: yyyy)
 #'
 #' @return string containing date range
-#' @importFrom magrittr %>%
 #' @export
 #'
 #' @examples
@@ -964,7 +953,6 @@ py <- function(dat1 = "", dat2 = "") {
 #' @param x dates (string: yyyy-mm-dd)
 #'
 #' @return formatted dates (string: yyyyQqq)
-#' @importFrom magrittr %>%
 #' @export
 #'
 #' @examples
@@ -982,7 +970,6 @@ ymd_to_yQq <- function(x) {
 #' @param nr_quarters number of quarters in period (integer)
 #'
 #' @return number of months in period
-#' @importFrom magrittr %>%
 #' @export
 #'
 #' @examples
@@ -999,7 +986,6 @@ qtrs <- function(nr_quarters) {
 #' @param dat2 date of period end (string: yyyyQq or yyyy.q)
 #'
 #' @return numeric length of date range in quarters
-#' @importFrom magrittr %>%
 #' @export
 #'
 #' @examples
@@ -1016,8 +1002,6 @@ nqtrs <- function(dat1 = "", dat2 = "") {
 #' @param ord numeric order (window length) of moving average
 #'
 #' @return object with same class as input containing moving average
-#' @importFrom magrittr %>%
-#' @importFrom rlang .data
 #' @export
 #'
 #' @examples
@@ -1071,7 +1055,6 @@ ma <- function(ser, ord) {
 #' @param gr_1 only show growth for the first series (default)
 #'
 #' @return a dygraph plot
-#' @importFrom magrittr %>%
 #' @export
 #'
 #' @examples
@@ -1132,6 +1115,7 @@ plot_1 <- function(ser, rng_start = as.character(Sys.Date() - lubridate::years(1
     htmltools::browsable()
 }
 
+
 #' Interactive plot with level and growth rate for forecast series
 #'
 #' @param ser time series to plot (min 1, max 3) (e.g. current fcst, old fcst, history)
@@ -1142,7 +1126,6 @@ plot_1 <- function(ser, rng_start = as.character(Sys.Date() - lubridate::years(1
 #' @param yoy_gr year-over-year (default) or annualized growth
 #'
 #' @return a dygraph plot
-#' @importFrom magrittr %>%
 #' @export
 #'
 #' @examples
@@ -1210,7 +1193,6 @@ plot_fc <- function(ser, rng_start = as.character(Sys.Date() - lubridate::years(
 #' @param gr_bar show bars or line (default) for the growth series
 #'
 #' @return a list with two dygraph plots (level, index, growth)
-#' @importFrom magrittr %>%
 #' @export
 #'
 #' @examples
@@ -1268,7 +1250,6 @@ plot_comp_2 <- function(sers, rng_start = as.character(Sys.Date() - lubridate::y
 #' @param gr_bar show bars or line (default) for the growth series
 #'
 #' @return a list with three dygraph plots (level, index, growth)
-#' @importFrom magrittr %>%
 #' @export
 #'
 #' @examples
@@ -1335,7 +1316,6 @@ plot_comp_3 <- function(sers, indx_start = as.character(Sys.Date() - lubridate::
 #' @param ... arguments to format the coefficients e.g. digits = 3
 #'
 #' @return a character vector containing the estimated equation (1) and bimets components (2:4)
-#' @importFrom magrittr %>%
 #' @export
 #'
 #' @examples
@@ -1433,16 +1413,12 @@ model_equation <- function(model, ...) { #   model =  est_lm   {model_equation(e
   return(c(model_eqn, model_eqn_beh, model_eqn_bim, model_eqn_coe))
 }
 
+
 #' Parse gets output and extract underlying data (GETS model development)
 #'
 #' @param model_in a model estimated by arx, isat, or getsm
 #'
 #' @return an xts containing the model variables
-#' @importFrom magrittr %>%
-#' @importFrom rlang .data
-#' @importFrom rlang !!
-#' @importFrom rlang sym
-#' @importFrom rlang :=
 #' @export
 #'
 #' @examples
@@ -1462,14 +1438,16 @@ extract_data <- function(model_in) {
   return(data_out)
 }
 
+
 #' Update a bimets model with new/modified equations
 #'
 #' @param model_1 original estimated bimets model
-#' @param model_2 bimets model containing updates (only updated equations need to be estimated)
-#' @param eqList names of updated behavioral equations (vector of strings), others taken from model_1 (equations missing from model_2 are removed)
+#' @param model_2 bimets model containing updates (only updated equations need
+#'   to be estimated)
+#' @param eqList names of updated behavioral equations (vector of strings),
+#'   others taken from model_1 (equations missing from model_2 are removed)
 #'
 #' @return estimated bimets model containing updates
-#' @importFrom magrittr %>%
 #' @export
 #'
 #' @examples
@@ -1492,6 +1470,7 @@ update_eqs <- function(model_1, model_2, eqList) {
   return(scen_model_est)
 }
 
+
 # **************************
 # other utility functions ----
 # **************************
@@ -1505,7 +1484,6 @@ update_eqs <- function(model_1, model_2, eqList) {
 #' @param e2 second addend
 #'
 #' @return sum of the two addends replacing the values in the first addend
-#' @importFrom magrittr %>%
 #' @export
 #'
 #' @examples

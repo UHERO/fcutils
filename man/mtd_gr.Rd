@@ -7,9 +7,11 @@
 mtd_gr(long_tbl_in, avg = TRUE)
 }
 \arguments{
-\item{long_tbl_in}{a long tibble of time series (produced by ts_long() for example)}
+\item{long_tbl_in}{a long tibble of time series (produced by ts_long() for
+example)}
 
-\item{avg}{if true, the year to date average, if false, the year to date sum for calculation}
+\item{avg}{if true, the year to date average, if false, the year to date sum
+for calculation}
 }
 \value{
 a long tibble of time series containing year to date growth rate

@@ -9,7 +9,8 @@ rename_udaman(ser_in, freq = NULL)
 \arguments{
 \item{ser_in}{series name (string "mnemonic_loc", "mnemonic__loc_freq")}
 
-\item{freq}{frequency of the series, required if not contained in the series name (string "D", "W", "M", "Q", "S", "A")}
+\item{freq}{frequency of the series, required if not contained in the series
+name (string "D", "W", "M", "Q", "S", "A")}
 }
 \value{
 series name following udaman convention "mnemonic@loc.freq"

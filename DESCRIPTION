@@ -30,9 +30,12 @@ Imports:
     xts
 Suggests: 
     bimets,
-    gets
+    gets,
+    knitr,
+    rmarkdown
 Depends: 
     R (>= 2.10)
 LazyData: true
-URL: https://github.com/UHERO/fcutils
+URL: https://github.com/UHERO/fcutils, https://uhero.github.io/fcutils/
 BugReports: https://github.com/UHERO/fcutils/issues
+VignetteBuilder: knitr

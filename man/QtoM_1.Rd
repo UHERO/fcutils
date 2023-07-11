@@ -11,7 +11,8 @@ QtoM_1(var_q, ts_start, conv_type)
 
 \item{ts_start}{starting period as c(year, quarter) e.g. c(2001, 1)}
 
-\item{conv_type}{match the quarterly value via "first", "last", "sum", "average"}
+\item{conv_type}{match the quarterly value via "first", "last", "sum",
+"average"}
 }
 \value{
 vector containing a single variable at monthly freq

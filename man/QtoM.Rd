@@ -7,9 +7,11 @@
 QtoM(data_q, conv_type)
 }
 \arguments{
-\item{data_q}{tibble containing variables at quarterly freq}
+\item{data_q}{tibble containing variables at quarterly freq the first column
+of data_q named "time" contains dates}
 
-\item{conv_type}{match the quarterly value via "first", "last", "sum", "average"}
+\item{conv_type}{match the quarterly value via "first", "last", "sum",
+"average"}
 }
 \value{
 tibble containing variables at monthly freq

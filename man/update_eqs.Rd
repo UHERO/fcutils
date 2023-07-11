@@ -9,9 +9,11 @@ update_eqs(model_1, model_2, eqList)
 \arguments{
 \item{model_1}{original estimated bimets model}
 
-\item{model_2}{bimets model containing updates (only updated equations need to be estimated)}
+\item{model_2}{bimets model containing updates (only updated equations need
+to be estimated)}
 
-\item{eqList}{names of updated behavioral equations (vector of strings), others taken from model_1 (equations missing from model_2 are removed)}
+\item{eqList}{names of updated behavioral equations (vector of strings),
+others taken from model_1 (equations missing from model_2 are removed)}
 }
 \value{
 estimated bimets model containing updates

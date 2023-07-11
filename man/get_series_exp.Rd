@@ -18,15 +18,18 @@ get_series_exp(
 
 \item{format}{"wide" (default) or "long" or "xts"}
 
-\item{save_loc}{location to save the csv of the retrieved data, set to NULL to avoid saving}
+\item{save_loc}{location to save the csv of the retrieved data, set to NULL
+to avoid saving}
 
-\item{expand}{"true" or "raw" ("true" downloads formatted data, "raw" downloads raw units)}
+\item{expand}{"true" or "raw" ("true" downloads formatted data, "raw"
+downloads raw units)}
 
-\item{rename}{"compact" (default), "full", "no". "compact": @ replaced by _ and no frequency;
-"full": @ replaced by __ and . by _;
-"no": no renaming, keep UDAMAN names}
+\item{rename}{"compact" (default), "full", "no". "compact": @ replaced by _
+and no frequency; "full": @ replaced by __ and . by _; "no": no renaming,
+keep UDAMAN names}
 
-\item{descr}{if TRUE add to the udaman series name the series description in parentheses}
+\item{descr}{if TRUE add to the udaman series name the series description in
+parentheses}
 }
 \value{
 time and data for all series combined in a tibble

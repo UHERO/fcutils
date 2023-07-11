@@ -7,11 +7,14 @@
 ptd_cum(long_tbl_in, per = "year", avg = TRUE)
 }
 \arguments{
-\item{long_tbl_in}{a long tibble of time series (produced by ts_long() for example)}
+\item{long_tbl_in}{a long tibble of time series (produced by ts_long() for
+example)}
 
-\item{per}{unit of time supplied to floor_date() (for ytd per = "year" (default), for mtd per = "month")}
+\item{per}{unit of time supplied to floor_date() (for ytd per = "year"
+(default), for mtd per = "month")}
 
-\item{avg}{if true (default), the year to date average, if false, the year to date sum}
+\item{avg}{if true (default), the year to date average, if false, the year to
+date sum}
 }
 \value{
 a long tibble of time series containing year to date sum or average

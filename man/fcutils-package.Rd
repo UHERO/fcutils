@@ -8,6 +8,15 @@
 \description{
 Manipulate time series. Retrieve and store data. Extend tsbox with additional frequency conversions and growth calculations. Plot time series data. Modify bimets models.
 }
+\seealso{
+Useful links:
+\itemize{
+  \item \url{https://github.com/UHERO/fcutils}
+  \item \url{https://uhero.github.io/fcutils/}
+  \item Report bugs at \url{https://github.com/UHERO/fcutils/issues}
+}
+
+}
 \author{
 \strong{Maintainer}: Peter Fuleky \email{fuleky@hawaii.edu} (\href{https://orcid.org/0000-0002-4094-2823}{ORCID})
 
