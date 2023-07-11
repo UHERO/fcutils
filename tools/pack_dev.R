@@ -69,14 +69,7 @@ pkgdown::build_site()
 
 usethis::use_pkgdown_github_pages()
 
-# renv::init()
+usethis::proj_get()
+usethis::proj_sitrep()
 
-# usethis::proj_sitrep()
-
-# usethis::create_from_github(
-#   "https://github.com/UHERO/fcst_utils.git",
-#   destdir = "/Users/peterfuleky/Documents/UHERO/UHERO_work/forecast/"
-# )
-
-# usethis::git_sitrep()
-
+renv::init()
