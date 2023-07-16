@@ -57,7 +57,6 @@
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">get_series_exp</span><span class="op">(</span></span>
 <span>  <span class="va">exp_id</span>,</span>
 <span>  format <span class="op">=</span> <span class="st">"wide"</span>,</span>
-<span>  save_loc <span class="op">=</span> <span class="st">"data/raw"</span>,</span>
 <span>  expand <span class="op">=</span> <span class="st">"true"</span>,</span>
 <span>  rename <span class="op">=</span> <span class="st">"compact"</span>,</span>
 <span>  descr <span class="op">=</span> <span class="cn">FALSE</span></span>
@@ -72,11 +71,6 @@
 
 <dt>format</dt>
 <dd><p>"wide" (default) or "long" or "xts"</p></dd>
-
-
-<dt>save_loc</dt>
-<dd><p>location to save the csv of the retrieved data, set to NULL
-to avoid saving</p></dd>
 
 
 <dt>expand</dt>
@@ -104,10 +98,9 @@ parentheses</p></dd>
 
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span></span></span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span> <span class="co"># interactive()</span></span></span>
 <span class="r-in"><span><span class="fu">get_series_exp</span><span class="op">(</span>exp_id <span class="op">=</span> <span class="fl">74</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu">get_series_exp</span><span class="op">(</span><span class="fl">74</span>, format <span class="op">=</span> <span class="st">"xts"</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="fu">get_series_exp</span><span class="op">(</span><span class="fl">74</span>, save_loc <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">}</span></span></span>
 </code></pre></div>
     </div>
