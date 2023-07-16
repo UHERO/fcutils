@@ -39,7 +39,7 @@ format option
 Download a set of series from udaman using series names
 }
 \examples{
-\dontrun{
+\dontshow{if (interactive()) (if (getRversion() >= "3.4") withAutoprint else force)(\{ # examplesIf}
 get_series(c("VISNS@HI.M", "VAPNS@HI.M"))
 get_series(c("VISNS@HI.M", "VISUSNS@HI.M"), freq = "Q")
 get_series(c("VISNS@HI.M", "VAPNS@HI.M"), format = "xts")
@@ -47,5 +47,5 @@ get_series(c("VISNS@HI.M"), format = "xts")
 get_series(c("VISNS@HI.M"), format = "xts", descr = TRUE)
 get_series(c("E_NF_HI", "ECT_HI", "E_TU_HAW"), freq = "M")
 get_series(c("E_NF__HI_M", "ECT__HI_M", "VAP__HI_W"))
-}
+\dontshow{\}) # examplesIf}
 }

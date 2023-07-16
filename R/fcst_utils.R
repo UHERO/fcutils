@@ -81,8 +81,7 @@ get_series_1 <- function(ser_id, expand = "true", rename = "compact", descr = FA
 #'   format option
 #' @export
 #'
-#' @examples
-#' \dontrun{
+#' @examplesIf interactive()
 #' get_series(c("VISNS@HI.M", "VAPNS@HI.M"))
 #' get_series(c("VISNS@HI.M", "VISUSNS@HI.M"), freq = "Q")
 #' get_series(c("VISNS@HI.M", "VAPNS@HI.M"), format = "xts")
@@ -90,7 +89,6 @@ get_series_1 <- function(ser_id, expand = "true", rename = "compact", descr = FA
 #' get_series(c("VISNS@HI.M"), format = "xts", descr = TRUE)
 #' get_series(c("E_NF_HI", "ECT_HI", "E_TU_HAW"), freq = "M")
 #' get_series(c("E_NF__HI_M", "ECT__HI_M", "VAP__HI_W"))
-#' }
 get_series <- function(ser_id_vec, format = "wide", expand = "true", rename = "compact", freq = NULL, descr = FALSE) {
   ser_tbl <- ser_id_vec %>%
     rename_udaman(., freq = freq) %>%
