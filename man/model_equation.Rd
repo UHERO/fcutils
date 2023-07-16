@@ -18,7 +18,7 @@ a character vector containing the estimated equation (1) and bimets components (
 Parse lm() output and convert into bimets equation (GETS model development)
 }
 \examples{
-\dontrun{
+\dontshow{if (interactive()) (if (getRversion() >= "3.4") withAutoprint else force)(\{ # examplesIf}
 # this function combines coefficient estimates and variable names into an equation
 # in vector element 1 and into bimets components in vector elements 2-4.
 # https://stats.stackexchange.com/questions/63600/
@@ -42,5 +42,5 @@ model_equation(dfm)
 # (2) "BEHAVIORAL> TSDELTA_LOG_uk"
 # (3) "EQ> TSDELTA(LOG(uk)) = b0 + b1 * TSLAG(uk, 1) + b2 * TSLAG(uk, 11) + b3 * TSLAG(uk, 12)"
 # (4) "COEFF> b0 b1 b2 b3"
-}
+\dontshow{\}) # examplesIf}
 }

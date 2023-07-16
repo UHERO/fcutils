@@ -19,7 +19,7 @@ a long tibble of time series containing year to date sum or average
 Month to date sum or average
 }
 \examples{
-\dontrun{
+\dontshow{if (interactive()) (if (getRversion() >= "3.4") withAutoprint else force)(\{ # examplesIf}
 get_series(c("VISPNS@HI.D", "VAPNS@HI.D")) |>
   tsbox::ts_long() |>
   mtd_cum()
@@ -27,5 +27,5 @@ test <- get_series("VAPNS@HI.D") |>
   tsbox::ts_long() |>
   mtd_cum()
 test \%ts/\% tsbox::ts_lag(test, "3 years") |> tail()
-}
+\dontshow{\}) # examplesIf}
 }

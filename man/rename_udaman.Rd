@@ -23,7 +23,7 @@ rename_udaman(c("E_NF_HI", "ECT_HI", "E_TU_HAW"), freq = "M")
 rename_udaman(c("E_NF__HI_M", "ECT__HI_M", "VAP__HAW_W"))
 rename_udaman(c("E_NF@HI.M", "ECT@HI.M", "VAP@HAW.W"))
 rename_udaman(c("SH_US@HI.M", "SH_JP__HON_M"))
-\dontrun{
+\dontshow{if (interactive()) (if (getRversion() >= "3.4") withAutoprint else force)(\{ # examplesIf}
 get_series_exp(74) |> dplyr::rename_with(~ rename_udaman(., freq = "M"), .cols = -1)
 get_series_exp(74) |> dplyr::rename_with(rename_udaman, freq = "M", .cols = !time)
 get_series_exp(74) |>
@@ -33,5 +33,5 @@ get_series_exp(318, rename = "full") |>
   tsbox::ts_long() |>
   dplyr::mutate(id = rename_udaman(id)) |>
   tsbox::ts_xts()
-}
+\dontshow{\}) # examplesIf}
 }

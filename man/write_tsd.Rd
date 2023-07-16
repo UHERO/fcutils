@@ -20,7 +20,7 @@ location)
 Save an xts or a wide data frame with time series in tsd format
 }
 \examples{
-\dontrun{
+\dontshow{if (interactive()) (if (getRversion() >= "3.4") withAutoprint else force)(\{ # examplesIf}
 get_series_exp(74) |> write_tsd("out.tsd")
-}
+\dontshow{\}) # examplesIf}
 }

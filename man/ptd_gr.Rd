@@ -26,7 +26,7 @@ a long tibble of time series containing year to date growth rate
 Period to date growth rate
 }
 \examples{
-\dontrun{
+\dontshow{if (interactive()) (if (getRversion() >= "3.4") withAutoprint else force)(\{ # examplesIf}
 get_series(c("VISNS@HI.M", "VAPNS@HI.M")) |>
   tsbox::ts_long() |>
   ptd_gr() |>
@@ -35,5 +35,5 @@ get_series("VAPNS@HI.D") |>
   tsbox::ts_long() |>
   ptd_gr(per = "month", lag_length = "3 years") |>
   tail()
-}
+\dontshow{\}) # examplesIf}
 }

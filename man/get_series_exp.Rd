@@ -7,7 +7,6 @@
 get_series_exp(
   exp_id,
   format = "wide",
-  save_loc = "data/raw",
   expand = "true",
   rename = "compact",
   descr = FALSE
@@ -17,9 +16,6 @@ get_series_exp(
 \item{exp_id}{export id}
 
 \item{format}{"wide" (default) or "long" or "xts"}
-
-\item{save_loc}{location to save the csv of the retrieved data, set to NULL
-to avoid saving}
 
 \item{expand}{"true" or "raw" ("true" downloads formatted data, "raw"
 downloads raw units)}
@@ -38,9 +34,8 @@ time and data for all series combined in a tibble
 Download series listed in an export table from udaman
 }
 \examples{
-\dontrun{
+\dontshow{if (interactive()) (if (getRversion() >= "3.4") withAutoprint else force)(\{ # examplesIf}
 get_series_exp(exp_id = 74)
 get_series_exp(74, format = "xts")
-get_series_exp(74, save_loc = NULL)
-}
+\dontshow{\}) # examplesIf}
 }

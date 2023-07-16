@@ -22,7 +22,7 @@ estimated bimets model containing updates
 Update a bimets model with new/modified equations
 }
 \examples{
-\dontrun{
+\dontshow{if (interactive()) (if (getRversion() >= "3.4") withAutoprint else force)(\{ # examplesIf}
 update_eqs(scen_model_1_est, scen_model_2_est, c("E_NF_AT_HI_Q", "Y_R_AT_HI_Q"))
-}
+\dontshow{\}) # examplesIf}
 }

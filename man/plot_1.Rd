@@ -51,11 +51,11 @@ plot_1(test1, rng_start = "2017-01-01", gr_1 = FALSE)
 test1 <- AtoQ(`ncen@us.sola`)
 plot_1(`ncen@us.sola`, rng_start = "2017-01-01")
 plot_1(test1, rng_start = "2017-01-01")
-\dontrun{
-get_series_exp(74, save_loc = NULL, rename = "no") |>
+\dontshow{if (interactive()) (if (getRversion() >= "3.4") withAutoprint else force)(\{ # examplesIf}
+get_series_exp(74, rename = "no") |>
   tsbox::ts_long() |>
   tsbox::ts_xts() |>
   magrittr::extract(, c("E_NF@HI.Q", "ECT@HI.Q", "EMN@HI.Q")) |>
   plot_1()
-}
+\dontshow{\}) # examplesIf}
 }

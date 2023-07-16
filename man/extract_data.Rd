@@ -16,7 +16,7 @@ an xts containing the model variables
 Parse gets output and extract underlying data (GETS model development)
 }
 \examples{
-\dontrun{
+\dontshow{if (interactive()) (if (getRversion() >= "3.4") withAutoprint else force)(\{ # examplesIf}
 # save the data associated with a gets model
-}
+\dontshow{\}) # examplesIf}
 }

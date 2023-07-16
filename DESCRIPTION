@@ -12,7 +12,6 @@ RoxygenNote: 7.2.3
 Imports: 
     dplyr,
     dygraphs,
-    here,
     htmltools,
     httr,
     jsonlite,
@@ -30,6 +29,7 @@ Imports:
     xts
 Suggests: 
     bimets,
+    dynlm,
     gets,
     knitr,
     rmarkdown

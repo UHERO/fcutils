@@ -18,11 +18,11 @@ variable
 Construct a series name from variable components and retrieve the series
 }
 \examples{
-\dontrun{
+\dontshow{if (interactive()) (if (getRversion() >= "3.4") withAutoprint else force)(\{ # examplesIf}
 ser_i <- "_NF"
 cnty_i <- "HI"
-get_series_exp(74, save_loc = NULL) |>
+get_series_exp(74, rename = "no") |>
   tsbox::ts_long() |>
   tsbox::ts_xts() \%$\% get_var("E{ser_i}@{cnty_i}.Q")
-}
+\dontshow{\}) # examplesIf}
 }

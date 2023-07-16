@@ -110,8 +110,6 @@ get_series <- function(ser_id_vec, format = "wide", expand = "true", rename = "c
 #'
 #' @param exp_id export id
 #' @param format "wide" (default) or "long" or "xts"
-#' @param save_loc location to save the csv of the retrieved data, set to NULL
-#'   to avoid saving
 #' @param expand "true" or "raw" ("true" downloads formatted data, "raw"
 #'   downloads raw units)
 #' @param rename "compact" (default), "full", "no". "compact": @ replaced by _
@@ -123,13 +121,10 @@ get_series <- function(ser_id_vec, format = "wide", expand = "true", rename = "c
 #' @return time and data for all series combined in a tibble
 #' @export
 #'
-#' @examples
-#' \dontrun{
+#' @examplesIf interactive()
 #' get_series_exp(exp_id = 74)
 #' get_series_exp(74, format = "xts")
-#' get_series_exp(74, save_loc = NULL)
-#' }
-get_series_exp <- function(exp_id, format = "wide", save_loc = "data/raw", expand = "true", rename = "compact", descr = FALSE) {
+get_series_exp <- function(exp_id, format = "wide", expand = "true", rename = "compact", descr = FALSE) {
   # API call
   url <- stringr::str_c("https://api.uhero.hawaii.edu/v1.u/package/export?id=", exp_id, "&expand=", expand, "&u=uhero&nocache")
   req <- httr::GET(url, httr::add_headers(Authorization = stringr::str_c("Bearer ", Sys.getenv("udaman_token"))))
@@ -142,7 +137,7 @@ get_series_exp <- function(exp_id, format = "wide", save_loc = "data/raw", expan
   values <- uhero_data$data$seriesObservations$transformationResults %>%
     purrr::map("values") %>%
     purrr::flatten()
-  data_lst <- purrr::map2(dates, values, ~ tibble(time = .x %>% lubridate::ymd(), value = .y %>% as.numeric()))
+  data_lst <- purrr::map2(dates, values, ~ tibble::tibble(time = .x %>% lubridate::ymd(), value = .y %>% as.numeric()))
   empty_ser <- data_lst %>%
     purrr::map(~ nrow(.x) == 0) %>%
     purrr::reduce(c)
@@ -173,7 +168,6 @@ get_series_exp <- function(exp_id, format = "wide", save_loc = "data/raw", expan
         if (descr) stringr::str_c(., " (", title, ")") else .
       })
   )
-  if (!is.null(save_loc)) readr::write_csv(data_tbl, here::here(save_loc, stringr::str_c(exp_id, ".csv")))
   if (format == "wide") data_out <- data_tbl
   if (format == "long") data_out <- data_tbl %>% tsbox::ts_long()
   if (format == "xts") {
@@ -263,14 +257,12 @@ make_xts <- function(start = bnk_start, end = bnk_end, per = "year", val = NA_re
 #' @return variable
 #' @export
 #'
-#' @examples
-#' \dontrun{
+#' @examplesIf interactive()
 #' ser_i <- "_NF"
 #' cnty_i <- "HI"
-#' get_series_exp(74, save_loc = NULL) |>
+#' get_series_exp(74, rename = "no") |>
 #'   tsbox::ts_long() |>
 #'   tsbox::ts_xts() %$% get_var("E{ser_i}@{cnty_i}.Q")
-#' }
 get_var <- function(ser_in, env = parent.frame()) {
   return(ser_in %>% stringr::str_glue() %>% get(envir = env, inherits = TRUE))
 }
@@ -290,7 +282,7 @@ get_var <- function(ser_in, env = parent.frame()) {
 #' rename_udaman(c("E_NF__HI_M", "ECT__HI_M", "VAP__HAW_W"))
 #' rename_udaman(c("E_NF@HI.M", "ECT@HI.M", "VAP@HAW.W"))
 #' rename_udaman(c("SH_US@HI.M", "SH_JP__HON_M"))
-#' \dontrun{
+#' @examplesIf interactive()
 #' get_series_exp(74) |> dplyr::rename_with(~ rename_udaman(., freq = "M"), .cols = -1)
 #' get_series_exp(74) |> dplyr::rename_with(rename_udaman, freq = "M", .cols = !time)
 #' get_series_exp(74) |>
@@ -300,7 +292,6 @@ get_var <- function(ser_in, env = parent.frame()) {
 #'   tsbox::ts_long() |>
 #'   dplyr::mutate(id = rename_udaman(id)) |>
 #'   tsbox::ts_xts()
-#' }
 rename_udaman <- function(ser_in, freq = NULL) {
   if (!is.character(ser_in)) {
     ser_in <- as.character(ser_in)
@@ -336,10 +327,8 @@ rename_udaman <- function(ser_in, freq = NULL) {
 #'   location)
 #' @export
 #'
-#' @examples
-#' \dontrun{
+#' @examplesIf interactive()
 #' get_series_exp(74) |> write_tsd("out.tsd")
-#' }
 write_tsd <- function(x, file) {
   # convert the xts or wide data frame to tslist
   if ("xts" %in% class(x)) {
@@ -597,12 +586,10 @@ QtoA <- function(ser_in, aggr = "mean") {
 #' @return a long tibble of time series containing year to date sum or average
 #' @export
 #'
-#' @examples
-#' \dontrun{
+#' @examplesIf interactive()
 #' get_series(c("VISNS@HI.M", "VAPNS@HI.M")) |>
 #'   tsbox::ts_long() |>
 #'   ytd_cum()
-#' }
 ytd_cum <- function(long_tbl_in, avg = TRUE) {
   long_tbl_out <- long_tbl_in %>%
     dplyr::mutate(yr = lubridate::floor_date(.data$time, "year")) %>%
@@ -624,13 +611,11 @@ ytd_cum <- function(long_tbl_in, avg = TRUE) {
 #' @return a long tibble of time series containing year to date growth rate
 #' @export
 #'
-#' @examples
-#' \dontrun{
+#' @examplesIf interactive()
 #' get_series(c("VISNS@HI.M", "VAPNS@HI.M")) |>
 #'   tsbox::ts_long() |>
 #'   ytd_gr() |>
 #'   tail()
-#' }
 ytd_gr <- function(long_tbl_in, avg = TRUE) {
   long_tbl_out <- long_tbl_in %>%
     ytd_cum(avg) %>%
@@ -648,8 +633,7 @@ ytd_gr <- function(long_tbl_in, avg = TRUE) {
 #' @return a long tibble of time series containing year to date sum or average
 #' @export
 #'
-#' @examples
-#' \dontrun{
+#' @examplesIf interactive()
 #' get_series(c("VISPNS@HI.D", "VAPNS@HI.D")) |>
 #'   tsbox::ts_long() |>
 #'   mtd_cum()
@@ -657,7 +641,6 @@ ytd_gr <- function(long_tbl_in, avg = TRUE) {
 #'   tsbox::ts_long() |>
 #'   mtd_cum()
 #' test %ts/% tsbox::ts_lag(test, "3 years") |> tail()
-#' }
 mtd_cum <- function(long_tbl_in, avg = TRUE) {
   long_tbl_out <- long_tbl_in %>%
     dplyr::mutate(yrmo = lubridate::floor_date(.data$time, "month")) %>%
@@ -679,13 +662,11 @@ mtd_cum <- function(long_tbl_in, avg = TRUE) {
 #' @return a long tibble of time series containing year to date growth rate
 #' @export
 #'
-#' @examples
-#' \dontrun{
+#' @examplesIf interactive()
 #' get_series(c("VISPNS@HI.D", "VAPNS@HI.D")) |>
 #'   tsbox::ts_long() |>
 #'   mtd_gr() |>
 #'   tail()
-#' }
 mtd_gr <- function(long_tbl_in, avg = TRUE) {
   long_tbl_out <- long_tbl_in %>%
     mtd_cum(avg) %>%
@@ -706,12 +687,10 @@ mtd_gr <- function(long_tbl_in, avg = TRUE) {
 #' @return a long tibble of time series containing year to date sum or average
 #' @export
 #'
-#' @examples
-#' \dontrun{
+#' @examplesIf interactive()
 #' get_series(c("VISNS@HI.M", "VAPNS@HI.M")) |>
 #'   tsbox::ts_long() |>
 #'   ptd_cum()
-#' }
 ptd_cum <- function(long_tbl_in, per = "year", avg = TRUE) {
   long_tbl_out <- long_tbl_in %>%
     dplyr::mutate(time_per = lubridate::floor_date(.data$time, per)) %>%
@@ -737,8 +716,7 @@ ptd_cum <- function(long_tbl_in, per = "year", avg = TRUE) {
 #' @return a long tibble of time series containing year to date growth rate
 #' @export
 #'
-#' @examples
-#' \dontrun{
+#' @examplesIf interactive()
 #' get_series(c("VISNS@HI.M", "VAPNS@HI.M")) |>
 #'   tsbox::ts_long() |>
 #'   ptd_gr() |>
@@ -747,7 +725,6 @@ ptd_cum <- function(long_tbl_in, per = "year", avg = TRUE) {
 #'   tsbox::ts_long() |>
 #'   ptd_gr(per = "month", lag_length = "3 years") |>
 #'   tail()
-#' }
 ptd_gr <- function(long_tbl_in, per = "year", lag_length = "1 year", avg = TRUE) {
   long_tbl_out <- long_tbl_in %>%
     ptd_cum(per, avg) %>%
@@ -1065,13 +1042,12 @@ ma <- function(ser, ord) {
 #' test1 <- AtoQ(`ncen@us.sola`)
 #' plot_1(`ncen@us.sola`, rng_start = "2017-01-01")
 #' plot_1(test1, rng_start = "2017-01-01")
-#' \dontrun{
-#' get_series_exp(74, save_loc = NULL, rename = "no") |>
+#' @examplesIf interactive()
+#' get_series_exp(74, rename = "no") |>
 #'   tsbox::ts_long() |>
 #'   tsbox::ts_xts() |>
 #'   magrittr::extract(, c("E_NF@HI.Q", "ECT@HI.Q", "EMN@HI.Q")) |>
 #'   plot_1()
-#' }
 plot_1 <- function(ser, rng_start = as.character(Sys.Date() - lubridate::years(15)), rng_end = as.character(Sys.Date()), height = 300, width = 900, yoy_gr = TRUE, gr_1 = TRUE) {
   ser_names <- ser %>%
     tsbox::ts_xts() %>%
@@ -1136,13 +1112,12 @@ plot_1 <- function(ser, rng_start = as.character(Sys.Date() - lubridate::years(1
 #' test1 <- AtoQ(`ncen@us.sola`)
 #' plot_fc(`ncen@us.sola`, rng_start = "2017-01-01")
 #' plot_fc(test1, rng_start = "2017-01-01")
-#' \dontrun{
-#' get_series_exp(74, save_loc = NULL, rename = "no") |>
+#' @examplesIf interactive()
+#' get_series_exp(74, rename = "no") |>
 #'   tsbox::ts_long() |>
 #'   tsbox::ts_xts() |>
 #'   magrittr::extract(, c("E_NF@HI.Q", "ECT@HI.Q", "EMN@HI.Q")) |>
 #'   plot_fc()
-#' }
 plot_fc <- function(ser, rng_start = as.character(Sys.Date() - lubridate::years(15)), rng_end = as.character(Sys.Date()), height = 300, width = 900, yoy_gr = TRUE) {
   ser_names <- ser %>%
     tsbox::ts_xts() %>%
@@ -1192,13 +1167,12 @@ plot_fc <- function(ser, rng_start = as.character(Sys.Date() - lubridate::years(
 #' `ncen@us.sola`["2016/2021"] <- c(323127513, 325511184, 327891911, 330268840, 332639102, 334998398)
 #' test1 <- AtoQ(`ncen@us.sola`)
 #' plot_comp_2(tsbox::ts_c(`ncen@us.sola`, test1), rng_start = "2017-01-01")
-#' \dontrun{
-#' get_series_exp(74, save_loc = NULL) |>
+#' @examplesIf interactive()
+#' get_series_exp(74, rename = "no") |>
 #'   tsbox::ts_long() |>
 #'   tsbox::ts_xts() |>
 #'   magrittr::extract(, c("E_NF@HI.Q", "ECT@HI.Q", "EMN@HI.Q")) |>
 #'   plot_comp_2()
-#' }
 plot_comp_2 <- function(sers, rng_start = as.character(Sys.Date() - lubridate::years(15)), rng_end = as.character(Sys.Date()), height = 300, width = 900, yoy_gr = TRUE, gr_bar = FALSE) {
   ser_names <- sers %>%
     tsbox::ts_xts() %>%
@@ -1249,13 +1223,12 @@ plot_comp_2 <- function(sers, rng_start = as.character(Sys.Date() - lubridate::y
 #' `ncen@us.sola`["2016/2021"] <- c(323127513, 325511184, 327891911, 330268840, 332639102, 334998398)
 #' test1 <- AtoQ(`ncen@us.sola`)
 #' plot_comp_3(tsbox::ts_c(`ncen@us.sola`, test1), rng_start = "2017-01-01")
-#' \dontrun{
-#' get_series_exp(74, save_loc = NULL) |>
+#' @examplesIf interactive()
+#' get_series_exp(74, rename = "no") |>
 #'   tsbox::ts_long() |>
 #'   tsbox::ts_xts() |>
 #'   magrittr::extract(, c("E_NF@HI.Q", "ECT@HI.Q", "EMN@HI.Q")) |>
 #'   plot_comp_3()
-#' }
 plot_comp_3 <- function(sers, indx_start = as.character(Sys.Date() - lubridate::years(15)), rng_start = as.character(Sys.Date() - lubridate::years(15)), rng_end = as.character(Sys.Date()), height = 300, width = 900, yoy_gr = TRUE, gr_bar = FALSE) {
   ser_names <- sers %>%
     tsbox::ts_xts() %>%
@@ -1310,8 +1283,7 @@ plot_comp_3 <- function(sers, indx_start = as.character(Sys.Date() - lubridate::
 #' @return a character vector containing the estimated equation (1) and bimets components (2:4)
 #' @export
 #'
-#' @examples
-#' \dontrun{
+#' @examplesIf interactive()
 #' # this function combines coefficient estimates and variable names into an equation
 #' # in vector element 1 and into bimets components in vector elements 2-4.
 #' # https://stats.stackexchange.com/questions/63600/
@@ -1335,7 +1307,6 @@ plot_comp_3 <- function(sers, indx_start = as.character(Sys.Date() - lubridate::
 #' # (2) "BEHAVIORAL> TSDELTA_LOG_uk"
 #' # (3) "EQ> TSDELTA(LOG(uk)) = b0 + b1 * TSLAG(uk, 1) + b2 * TSLAG(uk, 11) + b3 * TSLAG(uk, 12)"
 #' # (4) "COEFF> b0 b1 b2 b3"
-#' }
 model_equation <- function(model, ...) { #   model =  est_lm   {model_equation(est_lm)[2:4]}
   format_args <- list(...)
 
@@ -1413,10 +1384,8 @@ model_equation <- function(model, ...) { #   model =  est_lm   {model_equation(e
 #' @return an xts containing the model variables
 #' @export
 #'
-#' @examples
-#' \dontrun{
+#' @examplesIf interactive()
 #' # save the data associated with a gets model
-#' }
 extract_data <- function(model_in) {
   data_out <- gets::eviews(model_in, print = FALSE, return = TRUE)$data %>%
     dplyr::select(-c) %>%
@@ -1442,10 +1411,8 @@ extract_data <- function(model_in) {
 #' @return estimated bimets model containing updates
 #' @export
 #'
-#' @examples
-#' \dontrun{
+#' @examplesIf interactive()
 #' update_eqs(scen_model_1_est, scen_model_2_est, c("E_NF_AT_HI_Q", "Y_R_AT_HI_Q"))
-#' }
 update_eqs <- function(model_1, model_2, eqList) {
   # initialize the result with model_2 (contains all equations we want)
   scen_model_est <- model_2
@@ -1478,10 +1445,8 @@ update_eqs <- function(model_1, model_2, eqList) {
 #' @return sum of the two addends replacing the values in the first addend
 #' @export
 #'
-#' @examples
-#' \dontrun{
+#' @examplesIf interactive()
 #' add_QMOD.xts$VISUS_HI[pq(2022.3, 2023.4)] <- add_QMOD.xts$VISUS_HI[pq(2022.3, 2023.4)] +
 #'   c(0.01, -0.04, rep(-0.025, 4))
 #' add_QMOD.xts$VISUS_HI[pq(2022.3, 2023.4)] %+=% c(0.01, -0.04, rep(-0.025, 4)) # easier on the eye
-#' }
 `%+=%` <- function(e1, e2) eval.parent(substitute(e1 <- e1 + e2))

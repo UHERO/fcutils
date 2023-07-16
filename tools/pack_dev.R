@@ -25,7 +25,6 @@ usethis::use_package("tidyr") # drop_na
 usethis::use_package("tibble") # tibble, as_tibble, enframe
 usethis::use_package("magrittr")
 usethis::use_package("lubridate") # ymd
-usethis::use_package("here") # here
 usethis::use_package("tempdisagg") # td
 usethis::use_package("dygraphs")
 usethis::use_package("xts") # xts, nquarters
@@ -35,8 +34,9 @@ usethis::use_package("htmltools") # tagList, browsable
 usethis::use_package("tsbox")
 usethis::use_package("bimets", "Suggests")
 usethis::use_package("gets", "Suggests")
+usethis::use_package("dynlm", "Suggests")
 
-usethis::use_import_from("magrittr", "%>%")
+usethis::use_import_from("magrittr", "%$%")
 usethis::use_import_from("rlang", ":=")
 usethis::use_import_from("rlang", "!!")
 usethis::use_import_from("rlang", "sym")

@@ -19,9 +19,9 @@ Warning: Typing x \%+=\% y/2 returns x <- (x + y)/2.
 Adding parentheses, i.e. x \%+=\% (y/2) solves the problem.
 }
 \examples{
-\dontrun{
+\dontshow{if (interactive()) (if (getRversion() >= "3.4") withAutoprint else force)(\{ # examplesIf}
 add_QMOD.xts$VISUS_HI[pq(2022.3, 2023.4)] <- add_QMOD.xts$VISUS_HI[pq(2022.3, 2023.4)] +
   c(0.01, -0.04, rep(-0.025, 4))
 add_QMOD.xts$VISUS_HI[pq(2022.3, 2023.4)] \%+=\% c(0.01, -0.04, rep(-0.025, 4)) # easier on the eye
-}
+\dontshow{\}) # examplesIf}
 }
