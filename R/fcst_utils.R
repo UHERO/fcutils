@@ -9,10 +9,6 @@
 # so they accept xts, long and wide tbl (see ma())
 
 
-# eliminate warning about .
-utils::globalVariables(".")
-
-
 # **************************
 # data retrieval and manipulation ----
 # **************************
@@ -31,10 +27,8 @@ utils::globalVariables(".")
 #' @return time and data for a single series combined in a tibble
 #' @export
 #'
-#' @examples
-#' \dontrun{
+#' @examplesIf interactive()
 #' get_series_1(ser_id = "VISNS@HI.M")
-#' }
 get_series_1 <- function(ser_id, expand = "true", rename = "compact", descr = FALSE) {
   # API call
   url <- stringr::str_c("https://api.uhero.hawaii.edu/v1.u/series?name=", ser_id, "&expand=", expand, "&u=uhero&nocache")

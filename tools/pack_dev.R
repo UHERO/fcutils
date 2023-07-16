@@ -1,11 +1,14 @@
+usethis::use_blank_slate()
+
 install.packages("devtools")
 install.packages("renv")
 install.packages("tidyverse")
 
 usethis::create_package("/Users/peterfuleky/Documents/UHERO/UHERO_work/forecast/fcutils")
-usethis::use_mit_license()
 
-usethis::use_blank_slate()
+renv::init()
+
+usethis::use_mit_license()
 
 usethis::use_r("fcst_utils.R")
 
@@ -71,5 +74,3 @@ usethis::use_pkgdown_github_pages()
 
 usethis::proj_get()
 usethis::proj_sitrep()
-
-renv::init()

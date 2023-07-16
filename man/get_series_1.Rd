@@ -26,7 +26,7 @@ time and data for a single series combined in a tibble
 Download a single series from udaman using series name
 }
 \examples{
-\dontrun{
+\dontshow{if (interactive()) (if (getRversion() >= "3.4") withAutoprint else force)(\{ # examplesIf}
 get_series_1(ser_id = "VISNS@HI.M")
-}
+\dontshow{\}) # examplesIf}
 }
