@@ -450,6 +450,20 @@ write_tsd <- function(x, file) {
 }
 
 
+#' Copy a data frame to clipboard
+#'
+#' @param x tibble (or data frame) to be copied
+#'
+#' @return copy_tbl() returns the input x invisibly
+#' @export
+#'
+#' @examplesIf interactive()
+#' get_series(c("VISNS@HI.M", "VAPNS@HI.M")) %>% copy_tbl()
+copy_tbl <- function(x) {
+  readr::write_delim(x, pipe("pbcopy"), delim = "\t")
+}
+
+
 # **************************
 # time series utility functions ----
 # **************************
