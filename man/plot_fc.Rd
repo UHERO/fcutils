@@ -8,6 +8,9 @@ plot_fc(
   ser,
   rng_start = as.character(Sys.Date() - lubridate::years(15)),
   rng_end = as.character(Sys.Date()),
+  add_table = TRUE,
+  table_start = rng_start,
+  table_end = rng_end,
   height = 300,
   width = 900,
   yoy_gr = TRUE
@@ -19,6 +22,12 @@ plot_fc(
 \item{rng_start}{start of zoom range ("YYYY-MM-DD")}
 
 \item{rng_end}{end of the zoom range ("YYYY-MM-DD")}
+
+\item{add_table}{should a data table be appended to the plot? (default = TRUE)}
+
+\item{table_start}{start of table range ("YYYY-MM-DD") (all data = NULL, default = rng_start)}
+
+\item{table_end}{end of table range ("YYYY-MM-DD") (all data = NULL, default = rng_end)}
 
 \item{height}{height of a single panel (px)}
 

@@ -1162,6 +1162,9 @@ plot_2ax <- function(ser, rng_start = as.character(Sys.Date() - lubridate::years
 #' @param ser time series to plot (min 1, max 3) (e.g. current fcst, old fcst, history)
 #' @param rng_start start of zoom range ("YYYY-MM-DD")
 #' @param rng_end end of the zoom range ("YYYY-MM-DD")
+#' @param add_table should a data table be appended to the plot? (default = TRUE)
+#' @param table_start start of table range ("YYYY-MM-DD") (all data = NULL, default = rng_start)
+#' @param table_end end of table range ("YYYY-MM-DD") (all data = NULL, default = rng_end)
 #' @param height height of a single panel (px)
 #' @param width width of a single panel (px)
 #' @param yoy_gr year-over-year (default) or annualized growth
@@ -1201,7 +1204,7 @@ plot_2ax <- function(ser, rng_start = as.character(Sys.Date() - lubridate::years
 #' # read_lines(file = save_loc)[-1] %>% str_replace_all("\\}</style>", "font-family: Arial, Helvetica, sans-serif; font-size: medium;}</style>") %>% write_lines(file = save_loc)
 #' # incorporate dependecies into html
 #' # rmarkdown::pandoc_self_contained_html(input = save_loc, output = save_loc)
-plot_fc <- function(ser, rng_start = as.character(Sys.Date() - lubridate::years(15)), rng_end = as.character(Sys.Date()), height = 300, width = 900, yoy_gr = TRUE) {
+plot_fc <- function(ser, rng_start = as.character(Sys.Date() - lubridate::years(15)), rng_end = as.character(Sys.Date()), add_table = TRUE, table_start = rng_start, table_end = rng_end, height = 300, width = 900, yoy_gr = TRUE) {
   ser_names <- ser %>%
     tsbox::ts_xts() %>%
     names()
@@ -1230,22 +1233,26 @@ plot_fc <- function(ser, rng_start = as.character(Sys.Date() - lubridate::years(
     dygraphs::dyRangeSelector(dateWindow = c(rng_start, rng_end), height = 30, strokeColor = "red") %>%
     dygraphs::dyLegend(show = "follow", labelsSeparateLines = TRUE)
 
-  # generate a table with the data
-  ser_tbl <- ser_to_plot %>%
-    # tsbox::ts_span(rng_start, rng_end) %>%
-    tsbox::ts_tbl() %>%
-    tidyr::drop_na() %>%
-    tsbox::ts_wide() %>%
-    reactable::reactable(
-      highlight = TRUE,
-      compact = TRUE,
-      height = height,
-      width = width,
-      defaultPageSize = 1000
-    )
+  if(add_table){
+    # generate a table with the data
+    ser_tbl <- ser_to_plot %>%
+      tsbox::ts_tbl() %>%
+      tidyr::drop_na() %>%
+      tsbox::ts_span(table_start, table_end) %>%
+      dplyr::mutate(value = round(.data$value, 2)) %>%
+      tsbox::ts_wide() %>%
+      reactable::reactable(
+        highlight = TRUE,
+        compact = TRUE,
+        height = height,
+        width = width,
+        defaultPageSize = 1000
+      )
+    ser_plot <- list(ser_plot, ser_tbl)
+  }
 
   # render the dygraphs objects and tables using htmltools
-  list(ser_plot, ser_tbl) %>%
+  ser_plot %>%
     htmltools::tagList() %>%
     htmltools::browsable()
 }
