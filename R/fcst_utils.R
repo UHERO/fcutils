@@ -1191,16 +1191,31 @@ plot_2ax <- function(ser, rng_start = as.character(Sys.Date() - lubridate::years
 #'   tsbox::ts_xts() |>
 #'   magrittr::extract(, c("E_NF@HI.Q", "ECT@HI.Q", "EMN@HI.Q")) |>
 #'   plot_fc()
+#' # combine a list of plots into a single html:
+#' # save_loc <- here::here("output/plots", str_c("plots_", Sys.Date(), ".html"))
+#' # plots_out %>%
+#' #   htmltools::tagList() %>%
+#' #   htmltools::browsable() %>%
+#' #   htmltools::save_html(file = save_loc)
+#' # fix the html:
+#' # read_lines(file = save_loc)[-1] %>% str_replace_all("\\}</style>", "font-family: Arial, Helvetica, sans-serif; font-size: medium;}</style>") %>% write_lines(file = save_loc)
+#' # incorporate dependecies into html
+#' # rmarkdown::pandoc_self_contained_html(input = save_loc, output = save_loc)
 plot_fc <- function(ser, rng_start = as.character(Sys.Date() - lubridate::years(15)), rng_end = as.character(Sys.Date()), height = 300, width = 900, yoy_gr = TRUE) {
   ser_names <- ser %>%
     tsbox::ts_xts() %>%
     names()
-  ser_plot <- ser %>%
+
+  # series to plot
+  ser_to_plot <- ser %>%
     tsbox::ts_xts() %>%
     {
       if (yoy_gr) tsbox::ts_c(., tsbox::ts_pcy(.[, 1])) else tsbox::ts_c(., tsbox::ts_pc(.[, 1]))
     } %>%
-    magrittr::set_names(c(ser_names, stringr::str_glue("{ser_names[1]}%"))) %>%
+    magrittr::set_names(c(ser_names, stringr::str_glue("{ser_names[1]}%")))
+
+  # generate the plot
+  ser_plot <- ser_to_plot %>%
     tsbox::ts_dygraphs(main = ser_names[1], group = "comp", height = height, width = width) %>%
     dygraphs::dyAxis("y", label = "level") %>%
     dygraphs::dyAxis("y2", label = "% Chg", drawGrid = FALSE, independentTicks = TRUE) %>%
@@ -1215,8 +1230,22 @@ plot_fc <- function(ser, rng_start = as.character(Sys.Date() - lubridate::years(
     dygraphs::dyRangeSelector(dateWindow = c(rng_start, rng_end), height = 30, strokeColor = "red") %>%
     dygraphs::dyLegend(show = "follow", labelsSeparateLines = TRUE)
 
-  # render the dygraphs objects using htmltools
-  ser_plot %>%
+  # generate a table with the data
+  ser_tbl <- ser_to_plot %>%
+    # tsbox::ts_span(rng_start, rng_end) %>%
+    tsbox::ts_tbl() %>%
+    tidyr::drop_na() %>%
+    tsbox::ts_wide() %>%
+    reactable::reactable(
+      highlight = TRUE,
+      compact = TRUE,
+      height = height,
+      width = width,
+      defaultPageSize = 1000
+    )
+
+  # render the dygraphs objects and tables using htmltools
+  list(ser_plot, ser_tbl) %>%
     htmltools::tagList() %>%
     htmltools::browsable()
 }

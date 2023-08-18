@@ -18,6 +18,7 @@ Imports:
     lubridate,
     magrittr,
     purrr,
+    reactable,
     readr,
     rlang,
     slider,
