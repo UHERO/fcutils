@@ -1098,6 +1098,65 @@ plot_1 <- function(ser, rng_start = as.character(Sys.Date() - lubridate::years(1
 }
 
 
+#' Interactive lineplot with two axes
+#'
+#' @param ser time series to plot (e.g. history, oldsol, sol)
+#' @param rng_start start of zoom range ("YYYY-MM-DD")
+#' @param rng_end end of the zoom range ("YYYY-MM-DD")
+#' @param height height of a single panel (px)
+#' @param width width of a single panel (px)
+#'
+#' @return a dygraph plot
+#' @export
+#'
+#' @examples
+#' `ncen@us.sola` <- ts(NA_real_, start = 2016, end = 2021, freq = 1) |> tsbox::ts_xts()
+#' `ncen@us.sola`["2016/2021"] <- c(323127513, 325511184, 327891911, 330268840, 332639102, 334998398)
+#' `ncen@us.oldsola` <- `ncen@us.sola`
+#' `ncen@us.oldsola`["2020/2021"] <- c(352639102, 374998398)
+#' `ncen@us.a` <- `ncen@us.sola`
+#' `ncen@us.a`["2020/2021"] <- NA
+#' test1 <- tsbox::ts_tslist(tsbox::ts_c(`ncen@us.sola`, `ncen@us.oldsola`, `ncen@us.a`)) |>
+#'   purrr::map(AtoQ) |>
+#'   purrr::reduce(tsbox::ts_c) |>
+#'   magrittr::set_names(c("ncen@us.sola", "ncen@us.oldsola", "ncen@us.a"))
+#' plot_2ax(tsbox::ts_c(`ncen@us.sola`, `ncen@us.oldsola`, `ncen@us.a`), rng_start = "2017-01-01")
+#' plot_2ax(test1, rng_start = "2017-01-01")
+#' @examplesIf interactive()
+#' get_series_exp(74, rename = "no") |>
+#'   tsbox::ts_long() |>
+#'   tsbox::ts_xts() |>
+#'   magrittr::extract(, c("E_NF@HI.Q", "ECT@HI.Q", "EMN@HI.Q")) |>
+#'   plot_2ax()
+plot_2ax <- function(ser, rng_start = as.character(Sys.Date() - lubridate::years(15)), rng_end = as.character(Sys.Date()), height = 300, width = 900) {
+  ser_names <- ser %>%
+    tsbox::ts_xts() %>%
+    names()
+
+  ser_plot <- ser %>%
+    tsbox::ts_xts() %>%
+    tsbox::ts_dygraphs(main = ser_names[1] %>% stringr::str_replace_all("@.*", ""), height = height, width = width) %>%
+    dygraphs::dyAxis("y", label = "series 1") %>%
+    dygraphs::dyAxis("y2", label = "series 2+", drawGrid = FALSE, independentTicks = TRUE) %>%
+    {
+      if (length(ser_names[-1]) > 1) dygraphs::dyGroup(., ser_names[-1], strokeWidth = 2, axis = "y") else dygraphs::dySeries(., ser_names[-1], strokeWidth = 3, axis = "y")
+    } %>%
+    {
+      dygraphs::dySeries(., ser_names[1], strokeWidth = 3, axis = "y2")
+    } %>%
+    # dygraphs::dyOptions(colors = RColorBrewer::brewer.pal(length(ser_names), "Set1")) %>%
+    dygraphs::dyOptions(colors = uhero_colors[1:length(ser_names)]) %>%
+    dygraphs::dyLegend(show = "follow", labelsSeparateLines = TRUE) %>%
+    # dygraphs::dyLegend(width = 0.9 * width, show = "auto", labelsSeparateLines = FALSE) %>%
+    dygraphs::dyRangeSelector(dateWindow = c(rng_start, rng_end), height = 30, strokeColor = "red")
+
+  # render the dygraphs objects using htmltools
+  ser_plot %>%
+    htmltools::tagList() %>%
+    htmltools::browsable()
+}
+
+
 #' Interactive plot with level and growth rate for forecast series
 #'
 #' @param ser time series to plot (min 1, max 3) (e.g. current fcst, old fcst, history)
@@ -1163,7 +1222,7 @@ plot_fc <- function(ser, rng_start = as.character(Sys.Date() - lubridate::years(
 }
 
 
-#' Two-panel plot of levels, index, and growth rates
+#' Two-panel plot of levels and growth rates
 #'
 #' @param sers a vector of series to plot
 #' @param rng_start start of the zoom range ("YYYY-MM-DD")
