@@ -1076,7 +1076,7 @@ plot_1 <- function(ser, rng_start = as.character(Sys.Date() - lubridate::years(1
     } %>%
     magrittr::extract(, 1:length(c(ser_names, ser_names_pct))) %>%
     magrittr::set_names(c(ser_names, ser_names_pct)) %>%
-    tsbox::ts_dygraphs(main = ser_names[1], height = height, width = width) %>%
+    tsbox::ts_dygraphs(main = ser_names[1], group = "comp", height = height, width = width) %>%
     dygraphs::dyAxis("y", label = "% change") %>%
     dygraphs::dyAxis("y2", label = "level", drawGrid = FALSE, independentTicks = TRUE) %>%
     {
@@ -1135,7 +1135,7 @@ plot_2ax <- function(ser, rng_start = as.character(Sys.Date() - lubridate::years
 
   ser_plot <- ser %>%
     tsbox::ts_xts() %>%
-    tsbox::ts_dygraphs(main = ser_names[1] %>% stringr::str_replace_all("@.*", ""), height = height, width = width) %>%
+    tsbox::ts_dygraphs(main = ser_names[1] %>% stringr::str_replace_all("@.*", ""), group = "comp", height = height, width = width) %>%
     dygraphs::dyAxis("y", label = "series 1") %>%
     dygraphs::dyAxis("y2", label = "series 2+", drawGrid = FALSE, independentTicks = TRUE) %>%
     {
@@ -1201,7 +1201,7 @@ plot_fc <- function(ser, rng_start = as.character(Sys.Date() - lubridate::years(
       if (yoy_gr) tsbox::ts_c(., tsbox::ts_pcy(.[, 1])) else tsbox::ts_c(., tsbox::ts_pc(.[, 1]))
     } %>%
     magrittr::set_names(c(ser_names, stringr::str_glue("{ser_names[1]}%"))) %>%
-    tsbox::ts_dygraphs(main = ser_names[1], height = height, width = width) %>%
+    tsbox::ts_dygraphs(main = ser_names[1], group = "comp", height = height, width = width) %>%
     dygraphs::dyAxis("y", label = "level") %>%
     dygraphs::dyAxis("y2", label = "% Chg", drawGrid = FALSE, independentTicks = TRUE) %>%
     dygraphs::dySeries(stringr::str_glue("{ser_names[1]}"), axis = "y", strokeWidth = 2, color = uhero_colors[1]) %>%
