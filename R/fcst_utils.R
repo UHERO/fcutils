@@ -40,6 +40,11 @@ get_series_1 <- function(ser_id, expand = "true", rename = "compact", descr = FA
   values <- uhero_data$data$observations$transformationResults$values[[1]]
   series <- dplyr::bind_cols(time = lubridate::ymd(dates), values = as.numeric(values))
   name <- uhero_data$data$series$name
+  if(name == "") {
+    series <- dplyr::bind_cols(time = seq(lubridate::ymd("2000-01-01"), lubridate::ymd("2010-01-01"), by = "year"), values = rep(NA_real_, 11))
+    name <- ser_id
+  }
+  cat(name, "\n")
   title <- uhero_data$data$series$title
   geo <- uhero_data$data$series$geography$shortName
   colnames(series) <- dplyr::case_when(
