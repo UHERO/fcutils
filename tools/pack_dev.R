@@ -75,3 +75,7 @@ usethis::use_pkgdown_github_pages()
 
 usethis::proj_get()
 usethis::proj_sitrep()
+
+usethis::use_version()
+
+

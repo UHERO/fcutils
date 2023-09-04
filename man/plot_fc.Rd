@@ -57,4 +57,11 @@ plot_fc(test1, rng_start = "2017-01-01")
 test1 <- AtoQ(`ncen@us.sola`)
 plot_fc(`ncen@us.sola`, rng_start = "2017-01-01")
 plot_fc(test1, rng_start = "2017-01-01")
+\dontshow{if (interactive()) (if (getRversion() >= "3.4") withAutoprint else force)(\{ # examplesIf}
+get_series_exp(74, rename = "no") |>
+  tsbox::ts_long() |>
+  tsbox::ts_xts() |>
+  magrittr::extract(, c("E_NF@HI.Q", "ECT@HI.Q", "EMN@HI.Q")) |>
+  plot_fc()
+\dontshow{\}) # examplesIf}
 }
