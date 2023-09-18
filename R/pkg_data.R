@@ -80,8 +80,8 @@ uhero_colors_50 <- c("#1D667F80", "#F6A01B80", "#9BBB5980", "#8064A280", "#7EC4C
 #' @references \url{uhero.hawaii.edu}
 #' @keywords data
 # NULL
-# quarterly_data_example <- get_series_exp(74) %>% tidyr::drop_na()
-# quarterly_data_example %>% save(file = "quarterly_data_example.rda")
+# quarterly_data_example <- get_series_exp(74) |> tidyr::drop_na()
+# quarterly_data_example |> save(file = "quarterly_data_example.rda")
 "quarterly_data_example"
 
 #' monthly data for examples
@@ -93,8 +93,8 @@ uhero_colors_50 <- c("#1D667F80", "#F6A01B80", "#9BBB5980", "#8064A280", "#7EC4C
 #' @references \url{uhero.hawaii.edu}
 #' @keywords data
 # NULL
-# monthly_data_example <- get_series(c("VISNS@HI.M", "VAPNS@HI.M")) %>% tidyr::drop_na()
-# monthly_data_example %>% save(file = "monthly_data_example.rda")
+# monthly_data_example <- get_series(c("VISNS@HI.M", "VAPNS@HI.M")) |> tidyr::drop_na()
+# monthly_data_example |> save(file = "monthly_data_example.rda")
 "monthly_data_example"
 
 #' daily data for examples
@@ -106,8 +106,8 @@ uhero_colors_50 <- c("#1D667F80", "#F6A01B80", "#9BBB5980", "#8064A280", "#7EC4C
 #' @references \url{uhero.hawaii.edu}
 #' @keywords data
 # NULL
-# daily_data_example <- get_series(c("VISPNS@HI.D", "VAPNS@HI.D")) %>% tidyr::drop_na()
-# daily_data_example %>% save(file = "daily_data_example.rda")
+# daily_data_example <- get_series(c("VISPNS@HI.D", "VAPNS@HI.D")) |> tidyr::drop_na()
+# daily_data_example |> save(file = "daily_data_example.rda")
 "daily_data_example"
 
 # usethis::use_data(bnk_start, bnk_end, uhero_colors, uhero_colors_light, uhero_colors_50, internal = FALSE)
