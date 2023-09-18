@@ -1538,6 +1538,7 @@ plot_comp_3 <- function(sers, indx_start = as.character(Sys.Date() - lubridate::
 #' # specify location of the output
 #' save_loc <- stringr::str_c("~/Downloads/plots_", Sys.Date(), ".html")
 #' # combine a list of plots into a single html
+#' @examplesIf interactive()
 #' plot_out %>% save_plot_list(save_loc)
 save_plot_list <- function(plot_list, save_loc){
   # save list of plots to html
@@ -1577,6 +1578,7 @@ save_plot_list <- function(plot_list, save_loc){
 #' gen_table(quarterly_data_example)
 #' gen_table(quarterly_data_example, percent = "none")
 #' gen_table(quarterly_data_example, percent = "pcy", time_across = FALSE)
+#' @examplesIf interactive()
 #' gen_table(quarterly_data_example, percent = "pcy", time_across = FALSE,
 #' save_loc = "~/Downloads/temp.csv")
 #' gen_table(quarterly_data_example, percent = "pcy", time_across = TRUE,

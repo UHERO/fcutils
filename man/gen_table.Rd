@@ -41,8 +41,10 @@ gen_table()
 gen_table(quarterly_data_example)
 gen_table(quarterly_data_example, percent = "none")
 gen_table(quarterly_data_example, percent = "pcy", time_across = FALSE)
+\dontshow{if (interactive()) (if (getRversion() >= "3.4") withAutoprint else force)(\{ # examplesIf}
 gen_table(quarterly_data_example, percent = "pcy", time_across = FALSE,
 save_loc = "~/Downloads/temp.csv")
 gen_table(quarterly_data_example, percent = "pcy", time_across = TRUE,
 save_loc = "~/Downloads/temp.html")
+\dontshow{\}) # examplesIf}
 }
