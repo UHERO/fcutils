@@ -7,8 +7,7 @@
 write_tsd(x, file)
 }
 \arguments{
-\item{x}{an xts or a (wide) data frame with time series (only M, Q, A
-frequency)}
+\item{x}{a ts-boxable object (only M, Q, A frequency)}
 
 \item{file}{string denoting the location and name of the output file}
 }
@@ -21,6 +20,6 @@ Save an xts or a wide data frame with time series in tsd format
 }
 \examples{
 \dontshow{if (interactive()) (if (getRversion() >= "3.4") withAutoprint else force)(\{ # examplesIf}
-get_series_exp(74) |> write_tsd("out.tsd")
+quarterly_data_example |> write_tsd("out.tsd")
 \dontshow{\}) # examplesIf}
 }

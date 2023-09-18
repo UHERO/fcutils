@@ -25,7 +25,10 @@
 #'   parentheses
 #'
 #' @return time and data for a single series combined in a tibble
-#' @export
+#'
+#' @details This function requires access permission to UDAMAN.
+#' Store the udaman token in the .Renviron file using the following format:
+#' udaman_token = "this is your UDAMAN token"
 #'
 #' @examplesIf interactive()
 #' get_series_1(ser_id = "VISNS@HI.M")
@@ -86,6 +89,10 @@ get_series_1 <- function(ser_id, expand = "true", rename = "compact", descr = FA
 #'   format option
 #' @export
 #'
+#' @details This function requires access permission to UDAMAN.
+#' Store the udaman token in the .Renviron file using the following format:
+#' udaman_token = "this is your UDAMAN token"
+#'
 #' @examplesIf interactive()
 #' get_series(c("VISNS@HI.M", "VAPNS@HI.M"))
 #' get_series(c("VISNS@HI.M", "VISUSNS@HI.M"), freq = "Q")
@@ -125,6 +132,10 @@ get_series <- function(ser_id_vec, format = "wide", expand = "true", rename = "c
 #'
 #' @return time and data for all series combined in a tibble
 #' @export
+#'
+#' @details This function requires access permission to UDAMAN.
+#' Store the udaman token in the .Renviron file using the following format:
+#' udaman_token = "this is your UDAMAN token"
 #'
 #' @examplesIf interactive()
 #' get_series_exp(exp_id = 74)
@@ -182,6 +193,7 @@ get_series_exp <- function(exp_id, format = "wide", expand = "true", rename = "c
   }
   return(data_out)
 }
+# OLD VERSION USING USER NAME AND PASSWORD
 # get_series_exp <- function(exp_id, format = "wide", save_loc = "data/raw") {
 #   url <- "https://udaman.uhero.hawaii.edu/"
 #   dn_url <- stringr::str_c("https://udaman.uhero.hawaii.edu/exports/", exp_id, ".csv")
@@ -265,9 +277,9 @@ make_xts <- function(start = bnk_start, end = bnk_end, per = "year", val = NA_re
 #' @examplesIf interactive()
 #' ser_i <- "_NF"
 #' cnty_i <- "HI"
-#' get_series_exp(74, rename = "no") |>
+#' quarterly_data_example |>
 #'   tsbox::ts_long() |>
-#'   tsbox::ts_xts() %$% get_var("E{ser_i}@{cnty_i}.Q")
+#'   tsbox::ts_xts() %$% get_var("E{ser_i}_{cnty_i}")
 get_var <- function(ser_in, env = parent.frame()) {
   return(ser_in %>% stringr::str_glue() %>% get(envir = env, inherits = TRUE))
 }
@@ -287,15 +299,11 @@ get_var <- function(ser_in, env = parent.frame()) {
 #' rename_udaman(c("E_NF__HI_M", "ECT__HI_M", "VAP__HAW_W"))
 #' rename_udaman(c("E_NF@HI.M", "ECT@HI.M", "VAP@HAW.W"))
 #' rename_udaman(c("SH_US@HI.M", "SH_JP__HON_M"))
-#' @examplesIf interactive()
-#' get_series_exp(74) |> dplyr::rename_with(~ rename_udaman(., freq = "M"), .cols = -1)
-#' get_series_exp(74) |> dplyr::rename_with(rename_udaman, freq = "M", .cols = !time)
-#' get_series_exp(74) |>
+#' quarterly_data_example |> dplyr::rename_with(~ rename_udaman(., freq = "M"), .cols = -1)
+#' quarterly_data_example |> dplyr::rename_with(rename_udaman, freq = "M", .cols = !time)
+#' quarterly_data_example |>
 #'   tsbox::ts_long() |>
-#'   dplyr::mutate(id = rename_udaman(id, freq = "M"))
-#' get_series_exp(318, rename = "full") |>
-#'   tsbox::ts_long() |>
-#'   dplyr::mutate(id = rename_udaman(id)) |>
+#'   dplyr::mutate(id = rename_udaman(id, freq = "M")) |>
 #'   tsbox::ts_xts()
 rename_udaman <- function(ser_in, freq = NULL) {
   if (!is.character(ser_in)) {
@@ -324,8 +332,7 @@ rename_udaman <- function(ser_in, freq = NULL) {
 
 #' Save an xts or a wide data frame with time series in tsd format
 #'
-#' @param x an xts or a (wide) data frame with time series (only M, Q, A
-#'   frequency)
+#' @param x a ts-boxable object (only M, Q, A frequency)
 #' @param file string denoting the location and name of the output file
 #'
 #' @return nothing (silently save the contents of the tsd file to a user defined
@@ -333,24 +340,14 @@ rename_udaman <- function(ser_in, freq = NULL) {
 #' @export
 #'
 #' @examplesIf interactive()
-#' get_series_exp(74) |> write_tsd("out.tsd")
+#' quarterly_data_example |> write_tsd("out.tsd")
 write_tsd <- function(x, file) {
   # convert the xts or wide data frame to tslist
-  if ("xts" %in% class(x)) {
-    in_list <- x %>%
-      tsbox::ts_tbl() %>%
-      tidyr::drop_na() %>%
-      tsbox::ts_tslist()
-  } else if (setequal(c("id", "time", "value"), colnames(x))) {
-    in_list <- x %>%
-      tidyr::drop_na() %>%
-      tsbox::ts_tslist()
-  } else {
-    in_list <- x %>%
-      tsbox::ts_long() %>%
-      tidyr::drop_na() %>%
-      tsbox::ts_tslist()
-  }
+  wide_df <- is_wide(x)
+  x_mod <- if (wide_df) tsbox::ts_long(x) else tsbox::ts_tbl(x)
+  in_list <- x_mod %>%
+    tidyr::drop_na() %>%
+    tsbox::ts_tslist()
 
   # get summary info about the time series
   in_summary <- in_list %>%
@@ -454,7 +451,6 @@ write_tsd <- function(x, file) {
   to_save %>% readr::write_file(file)
 }
 
-
 #' Copy a data frame to clipboard
 #'
 #' @param x tibble (or data frame) to be copied
@@ -462,11 +458,158 @@ write_tsd <- function(x, file) {
 #' @return copy_tbl() returns the input x invisibly
 #' @export
 #'
-#' @examplesIf interactive()
-#' get_series(c("VISNS@HI.M", "VAPNS@HI.M")) %>% copy_tbl()
+#' @examples
+#' monthly_data_example %>% copy_tbl()
 copy_tbl <- function(x) {
   readr::write_delim(x, pipe("pbcopy"), delim = "\t")
 }
+
+
+#' Check if a data frame is in long format
+#'
+#' @param x tibble or data frame
+#'
+#' @return returns TRUE for long format data frame (id, time, value columns), FALSE otherwise
+#' @export
+#'
+#' @examples
+#' monthly_data_example %>% is_long()
+#' monthly_data_example %>% tsbox::ts_long() %>% is_long()
+is_long <- function(x) {
+  rc <- tsbox::relevant_class(x)
+  if (!(rc %in% c("data.frame", "tbl_df", "data.table"))) {
+    return(FALSE)
+  }
+
+  x <- as.data.frame(x)
+
+  all.names <- colnames(x)
+  if (any(c("time", "times", "date", "dates") %in% tolower(colnames(x)))) {
+    time.name <- "time"
+  } else {
+    stop(
+      "No [time] column detected. ",
+      "To be explicit, name time column 'time'."
+    )
+  }
+
+  time.pos <- which(all.names == time.name)
+  id.names <- setdiff(all.names[1:time.pos], time.name)
+  value.names <- setdiff(all.names[time.pos:length(all.names)], time.name)
+
+  # character cols or factors should be considered ids, with message
+  value.classes <- vapply(x[, value.names], class, "")
+  value.names.that.are.ids <- names(value.classes)[value.classes %in% c("character", "factor")]
+
+  if (length(value.names.that.are.ids) > 0) {
+    # message(
+    #   "Found character or factor columns right to the [time] column.\n",
+    #   "These will be treated as [id] columns: ",
+    #   paste(paste0("'", value.names.that.are.ids, "'"), collapse = ", ")
+    # )
+    value.names <- setdiff(value.names, value.names.that.are.ids)
+    id.names <- union(id.names, value.names.that.are.ids)
+  }
+
+  if (length(value.names) == 0L) {
+    stop(
+      "No [value] column detected. ",
+      "[value] column(s) must be right of the [time] column."
+    )
+  }
+  if (length(value.names) > 1L) {
+    # message(
+    #   "Long tables should have a single [value] column.\n",
+    #   "The data contains the following [value] columns: ",
+    #   paste(paste0("'", value.names, "'"), collapse = ", ")
+    # )
+    return(FALSE)
+  } else if (length(id.names) == 0L) {
+    # message(
+    #   "Long tables should have a single [id] column. ",
+    #   "The data contains no [id] columns."
+    # )
+    return(FALSE)
+  } else if (length(id.names) > 1L) {
+    # message(
+    #   "Long tables should have a single [id] column.\n",
+    #   "The data contains the following [id] columns: ",
+    #   paste(paste0("'", id.names, "'"), collapse = ", ")
+    # )
+    return(FALSE)
+  } else {
+    return(TRUE)
+  }
+}
+
+#' Check if a data frame is in wide format
+#'
+#' @param x tibble or data frame
+#'
+#' @return returns TRUE for wide format data frame (time and value columns), FALSE otherwise
+#' @export
+#'
+#' @examples
+#' monthly_data_example %>% is_wide()
+#' monthly_data_example %>% tsbox::ts_long() %>% is_wide()
+#' dat_in <- monthly_data_example %>% tsbox::ts_long() %>% tsbox::ts_tslist()
+#' wide_df <- is_wide(dat_in)
+#' x_mod <- if (wide_df) tsbox::ts_long(dat_in) else tsbox::ts_tbl(dat_in)
+#' ans <- if (wide_df) tsbox::ts_wide(x_mod) else tsbox::copy_class(x_mod, dat_in)
+is_wide <- function(x) {
+  rc <- tsbox::relevant_class(x)
+  if (!(rc %in% c("data.frame", "tbl_df", "data.table"))) {
+    return(FALSE)
+  }
+
+  x <- as.data.frame(x)
+
+  all.names <- colnames(x)
+  if (any(c("time", "times", "date", "dates") %in% tolower(colnames(x)))) {
+    time.name <- "time"
+  } else {
+    stop(
+      "No [time] column detected. ",
+      "To be explicit, name time column 'time'."
+    )
+  }
+
+  time.pos <- which(all.names == time.name)
+  id.names <- setdiff(all.names[1:time.pos], time.name)
+  value.names <- setdiff(all.names[time.pos:length(all.names)], time.name)
+
+  # character cols or factors should be considered ids, with message
+  value.classes <- vapply(x[, value.names], class, "")
+  value.names.that.are.ids <- names(value.classes)[value.classes %in% c("character", "factor")]
+
+  if (length(value.names.that.are.ids) > 0) {
+    # message(
+    #   "Found character or factor columns right to the [time] column.\n",
+    #   "These will be treated as [id] columns: ",
+    #   paste(paste0("'", value.names.that.are.ids, "'"), collapse = ", ")
+    # )
+    value.names <- setdiff(value.names, value.names.that.are.ids)
+    id.names <- union(id.names, value.names.that.are.ids)
+  }
+
+  if (length(value.names) == 0L) {
+    stop(
+      "No [value] column detected. ",
+      "[value] column(s) must be right of the [time] column."
+    )
+  }
+  if (length(id.names) > 0L) {
+    # message(
+    #   "Wide tables should not have an [id] column.\n",
+    #   "The data contains the following [id] columns: ",
+    #   paste(paste0("'", id.names, "'"), collapse = ", ")
+    # )
+    return(FALSE)
+  } else {
+    return(TRUE)
+  }
+}
+
 
 
 # **************************
@@ -605,8 +748,8 @@ QtoA <- function(ser_in, aggr = "mean") {
 #' @return a long tibble of time series containing year to date sum or average
 #' @export
 #'
-#' @examplesIf interactive()
-#' get_series(c("VISNS@HI.M", "VAPNS@HI.M")) |>
+#' @examples
+#' monthly_data_example |>
 #'   tsbox::ts_long() |>
 #'   ytd_cum()
 ytd_cum <- function(long_tbl_in, avg = TRUE) {
@@ -630,8 +773,8 @@ ytd_cum <- function(long_tbl_in, avg = TRUE) {
 #' @return a long tibble of time series containing year to date growth rate
 #' @export
 #'
-#' @examplesIf interactive()
-#' get_series(c("VISNS@HI.M", "VAPNS@HI.M")) |>
+#' @examples
+#' monthly_data_example |>
 #'   tsbox::ts_long() |>
 #'   ytd_gr() |>
 #'   tail()
@@ -652,13 +795,15 @@ ytd_gr <- function(long_tbl_in, avg = TRUE) {
 #' @return a long tibble of time series containing year to date sum or average
 #' @export
 #'
+#' @examples
+#' daily_data_example |>
+#'   tsbox::ts_long() |>
+#'   mtd_cum()
+#' test <- daily_data_example |>
+#'   dplyr::select(time, "VAPNS_HI") |>
+#'   tsbox::ts_long() |>
+#'   mtd_cum()
 #' @examplesIf interactive()
-#' get_series(c("VISPNS@HI.D", "VAPNS@HI.D")) |>
-#'   tsbox::ts_long() |>
-#'   mtd_cum()
-#' test <- get_series("VAPNS@HI.D") |>
-#'   tsbox::ts_long() |>
-#'   mtd_cum()
 #' test %ts/% tsbox::ts_lag(test, "3 years") |> tail()
 mtd_cum <- function(long_tbl_in, avg = TRUE) {
   long_tbl_out <- long_tbl_in %>%
@@ -681,8 +826,8 @@ mtd_cum <- function(long_tbl_in, avg = TRUE) {
 #' @return a long tibble of time series containing year to date growth rate
 #' @export
 #'
-#' @examplesIf interactive()
-#' get_series(c("VISPNS@HI.D", "VAPNS@HI.D")) |>
+#' @examples
+#' daily_data_example |>
 #'   tsbox::ts_long() |>
 #'   mtd_gr() |>
 #'   tail()
@@ -706,8 +851,8 @@ mtd_gr <- function(long_tbl_in, avg = TRUE) {
 #' @return a long tibble of time series containing year to date sum or average
 #' @export
 #'
-#' @examplesIf interactive()
-#' get_series(c("VISNS@HI.M", "VAPNS@HI.M")) |>
+#' @examples
+#' monthly_data_example |>
 #'   tsbox::ts_long() |>
 #'   ptd_cum()
 ptd_cum <- function(long_tbl_in, per = "year", avg = TRUE) {
@@ -735,12 +880,13 @@ ptd_cum <- function(long_tbl_in, per = "year", avg = TRUE) {
 #' @return a long tibble of time series containing year to date growth rate
 #' @export
 #'
-#' @examplesIf interactive()
-#' get_series(c("VISNS@HI.M", "VAPNS@HI.M")) |>
+#' @examples
+#' monthly_data_example |>
 #'   tsbox::ts_long() |>
 #'   ptd_gr() |>
 #'   tail()
-#' get_series("VAPNS@HI.D") |>
+#' monthly_data_example |>
+#'   dplyr::select(time, "VAPNS_HI") |>
 #'   tsbox::ts_long() |>
 #'   ptd_gr(per = "month", lag_length = "3 years") |>
 #'   tail()
@@ -1061,11 +1207,10 @@ ma <- function(ser, ord) {
 #' test1 <- AtoQ(`ncen@us.sola`)
 #' plot_1(`ncen@us.sola`, rng_start = "2017-01-01")
 #' plot_1(test1, rng_start = "2017-01-01")
-#' @examplesIf interactive()
-#' get_series_exp(74, rename = "no") |>
+#' get_series_exp(74") |>
 #'   tsbox::ts_long() |>
 #'   tsbox::ts_xts() |>
-#'   magrittr::extract(, c("E_NF@HI.Q", "ECT@HI.Q", "EMN@HI.Q")) |>
+#'   magrittr::extract(, c("E_NF_HI", "ECT_HI", "EMN_HI")) |>
 #'   plot_1()
 plot_1 <- function(ser, rng_start = as.character(Sys.Date() - lubridate::years(15)), rng_end = as.character(Sys.Date()), height = 300, width = 900, yoy_gr = TRUE, gr_1 = TRUE) {
   ser_names <- ser %>%
@@ -1127,11 +1272,10 @@ plot_1 <- function(ser, rng_start = as.character(Sys.Date() - lubridate::years(1
 #'   magrittr::set_names(c("ncen@us.sola", "ncen@us.oldsola", "ncen@us.a"))
 #' plot_2ax(tsbox::ts_c(`ncen@us.sola`, `ncen@us.oldsola`, `ncen@us.a`), rng_start = "2017-01-01")
 #' plot_2ax(test1, rng_start = "2017-01-01")
-#' @examplesIf interactive()
-#' get_series_exp(74, rename = "no") |>
+#' quarterly_data_example |>
 #'   tsbox::ts_long() |>
 #'   tsbox::ts_xts() |>
-#'   magrittr::extract(, c("E_NF@HI.Q", "ECT@HI.Q", "EMN@HI.Q")) |>
+#'   magrittr::extract(, c("E_NF_HI", "ECT_HI", "EMN_HI")) |>
 #'   plot_2ax()
 plot_2ax <- function(ser, rng_start = as.character(Sys.Date() - lubridate::years(15)), rng_end = as.character(Sys.Date()), height = 300, width = 900) {
   ser_names <- ser %>%
@@ -1193,11 +1337,10 @@ plot_2ax <- function(ser, rng_start = as.character(Sys.Date() - lubridate::years
 #' test1 <- AtoQ(`ncen@us.sola`)
 #' plot_fc(`ncen@us.sola`, rng_start = "2017-01-01")
 #' plot_fc(test1, rng_start = "2017-01-01")
-#' @examplesIf interactive()
-#' get_series_exp(74, rename = "no") |>
+#' quarterly_data_example |>
 #'   tsbox::ts_long() |>
 #'   tsbox::ts_xts() |>
-#'   magrittr::extract(, c("E_NF@HI.Q", "ECT@HI.Q", "EMN@HI.Q")) |>
+#'   magrittr::extract(, c("E_NF_HI", "ECT_HI", "EMN_HI")) |>
 #'   plot_fc()
 plot_fc <- function(ser, rng_start = as.character(Sys.Date() - lubridate::years(15)), rng_end = as.character(Sys.Date()), add_table = TRUE, table_start = rng_start, table_end = rng_end, height = 300, width = 900, yoy_gr = TRUE) {
   ser_names <- ser %>%
@@ -1271,11 +1414,10 @@ plot_fc <- function(ser, rng_start = as.character(Sys.Date() - lubridate::years(
 #' `ncen@us.sola`["2016/2021"] <- c(323127513, 325511184, 327891911, 330268840, 332639102, 334998398)
 #' test1 <- AtoQ(`ncen@us.sola`)
 #' plot_comp_2(tsbox::ts_c(`ncen@us.sola`, test1), rng_start = "2017-01-01")
-#' @examplesIf interactive()
-#' get_series_exp(74, rename = "no") |>
+#' quarterly_data_example |>
 #'   tsbox::ts_long() |>
 #'   tsbox::ts_xts() |>
-#'   magrittr::extract(, c("E_NF@HI.Q", "ECT@HI.Q", "EMN@HI.Q")) |>
+#'   magrittr::extract(, c("E_NF_HI", "ECT_HI", "EMN_HI")) |>
 #'   plot_comp_2()
 plot_comp_2 <- function(sers, rng_start = as.character(Sys.Date() - lubridate::years(15)), rng_end = as.character(Sys.Date()), height = 300, width = 900, yoy_gr = TRUE, gr_bar = FALSE) {
   ser_names <- sers %>%
@@ -1327,11 +1469,10 @@ plot_comp_2 <- function(sers, rng_start = as.character(Sys.Date() - lubridate::y
 #' `ncen@us.sola`["2016/2021"] <- c(323127513, 325511184, 327891911, 330268840, 332639102, 334998398)
 #' test1 <- AtoQ(`ncen@us.sola`)
 #' plot_comp_3(tsbox::ts_c(`ncen@us.sola`, test1), rng_start = "2017-01-01")
-#' @examplesIf interactive()
-#' get_series_exp(74, rename = "no") |>
+#' quarterly_data_example |>
 #'   tsbox::ts_long() |>
 #'   tsbox::ts_xts() |>
-#'   magrittr::extract(, c("E_NF@HI.Q", "ECT@HI.Q", "EMN@HI.Q")) |>
+#'   magrittr::extract(, c("E_NF_HI", "ECT_HI", "EMN_HI")) |>
 #'   plot_comp_3()
 plot_comp_3 <- function(sers, indx_start = as.character(Sys.Date() - lubridate::years(15)), rng_start = as.character(Sys.Date() - lubridate::years(15)), rng_end = as.character(Sys.Date()), height = 300, width = 900, yoy_gr = TRUE, gr_bar = FALSE) {
   ser_names <- sers %>%
@@ -1384,20 +1525,20 @@ plot_comp_3 <- function(sers, indx_start = as.character(Sys.Date() - lubridate::
 #' @return nothing (silently save the html to a user defined location)
 #' @export
 #'
-#' @examplesIf interactive()
+#' @examples
 #' # hold the plots in a list
 #' plot_out <- list()
-#' for (i in plot_list) {
-#'   plot_out[[i]] <- plot_fc(fcst_and_prev %>% tsbox::ts_long() %>%
+#' for (i in monthly_data_example[2:3] |> names()) {
+#'   plot_out[[i]] <- plot_1(monthly_data_example |> tsbox::ts_long() |>
 #'                              dplyr::filter(stringr::str_detect(id, i)),
 #'                              rng_start = as.character(Sys.Date() - lubridate::years( 5)),
 #'                              rng_end = as.character(Sys.Date() + lubridate::years(7)),
 #'                              width = 1500, height = 650, yoy_gr = TRUE)
 #' }
 #' # specify location of the output
-#' # save_loc <- here::here("output/plots", stringr::str_c("plots_", Sys.Date(), ".html"))
+#' save_loc <- stringr::str_c("~/Downloads/plots_", Sys.Date(), ".html")
 #' # combine a list of plots into a single html
-#' # plots_out %>% save_plot_list(save_loc)
+#' plot_out %>% save_plot_list(save_loc)
 save_plot_list <- function(plot_list, save_loc){
   # save list of plots to html
   plot_list %>%
@@ -1408,12 +1549,145 @@ save_plot_list <- function(plot_list, save_loc){
   readr::read_lines(file = save_loc)[-1] %>% stringr::str_replace_all(c("<style>" = "\\\n<title>Plots</title>\\\n<style>", "\\}</style>" = "font-family:Arial,Helvetica,sans-serif;font-size:medium;}</style>")) %>% readr::write_lines(file = save_loc)
   # incorporate dependecies into html
   rmarkdown::pandoc_self_contained_html(input = save_loc, output = save_loc)
+  # check out htmlwidgets
 }
 
 
 # **************************
 # utility functions for model development ----
 # **************************
+
+
+#' Generate a table with time series
+#'
+#' @param x a ts-boxable object
+#' @param tbl_start start period for table
+#' @param tbl_end end period for table
+#' @param percent what type of percent should be added ("none", "pc" (default), "pcy", "pca")
+#' @param time_across should time be in column headers and variable names in first column (default TRUE)
+#' @param tbl_height the height of the table in px (default 800)
+#' @param save_loc file path for saving table incl. extension ("html" or "csv") (default NULL)
+#'
+#' @return table formatted for output
+#' @export
+#'
+#' @examples
+#' quarterly_data_example %>% tsbox::ts_long() %>% tsbox::ts_tslist() %>%
+#' gen_table()
+#' gen_table(quarterly_data_example)
+#' gen_table(quarterly_data_example, percent = "none")
+#' gen_table(quarterly_data_example, percent = "pcy", time_across = FALSE)
+#' gen_table(quarterly_data_example, percent = "pcy", time_across = FALSE,
+#' save_loc = "~/Downloads/temp.csv")
+#' gen_table(quarterly_data_example, percent = "pcy", time_across = TRUE,
+#' save_loc = "~/Downloads/temp.html")
+gen_table <- function(x, tbl_start = as.character(Sys.Date() - lubridate::years(15)), tbl_end = as.character(Sys.Date()), percent = "pc", time_across = TRUE, tbl_height = 800, save_loc = NULL) {
+  # check if wide table
+  wide_df <- is_wide(x)
+  # convert to long table (all formats incl. xts)
+  x_mod <- if (wide_df) tsbox::ts_long(x) else tsbox::ts_tbl(x)
+
+  # add growth rates and format table for output
+  tbl_out <- x_mod %>%
+    tidyr::drop_na() %>%
+    {
+      if (percent == "pc") {
+        tsbox::ts_c(., tsbox::ts_pc(.) %>% dplyr::mutate(id = stringr::str_c(.data$id, " (%)")))
+      } else if (percent == "pcy") {
+        tsbox::ts_c(., tsbox::ts_pcy(.) %>% dplyr::mutate(id = stringr::str_c(.data$id, " (YoY%)")))
+      } else if (percent == "pca") {
+        tsbox::ts_c(., tsbox::ts_pca(.) %>% dplyr::mutate(id = stringr::str_c(.data$id, " (Ann%)")))
+      } else if (percent == "none") {
+        .
+      } else {
+        .
+      }
+    } %>%
+    dplyr::mutate(value = round(.data$value, 2)) %>%
+    dplyr::arrange(.data$id) %>%
+    tsbox::ts_span(tbl_start, tbl_end) %>%
+    {
+      if (time_across) {
+        tidyr::pivot_wider(., names_from = "time", values_from = "value")
+      } else {
+        tidyr::pivot_wider(., names_from = "id", values_from = "value")
+      }
+    }
+
+  # is a file requested?
+  if (is.null(save_loc)) {
+    return(tbl_out)
+  }
+
+  # file extension
+  ext <- tolower(tools::file_ext(save_loc))
+
+  # html table
+  if (ext == "html") {
+    if (time_across) {
+    tbl_out %>%
+      reactable::reactable(
+        searchable = TRUE,
+        # Search by case-sensitive text match
+
+        searchMethod = htmlwidgets::JS("function(rows, columnIds, searchValue) {
+        const pattern = new RegExp(searchValue, 'i')
+        return rows.filter(function(row) {
+        return columnIds.some(function(columnId) {
+        return pattern.test(row.values[columnId])
+        })
+        })
+        }"),
+        columns = list(
+          id = reactable::colDef(
+            sticky = "left"
+          )
+        ),
+        style = list(
+          fontFamily = "monaco, sans-serif, monospace",
+          fontSize = "small"
+        ),
+        striped = TRUE,
+        resizable = TRUE,
+        highlight = TRUE,
+        compact = TRUE,
+        height = tbl_height,
+        defaultPageSize = 1000,
+        defaultColDef = reactable::colDef(format = reactable::colFormat(separators = TRUE, digits = 2))
+      ) %>%
+      htmlwidgets::saveWidget(file = save_loc)
+    } else {
+      tbl_out %>%
+        reactable::reactable(
+          columns = list(
+            time = reactable::colDef(
+              sticky = "left"
+            )
+          ),
+          style = list(
+            fontFamily = "monaco, sans-serif, monospace",
+            fontSize = "small"
+          ),
+          striped = TRUE,
+          resizable = TRUE,
+          highlight = TRUE,
+          compact = TRUE,
+          height = tbl_height,
+          defaultPageSize = 1000,
+          defaultColDef = reactable::colDef(format = reactable::colFormat(separators = TRUE, digits = 2))
+        ) %>%
+        htmlwidgets::saveWidget(file = save_loc)
+    }
+  }
+
+  # csv table
+  if (ext == "csv") {
+    tbl_out %>% readr::write_csv(file = save_loc)
+  }
+
+  return(tbl_out)
+}
+
 #' Parse lm() output and convert into bimets equation (GETS model development)
 #'
 #' @param model a model estimated by lm() (lm object)

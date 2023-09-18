@@ -13,6 +13,7 @@ Imports:
     dplyr,
     dygraphs,
     htmltools,
+    htmlwidgets,
     httr,
     jsonlite,
     lubridate,

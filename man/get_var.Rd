@@ -21,8 +21,8 @@ Construct a series name from variable components and retrieve the series
 \dontshow{if (interactive()) (if (getRversion() >= "3.4") withAutoprint else force)(\{ # examplesIf}
 ser_i <- "_NF"
 cnty_i <- "HI"
-get_series_exp(74, rename = "no") |>
+quarterly_data_example |>
   tsbox::ts_long() |>
-  tsbox::ts_xts() \%$\% get_var("E{ser_i}@{cnty_i}.Q")
+  tsbox::ts_xts() \%$\% get_var("E{ser_i}_{cnty_i}")
 \dontshow{\}) # examplesIf}
 }

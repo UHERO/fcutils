@@ -16,7 +16,5 @@ copy_tbl() returns the input x invisibly
 Copy a data frame to clipboard
 }
 \examples{
-\dontshow{if (interactive()) (if (getRversion() >= "3.4") withAutoprint else force)(\{ # examplesIf}
-get_series(c("VISNS@HI.M", "VAPNS@HI.M")) \%>\% copy_tbl()
-\dontshow{\}) # examplesIf}
+monthly_data_example \%>\% copy_tbl()
 }

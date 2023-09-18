@@ -38,6 +38,11 @@ format option
 \description{
 Download a set of series from udaman using series names
 }
+\details{
+This function requires access permission to UDAMAN.
+Store the udaman token in the .Renviron file using the following format:
+udaman_token = "this is your UDAMAN token"
+}
 \examples{
 \dontshow{if (interactive()) (if (getRversion() >= "3.4") withAutoprint else force)(\{ # examplesIf}
 get_series(c("VISNS@HI.M", "VAPNS@HI.M"))

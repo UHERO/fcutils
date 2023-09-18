@@ -23,9 +23,7 @@ a long tibble of time series containing year to date sum or average
 Period to date sum or average
 }
 \examples{
-\dontshow{if (interactive()) (if (getRversion() >= "3.4") withAutoprint else force)(\{ # examplesIf}
-get_series(c("VISNS@HI.M", "VAPNS@HI.M")) |>
+monthly_data_example |>
   tsbox::ts_long() |>
   ptd_cum()
-\dontshow{\}) # examplesIf}
 }

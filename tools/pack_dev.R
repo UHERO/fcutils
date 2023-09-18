@@ -31,6 +31,7 @@ usethis::use_package("xts") # xts, nquarters
 usethis::use_package("httr") # GET, content, add_headers
 usethis::use_package("jsonlite") # fromJSON
 usethis::use_package("htmltools") # tagList, browsable
+usethis::use_package("htmlwidgets") # tagList, browsable
 usethis::use_package("tsbox")
 usethis::use_package("reactable")
 usethis::use_package("bimets", "Suggests")

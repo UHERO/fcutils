@@ -18,19 +18,17 @@ nothing (silently save the html to a user defined location)
 Save a list of interactive plots to html
 }
 \examples{
-\dontshow{if (interactive()) (if (getRversion() >= "3.4") withAutoprint else force)(\{ # examplesIf}
 # hold the plots in a list
 plot_out <- list()
-for (i in plot_list) {
-  plot_out[[i]] <- plot_fc(fcst_and_prev \%>\% tsbox::ts_long() \%>\%
+for (i in monthly_data_example[2:3] |> names()) {
+  plot_out[[i]] <- plot_1(monthly_data_example |> tsbox::ts_long() |>
                              dplyr::filter(stringr::str_detect(id, i)),
                              rng_start = as.character(Sys.Date() - lubridate::years( 5)),
                              rng_end = as.character(Sys.Date() + lubridate::years(7)),
                              width = 1500, height = 650, yoy_gr = TRUE)
 }
 # specify location of the output
-# save_loc <- here::here("output/plots", stringr::str_c("plots_", Sys.Date(), ".html"))
+save_loc <- stringr::str_c("~/Downloads/plots_", Sys.Date(), ".html")
 # combine a list of plots into a single html
-# plots_out \%>\% save_plot_list(save_loc)
-\dontshow{\}) # examplesIf}
+plot_out \%>\% save_plot_list(save_loc)
 }

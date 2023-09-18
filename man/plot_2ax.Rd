@@ -42,11 +42,9 @@ test1 <- tsbox::ts_tslist(tsbox::ts_c(`ncen@us.sola`, `ncen@us.oldsola`, `ncen@u
   magrittr::set_names(c("ncen@us.sola", "ncen@us.oldsola", "ncen@us.a"))
 plot_2ax(tsbox::ts_c(`ncen@us.sola`, `ncen@us.oldsola`, `ncen@us.a`), rng_start = "2017-01-01")
 plot_2ax(test1, rng_start = "2017-01-01")
-\dontshow{if (interactive()) (if (getRversion() >= "3.4") withAutoprint else force)(\{ # examplesIf}
-get_series_exp(74, rename = "no") |>
+quarterly_data_example |>
   tsbox::ts_long() |>
   tsbox::ts_xts() |>
-  magrittr::extract(, c("E_NF@HI.Q", "ECT@HI.Q", "EMN@HI.Q")) |>
+  magrittr::extract(, c("E_NF_HI", "ECT_HI", "EMN_HI")) |>
   plot_2ax()
-\dontshow{\}) # examplesIf}
 }

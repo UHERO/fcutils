@@ -25,6 +25,11 @@ time and data for a single series combined in a tibble
 \description{
 Download a single series from udaman using series name
 }
+\details{
+This function requires access permission to UDAMAN.
+Store the udaman token in the .Renviron file using the following format:
+udaman_token = "this is your UDAMAN token"
+}
 \examples{
 \dontshow{if (interactive()) (if (getRversion() >= "3.4") withAutoprint else force)(\{ # examplesIf}
 get_series_1(ser_id = "VISNS@HI.M")

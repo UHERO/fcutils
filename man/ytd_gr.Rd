@@ -20,10 +20,8 @@ a long tibble of time series containing year to date growth rate
 Year to date growth rate
 }
 \examples{
-\dontshow{if (interactive()) (if (getRversion() >= "3.4") withAutoprint else force)(\{ # examplesIf}
-get_series(c("VISNS@HI.M", "VAPNS@HI.M")) |>
+monthly_data_example |>
   tsbox::ts_long() |>
   ytd_gr() |>
   tail()
-\dontshow{\}) # examplesIf}
 }

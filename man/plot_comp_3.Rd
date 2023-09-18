@@ -43,11 +43,9 @@ Three-panel plot of levels, index, and growth rates
 `ncen@us.sola`["2016/2021"] <- c(323127513, 325511184, 327891911, 330268840, 332639102, 334998398)
 test1 <- AtoQ(`ncen@us.sola`)
 plot_comp_3(tsbox::ts_c(`ncen@us.sola`, test1), rng_start = "2017-01-01")
-\dontshow{if (interactive()) (if (getRversion() >= "3.4") withAutoprint else force)(\{ # examplesIf}
-get_series_exp(74, rename = "no") |>
+quarterly_data_example |>
   tsbox::ts_long() |>
   tsbox::ts_xts() |>
-  magrittr::extract(, c("E_NF@HI.Q", "ECT@HI.Q", "EMN@HI.Q")) |>
+  magrittr::extract(, c("E_NF_HI", "ECT_HI", "EMN_HI")) |>
   plot_comp_3()
-\dontshow{\}) # examplesIf}
 }

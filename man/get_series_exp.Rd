@@ -33,6 +33,11 @@ time and data for all series combined in a tibble
 \description{
 Download series listed in an export table from udaman
 }
+\details{
+This function requires access permission to UDAMAN.
+Store the udaman token in the .Renviron file using the following format:
+udaman_token = "this is your UDAMAN token"
+}
 \examples{
 \dontshow{if (interactive()) (if (getRversion() >= "3.4") withAutoprint else force)(\{ # examplesIf}
 get_series_exp(exp_id = 74)
