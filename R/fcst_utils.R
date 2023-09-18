@@ -1207,7 +1207,7 @@ ma <- function(ser, ord) {
 #' test1 <- AtoQ(`ncen@us.sola`)
 #' plot_1(`ncen@us.sola`, rng_start = "2017-01-01")
 #' plot_1(test1, rng_start = "2017-01-01")
-#' get_series_exp(74") |>
+#' quarterly_data_example |>
 #'   tsbox::ts_long() |>
 #'   tsbox::ts_xts() |>
 #'   magrittr::extract(, c("E_NF_HI", "ECT_HI", "EMN_HI")) |>
