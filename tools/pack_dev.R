@@ -70,6 +70,7 @@ devtools::check()
 
 usethis::use_readme_md()
 
+usethis::use_git_config(user.name = "Peter Fuleky", user.email = "fuleky@hawaii,edu")
 usethis::use_git()
 usethis::use_github(organisation = "UHERO", private = FALSE)
 
