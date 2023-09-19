@@ -64,8 +64,6 @@ devtools::document()
 devtools::load_all()
 devtools::check()
 
-# pak::pkg_deps_tree("tsbox")
-
 # utils::globalVariables(".")
 
 usethis::use_readme_md()
@@ -92,4 +90,6 @@ usethis::proj_sitrep()
 
 usethis::use_version()
 
-
+# install.packages("pak", repos = sprintf("https://r-lib.github.io/p/pak/stable/%s/%s/%s", .Platform$pkgType, R.Version()$os, R.Version()$arch))
+# pak::pkg_deps_tree("tsbox")
+# renv::remove("pak")
