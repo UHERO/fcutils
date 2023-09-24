@@ -1,5 +1,3 @@
-#' define project-wide constants
-#'
 #' start of data range in the data bank
 #' @name bnk_start
 #' @format scalar yyyy-mm-dd date
