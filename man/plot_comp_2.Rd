@@ -5,9 +5,9 @@
 \title{Two-panel plot of levels and growth rates}
 \usage{
 plot_comp_2(
-  sers,
-  rng_start = as.character(Sys.Date() - lubridate::years(15)),
-  rng_end = as.character(Sys.Date()),
+  x,
+  rng_start = as.character(Sys.Date() - lubridate::years(10)),
+  rng_end = as.character(Sys.Date() + lubridate::years(2)),
   height = 300,
   width = 900,
   yoy_gr = TRUE,
@@ -15,7 +15,7 @@ plot_comp_2(
 )
 }
 \arguments{
-\item{sers}{a vector of series to plot}
+\item{x}{ts-boxable object to plot}
 
 \item{rng_start}{start of the zoom range ("YYYY-MM-DD")}
 
@@ -30,19 +30,16 @@ plot_comp_2(
 \item{gr_bar}{show bars or line (default) for the growth series}
 }
 \value{
-a list with two dygraph plots (level, index, growth)
+a list with two dygraph plots (level, growth)
 }
 \description{
 Two-panel plot of levels and growth rates
 }
 \examples{
-`ncen@us.sola` <- ts(NA_real_, start = 2016, end = 2021, freq = 1) |> tsbox::ts_xts()
-`ncen@us.sola`["2016/2021"] <- c(323127513, 325511184, 327891911, 330268840, 332639102, 334998398)
-test1 <- AtoQ(`ncen@us.sola`)
-plot_comp_2(tsbox::ts_c(`ncen@us.sola`, test1), rng_start = "2017-01-01")
+monthly_data_example |>
+  plot_comp_2()
 quarterly_data_example |>
   tsbox::ts_long() |>
-  tsbox::ts_xts() |>
-  magrittr::extract(, c("E_NF_HI", "ECT_HI", "EMN_HI")) |>
+  tsbox::ts_pick("E_TU_HI", "ECT_HI", "EMN_HI") |>
   plot_comp_2()
 }

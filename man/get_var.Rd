@@ -7,7 +7,7 @@
 get_var(ser_in, env = parent.frame())
 }
 \arguments{
-\item{ser_in}{a variable name (string with substituted expressions)}
+\item{ser_in}{a variable name (character string with substituted expressions)}
 
 \item{env}{environment where the expression should be evaluated}
 }

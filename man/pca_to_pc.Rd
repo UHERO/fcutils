@@ -4,20 +4,34 @@
 \alias{pca_to_pc}
 \title{Convert annualized growth to quarterly growth}
 \usage{
-pca_to_pc(ser_in)
+pca_to_pc(x, freq = 4)
 }
 \arguments{
-\item{ser_in}{the series containing annualized growth (in percent)}
+\item{x}{ts-boxable object containing annualized growth (in percent)}
+
+\item{freq}{numeric frequency of the time series e.g. 4 for quarterly}
 }
 \value{
-series containing quarterly growth (in percent)
+object of the same type as the input containing quarterly growth (in percent)
 }
 \description{
 Convert annualized growth to quarterly growth
 }
 \examples{
-`ncen@us.sola` <- ts(NA_real_, start = 2016, end = 2021, freq = 1) |> tsbox::ts_xts()
-`ncen@us.sola`["2016/2021"] <- c(323127513, 325511184, 327891911, 330268840, 332639102, 334998398)
-test1 <- AtoQ(`ncen@us.sola`)
-tsbox::ts_c(test1 |> tsbox::ts_pca() |> pca_to_pc(), test1 |> tsbox::ts_pc())
+quarterly_data_example |>
+  tsbox::ts_long() |>
+  tsbox::ts_pca() |>
+  pca_to_pc() |>
+  tail()
+tsbox::ts_c(
+  quarterly_data_example |>
+    tsbox::ts_long() |>
+    tsbox::ts_pca() |>
+    pca_to_pc(),
+  quarterly_data_example |>
+    tsbox::ts_long() |>
+    tsbox::ts_pc()
+) |>
+  dplyr::arrange(id, time) |>
+  tsbox::ts_wide()
 }

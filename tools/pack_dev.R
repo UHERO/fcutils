@@ -68,6 +68,8 @@ devtools::check()
 
 usethis::use_readme_md()
 
+# usethis::create_github_token()
+# gitcreds::gitcreds_set()
 # usethis::use_git_config(user.name = "Peter Fuleky", user.email = "fuleky@hawaii.edu")
 usethis::use_git()
 usethis::use_github(organisation = "UHERO", private = FALSE)
@@ -93,3 +95,7 @@ usethis::use_version()
 # install.packages("pak", repos = sprintf("https://r-lib.github.io/p/pak/stable/%s/%s/%s", .Platform$pkgType, R.Version()$os, R.Version()$arch))
 # pak::pkg_deps_tree("tsbox")
 # renv::remove("pak")
+
+
+
+

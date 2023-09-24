@@ -4,24 +4,19 @@
 \alias{mtd_gr}
 \title{Month to date growth rate}
 \usage{
-mtd_gr(long_tbl_in, avg = TRUE)
+mtd_gr(x)
 }
 \arguments{
-\item{long_tbl_in}{a long tibble of time series (produced by ts_long() for
-example)}
-
-\item{avg}{if true, the year to date average, if false, the year to date sum
-for calculation}
+\item{x}{a ts-boxable object}
 }
 \value{
-a long tibble of time series containing year to date growth rate
+object of the same type as the input containing month to date growth rate
 }
 \description{
 Month to date growth rate
 }
 \examples{
 daily_data_example |>
-  tsbox::ts_long() |>
   mtd_gr() |>
   tail()
 }

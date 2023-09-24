@@ -7,13 +7,13 @@
 make_xts(start = bnk_start, end = bnk_end, per = "year", val = NA_real_)
 }
 \arguments{
-\item{start}{date of series start (string: "yyyy-mm-dd")}
+\item{start}{date of series start (character: "yyyy-mm-dd")}
 
-\item{end}{date of series end (string: "yyyy-mm-dd")}
+\item{end}{date of series end (character: "yyyy-mm-dd")}
 
-\item{per}{periodicity of series (string: "quarter", "year")}
+\item{per}{periodicity of series (character: "quarter", "year")}
 
-\item{val}{values to fill in (scalar or vector)}
+\item{val}{values to fill in (numeric scalar or vector)}
 }
 \value{
 an xts series

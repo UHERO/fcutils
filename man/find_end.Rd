@@ -4,10 +4,10 @@
 \alias{find_end}
 \title{Find the date of the last observation (NAs are dropped)}
 \usage{
-find_end(ser_in)
+find_end(x)
 }
 \arguments{
-\item{ser_in}{an xts series}
+\item{x}{ts-boxable object}
 }
 \value{
 date associated with last observation
@@ -16,7 +16,7 @@ date associated with last observation
 Find the date of the last observation (NAs are dropped)
 }
 \examples{
-`ncen@us.sola` <- ts(NA_real_, start = 2016, end = 2060, freq = 1) |> tsbox::ts_xts()
-`ncen@us.sola`["2016/2018"] <- c(323127513, 325511184, 327891911)
-find_end(`ncen@us.sola`)
+quarterly_data_example |>
+  dplyr::mutate(E_NF_HI = dplyr::if_else(time > "2022-01-01", NA_real_, E_NF_HI)) |>
+  find_end()
 }

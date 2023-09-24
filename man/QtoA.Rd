@@ -2,7 +2,8 @@
 % Please edit documentation in R/fcst_utils.R
 \name{QtoA}
 \alias{QtoA}
-\title{Conversion from quarterly to annual frequency}
+\title{Aggregate from quarterly to annual frequency
+(superseded by tsbox::ts_frequency())}
 \usage{
 QtoA(ser_in, aggr = "mean")
 }
@@ -15,13 +16,16 @@ QtoA(ser_in, aggr = "mean")
 converted xts series (freq = a)
 }
 \description{
-Conversion from quarterly to annual frequency
+Aggregate from quarterly to annual frequency
+(superseded by tsbox::ts_frequency())
 }
 \examples{
-`ncen@us.sola` <- ts(NA_real_, start = 2016, end = 2021, freq = 1) |> tsbox::ts_xts()
-`ncen@us.sola`["2016/2021"] <- c(323127513, 325511184, 327891911, 330268840, 332639102, 334998398)
-test1 <- AtoQ(`ncen@us.sola`)
-test2 <- QtoA(test1) # for stock type variables mean, for flow type variables sum
-print(test1)
-print(cbind(`ncen@us.sola`, test2))
+quarterly_data_example |>
+  tsbox::ts_long() |>
+  tsbox::ts_xts() |>
+  tsbox::ts_pick("E_NF_HI") |>
+  QtoA() |> # this matches with below
+  AtoQ() |>
+  QtoA() |> # this matches with above
+  tsbox::ts_plot()
 }

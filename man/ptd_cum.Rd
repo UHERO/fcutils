@@ -4,26 +4,31 @@
 \alias{ptd_cum}
 \title{Period to date sum or average}
 \usage{
-ptd_cum(long_tbl_in, per = "year", avg = TRUE)
+ptd_cum(x, per = "year", avg = TRUE)
 }
 \arguments{
-\item{long_tbl_in}{a long tibble of time series (produced by ts_long() for
-example)}
+\item{x}{a ts-boxable object}
 
 \item{per}{unit of time supplied to floor_date() (for ytd per = "year"
 (default), for mtd per = "month")}
 
-\item{avg}{if true (default), the year to date average, if false, the year to
-date sum}
+\item{avg}{if TRUE (default), retorn period to date average, if FALSE, return period to date sum}
 }
 \value{
-a long tibble of time series containing year to date sum or average
+object of the same type as the input containing period to date sum or average
 }
 \description{
 Period to date sum or average
 }
 \examples{
-monthly_data_example |>
+daily_data_example |>
+  ptd_cum("week")
+test <- daily_data_example |>
   tsbox::ts_long() |>
-  ptd_cum()
+  tsbox::ts_pick("VAPNS_HI") |>
+  ptd_cum("week")
+tsbox::`\%ts/\%`(test, tsbox::ts_lag(test, "4 weeks")) |>
+  tsbox::`\%ts-\%`(1) |>
+  tsbox::`\%ts*\%`(100) |>
+  tail()
 }

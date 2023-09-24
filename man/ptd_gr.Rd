@@ -4,35 +4,36 @@
 \alias{ptd_gr}
 \title{Period to date growth rate}
 \usage{
-ptd_gr(long_tbl_in, per = "year", lag_length = "1 year", avg = TRUE)
+ptd_gr(x, per = "year", lag_length = "1 year")
 }
 \arguments{
-\item{long_tbl_in}{a long tibble of time series (produced by ts_long() for
-example)}
+\item{x}{a ts-boxable object}
 
 \item{per}{unit of time supplied to floor_date() (for ytd per = "year"
 (default), for mtd per = "month")}
 
 \item{lag_length}{period over which growth is calculated (e.g. "1 year"
 (default), "3 years", etc. See ?ts_lag() for options)}
-
-\item{avg}{if true, the year to date average, if false, the year to date sum
-for calculation}
 }
 \value{
-a long tibble of time series containing year to date growth rate
+object of the same type as the input containing period to date growth rate
 }
 \description{
 Period to date growth rate
 }
 \examples{
 monthly_data_example |>
-  tsbox::ts_long() |>
   ptd_gr() |>
   tail()
 monthly_data_example |>
   dplyr::select(time, "VAPNS_HI") |>
-  tsbox::ts_long() |>
   ptd_gr(per = "month", lag_length = "3 years") |>
+  tail()
+daily_data_example |>
+  ptd_gr("week")
+daily_data_example |>
+  tsbox::ts_long() |>
+  tsbox::ts_pick("VAPNS_HI") |>
+  ptd_gr("week", "4 weeks") \%>\%
   tail()
 }

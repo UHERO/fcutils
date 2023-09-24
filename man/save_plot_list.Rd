@@ -21,11 +21,13 @@ Save a list of interactive plots to html
 # hold the plots in a list
 plot_out <- list()
 for (i in monthly_data_example[2:3] |> names()) {
-  plot_out[[i]] <- plot_1(monthly_data_example |> tsbox::ts_long() |>
-                             dplyr::filter(stringr::str_detect(id, i)),
-                             rng_start = as.character(Sys.Date() - lubridate::years( 5)),
-                             rng_end = as.character(Sys.Date() + lubridate::years(7)),
-                             width = 1500, height = 650, yoy_gr = TRUE)
+  plot_out[[i]] <- plot_1(
+    monthly_data_example |> tsbox::ts_long() |>
+      dplyr::filter(stringr::str_detect(id, i)),
+    rng_start = as.character(Sys.Date() - lubridate::years(5)),
+    rng_end = as.character(Sys.Date() + lubridate::years(7)),
+    width = 1500, height = 650, yoy_gr = TRUE
+  )
 }
 # specify location of the output
 save_loc <- stringr::str_c("~/Downloads/plots_", Sys.Date(), ".html")

@@ -4,19 +4,19 @@
 \alias{find_start}
 \title{Find the date of the first observation (NAs are dropped)}
 \usage{
-find_start(ser_in)
+find_start(x)
 }
 \arguments{
-\item{ser_in}{an xts series}
+\item{x}{ts-boxable object}
 }
 \value{
-date associated with first observation
+dates associated with first observation
 }
 \description{
 Find the date of the first observation (NAs are dropped)
 }
 \examples{
-`ncen@us.sola` <- ts(NA_real_, start = 2016, end = 2021, freq = 1) |> tsbox::ts_xts()
-`ncen@us.sola`["2017/2021"] <- c(325511184, 327891911, 330268840, 332639102, 334998398)
-find_start(`ncen@us.sola`)
+quarterly_data_example |>
+  dplyr::mutate(E_NF_HI = dplyr::if_else(time < "2000-01-01", NA_real_, E_NF_HI)) |>
+  find_start()
 }

@@ -5,9 +5,9 @@
 \title{Interactive plot with level and growth rate for forecast series}
 \usage{
 plot_fc(
-  ser,
-  rng_start = as.character(Sys.Date() - lubridate::years(15)),
-  rng_end = as.character(Sys.Date()),
+  x,
+  rng_start = as.character(Sys.Date() - lubridate::years(10)),
+  rng_end = as.character(Sys.Date() + lubridate::years(2)),
   add_table = TRUE,
   table_start = rng_start,
   table_end = rng_end,
@@ -17,7 +17,7 @@ plot_fc(
 )
 }
 \arguments{
-\item{ser}{time series to plot (min 1, max 3) (e.g. current fcst, old fcst, history)}
+\item{x}{ts-boxable object to plot (min 1, max 3 time series) (e.g. current fcst, old fcst, history)}
 
 \item{rng_start}{start of zoom range ("YYYY-MM-DD")}
 
@@ -42,24 +42,10 @@ a dygraph plot
 Interactive plot with level and growth rate for forecast series
 }
 \examples{
-`ncen@us.sola` <- ts(NA_real_, start = 2016, end = 2021, freq = 1) |> tsbox::ts_xts()
-`ncen@us.sola`["2016/2021"] <- c(323127513, 325511184, 327891911, 330268840, 332639102, 334998398)
-`ncen@us.oldsola` <- `ncen@us.sola`
-`ncen@us.oldsola`["2020/2021"] <- c(352639102, 374998398)
-`ncen@us.a` <- `ncen@us.sola`
-`ncen@us.a`["2020/2021"] <- NA
-test1 <- tsbox::ts_tslist(tsbox::ts_c(`ncen@us.sola`, `ncen@us.oldsola`, `ncen@us.a`)) |>
-  purrr::map(AtoQ) |>
-  purrr::reduce(tsbox::ts_c) |>
-  magrittr::set_names(c("ncen@us.sola", "ncen@us.oldsola", "ncen@us.a"))
-plot_fc(tsbox::ts_c(`ncen@us.sola`, `ncen@us.oldsola`, `ncen@us.a`), rng_start = "2017-01-01")
-plot_fc(test1, rng_start = "2017-01-01")
-test1 <- AtoQ(`ncen@us.sola`)
-plot_fc(`ncen@us.sola`, rng_start = "2017-01-01")
-plot_fc(test1, rng_start = "2017-01-01")
+monthly_data_example |>
+  plot_fc()
 quarterly_data_example |>
   tsbox::ts_long() |>
-  tsbox::ts_xts() |>
-  magrittr::extract(, c("E_NF_HI", "ECT_HI", "EMN_HI")) |>
+  tsbox::ts_pick("E_TU_HI", "ECT_HI", "EMN_HI") |>
   plot_fc()
 }

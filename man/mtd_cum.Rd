@@ -4,29 +4,25 @@
 \alias{mtd_cum}
 \title{Month to date sum or average}
 \usage{
-mtd_cum(long_tbl_in, avg = TRUE)
+mtd_cum(x, avg = TRUE)
 }
 \arguments{
-\item{long_tbl_in}{a long tibble of time series (produced by ts_long() for
-example)}
+\item{x}{a ts-boxable object}
 
-\item{avg}{if true, the year to date average, if false, the year to date sum}
+\item{avg}{if TRUE (default), return month to date average, if FALSE, return month to date sum}
 }
 \value{
-a long tibble of time series containing year to date sum or average
+object of the same type as the input containing year to date sum or average
 }
 \description{
 Month to date sum or average
 }
 \examples{
 daily_data_example |>
-  tsbox::ts_long() |>
   mtd_cum()
 test <- daily_data_example |>
-  dplyr::select(time, "VAPNS_HI") |>
   tsbox::ts_long() |>
+  tsbox::ts_pick("VAPNS_HI") |>
   mtd_cum()
-\dontshow{if (interactive()) (if (getRversion() >= "3.4") withAutoprint else force)(\{ # examplesIf}
-test \%ts/\% tsbox::ts_lag(test, "3 years") |> tail()
-\dontshow{\}) # examplesIf}
+tsbox::`\%ts/\%`(test, tsbox::ts_lag(test, "6 months")) |> tail()
 }

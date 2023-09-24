@@ -5,15 +5,15 @@
 \title{Interactive lineplot with two axes}
 \usage{
 plot_2ax(
-  ser,
-  rng_start = as.character(Sys.Date() - lubridate::years(15)),
-  rng_end = as.character(Sys.Date()),
+  x,
+  rng_start = as.character(Sys.Date() - lubridate::years(10)),
+  rng_end = as.character(Sys.Date() + lubridate::years(2)),
   height = 300,
   width = 900
 )
 }
 \arguments{
-\item{ser}{time series to plot (e.g. history, oldsol, sol)}
+\item{x}{ts-boxable object to plot (e.g. time series of history, oldsol, sol)}
 
 \item{rng_start}{start of zoom range ("YYYY-MM-DD")}
 
@@ -30,21 +30,10 @@ a dygraph plot
 Interactive lineplot with two axes
 }
 \examples{
-`ncen@us.sola` <- ts(NA_real_, start = 2016, end = 2021, freq = 1) |> tsbox::ts_xts()
-`ncen@us.sola`["2016/2021"] <- c(323127513, 325511184, 327891911, 330268840, 332639102, 334998398)
-`ncen@us.oldsola` <- `ncen@us.sola`
-`ncen@us.oldsola`["2020/2021"] <- c(352639102, 374998398)
-`ncen@us.a` <- `ncen@us.sola`
-`ncen@us.a`["2020/2021"] <- NA
-test1 <- tsbox::ts_tslist(tsbox::ts_c(`ncen@us.sola`, `ncen@us.oldsola`, `ncen@us.a`)) |>
-  purrr::map(AtoQ) |>
-  purrr::reduce(tsbox::ts_c) |>
-  magrittr::set_names(c("ncen@us.sola", "ncen@us.oldsola", "ncen@us.a"))
-plot_2ax(tsbox::ts_c(`ncen@us.sola`, `ncen@us.oldsola`, `ncen@us.a`), rng_start = "2017-01-01")
-plot_2ax(test1, rng_start = "2017-01-01")
+monthly_data_example |>
+  plot_2ax()
 quarterly_data_example |>
   tsbox::ts_long() |>
-  tsbox::ts_xts() |>
-  magrittr::extract(, c("E_NF_HI", "ECT_HI", "EMN_HI")) |>
+  tsbox::ts_pick("E_TU_HI", "ECT_HI", "EMN_HI") |>
   plot_2ax()
 }

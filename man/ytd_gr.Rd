@@ -4,17 +4,13 @@
 \alias{ytd_gr}
 \title{Year to date growth rate}
 \usage{
-ytd_gr(long_tbl_in, avg = TRUE)
+ytd_gr(x)
 }
 \arguments{
-\item{long_tbl_in}{a long tibble of time series (produced by ts_long() for
-example)}
-
-\item{avg}{if true, the year to date average, if false, the year to date sum
-for calculation}
+\item{x}{a ts-boxable object}
 }
 \value{
-a long tibble of time series containing year to date growth rate
+object of the same type as the input containing year to date growth rate
 }
 \description{
 Year to date growth rate
@@ -22,6 +18,8 @@ Year to date growth rate
 \examples{
 monthly_data_example |>
   tsbox::ts_long() |>
+  tsbox::ts_pick("VISNS_HI") |>
+  tsbox::ts_xts() |>
   ytd_gr() |>
   tail()
 }

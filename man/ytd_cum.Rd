@@ -4,22 +4,26 @@
 \alias{ytd_cum}
 \title{Year to date sum or average}
 \usage{
-ytd_cum(long_tbl_in, avg = TRUE)
+ytd_cum(x, avg = TRUE)
 }
 \arguments{
-\item{long_tbl_in}{a long tibble of time series (produced by ts_long() for
-example)}
+\item{x}{a ts-boxable object}
 
-\item{avg}{if true, the year to date average, if false, the year to date sum}
+\item{avg}{if TRUE (default), return year to date average, if FALSE, return year to date sum}
 }
 \value{
-a long tibble of time series containing year to date sum or average
+object of the same type as the input containing year to date sum or average
 }
 \description{
 Year to date sum or average
 }
 \examples{
 monthly_data_example |>
-  tsbox::ts_long() |>
   ytd_cum()
+monthly_data_example |>
+  tsbox::ts_long() |>
+  tsbox::ts_pick("VISNS_HI") |>
+  tsbox::ts_xts() |>
+  ytd_cum(avg = FALSE) |>
+  tsbox::ts_plot()
 }

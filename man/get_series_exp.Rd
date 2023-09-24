@@ -13,19 +13,17 @@ get_series_exp(
 )
 }
 \arguments{
-\item{exp_id}{export id}
+\item{exp_id}{export id (character or numeric)}
 
 \item{format}{"wide" (default) or "long" or "xts"}
 
-\item{expand}{"true" or "raw" ("true" downloads formatted data, "raw"
-downloads raw units)}
+\item{expand}{"true" or "raw" ("true" downloads formatted data, "raw" downloads raw units)}
 
 \item{rename}{"compact" (default), "full", "no". "compact": @ replaced by _
 and no frequency; "full": @ replaced by __ and . by _; "no": no renaming,
 keep UDAMAN names}
 
-\item{descr}{if TRUE add to the udaman series name the series description in
-parentheses}
+\item{descr}{if TRUE add to the udaman series name the series description in parentheses (default: FALSE)}
 }
 \value{
 time and data for all series combined in a tibble

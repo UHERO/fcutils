@@ -2,7 +2,8 @@
 % Please edit documentation in R/fcst_utils.R
 \name{AtoQ}
 \alias{AtoQ}
-\title{Linear interpolation based on aremos command reference page 292}
+\title{Linear interpolation based on AREMOS command reference page 292
+(superseded by disagg())}
 \usage{
 AtoQ(ser_in, aggr = "mean")
 }
@@ -15,10 +16,16 @@ AtoQ(ser_in, aggr = "mean")
 interpolated xts series (freq = q)
 }
 \description{
-Linear interpolation based on aremos command reference page 292
+Linear interpolation based on AREMOS command reference page 292
+(superseded by disagg())
 }
 \examples{
-`ncen@us.sola` <- ts(NA_real_, start = 2016, end = 2021, freq = 1) |> tsbox::ts_xts()
-`ncen@us.sola`["2016/2021"] <- c(323127513, 325511184, 327891911, 330268840, 332639102, 334998398)
-test1 <- AtoQ(`ncen@us.sola`)
+quarterly_data_example |>
+  tsbox::ts_long() |>
+  tsbox::ts_xts() |>
+  tsbox::ts_pick("E_NF_HI") |>
+  QtoA() |> # this matches with below
+  AtoQ() |>
+  QtoA() |> # this matches with above
+  tsbox::ts_plot()
 }

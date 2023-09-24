@@ -14,22 +14,20 @@ get_series(
 )
 }
 \arguments{
-\item{ser_id_vec}{vector of series names}
+\item{ser_id_vec}{vector of series names (character)}
 
 \item{format}{"wide" (default) or "long" or "xts"}
 
-\item{expand}{"true" (default) or "raw" ("true" downloads formatted data,
-"raw" downloads raw units)}
+\item{expand}{"true" (default) or "raw" ("true" downloads formatted data, "raw" downloads raw units)}
 
 \item{rename}{"compact" (default), "full", "no". "compact": @ replaced by _
 and no frequency; "full": @ replaced by __ and . by _; "no": no renaming,
 keep UDAMAN names}
 
 \item{freq}{if frequency is missing from series names (or want to modify freq
-in existing names) specify frequency, e.g. "M".}
+in existing names) specify frequency (character), e.g. "M".}
 
-\item{descr}{if TRUE add to the udaman series name the series description in
-parentheses}
+\item{descr}{if TRUE add to the udaman series name the series description in parentheses (default: FALSE)}
 }
 \value{
 time and data for all series combined in an object specified by the

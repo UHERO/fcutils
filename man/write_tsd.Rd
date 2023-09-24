@@ -2,21 +2,21 @@
 % Please edit documentation in R/fcst_utils.R
 \name{write_tsd}
 \alias{write_tsd}
-\title{Save an xts or a wide data frame with time series in tsd format}
+\title{Save a ts-boxable object in tsd format}
 \usage{
 write_tsd(x, file)
 }
 \arguments{
 \item{x}{a ts-boxable object (only M, Q, A frequency)}
 
-\item{file}{string denoting the location and name of the output file}
+\item{file}{character string denoting the location and name of the output file}
 }
 \value{
 nothing (silently save the contents of the tsd file to a user defined
 location)
 }
 \description{
-Save an xts or a wide data frame with time series in tsd format
+Save a ts-boxable object in tsd format
 }
 \examples{
 \dontshow{if (interactive()) (if (getRversion() >= "3.4") withAutoprint else force)(\{ # examplesIf}

@@ -7,13 +7,13 @@
 rename_udaman(ser_in, freq = NULL)
 }
 \arguments{
-\item{ser_in}{series name (string "mnemonic_loc", "mnemonic__loc_freq")}
+\item{ser_in}{series names (character "mnemonic_loc", "mnemonic__loc_freq", mnemonic@loc.freq")}
 
 \item{freq}{frequency of the series, required if not contained in the series
-name (string "D", "W", "M", "Q", "S", "A")}
+name (character "D", "W", "M", "Q", "S", "A")}
 }
 \value{
-series name following udaman convention "mnemonic@loc.freq"
+series names following udaman convention "mnemonic@loc.freq"
 }
 \description{
 Format series names to udaman format (mnemonic@loc.freq)

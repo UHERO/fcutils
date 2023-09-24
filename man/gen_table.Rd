@@ -6,8 +6,8 @@
 \usage{
 gen_table(
   x,
-  tbl_start = as.character(Sys.Date() - lubridate::years(15)),
-  tbl_end = as.character(Sys.Date()),
+  tbl_start = as.character(Sys.Date() - lubridate::years(10)),
+  tbl_end = as.character(Sys.Date() + lubridate::years(2)),
   percent = "pc",
   time_across = TRUE,
   tbl_height = 800,
@@ -21,13 +21,16 @@ gen_table(
 
 \item{tbl_end}{end period for table}
 
-\item{percent}{what type of percent should be added ("none", "pc" (default), "pcy", "pca")}
+\item{percent}{what type of percent should be added ("none", "pc" (default),
+"pcy", "pca")}
 
-\item{time_across}{should time be in column headers and variable names in first column (default TRUE)}
+\item{time_across}{should time be in column headers and variable names in
+first column (default TRUE)}
 
 \item{tbl_height}{the height of the table in px (default 800)}
 
-\item{save_loc}{file path for saving table incl. extension ("html" or "csv") (default NULL)}
+\item{save_loc}{file path for saving table incl. extension ("html" or "csv")
+(default NULL)}
 }
 \value{
 table formatted for output
@@ -36,15 +39,21 @@ table formatted for output
 Generate a table with time series
 }
 \examples{
-quarterly_data_example \%>\% tsbox::ts_long() \%>\% tsbox::ts_tslist() \%>\%
-gen_table()
+quarterly_data_example \%>\%
+  tsbox::ts_long() \%>\%
+  tsbox::ts_tslist() \%>\%
+  gen_table()
 gen_table(quarterly_data_example)
 gen_table(quarterly_data_example, percent = "none")
 gen_table(quarterly_data_example, percent = "pcy", time_across = FALSE)
 \dontshow{if (interactive()) (if (getRversion() >= "3.4") withAutoprint else force)(\{ # examplesIf}
-gen_table(quarterly_data_example, percent = "pcy", time_across = FALSE,
-save_loc = "~/Downloads/temp.csv")
-gen_table(quarterly_data_example, percent = "pcy", time_across = TRUE,
-save_loc = "~/Downloads/temp.html")
+gen_table(quarterly_data_example,
+  percent = "pcy",
+  time_across = FALSE, save_loc = "~/Downloads/temp.csv"
+)
+gen_table(quarterly_data_example,
+  percent = "pcy", time_across = TRUE,
+  save_loc = "~/Downloads/temp.html"
+)
 \dontshow{\}) # examplesIf}
 }

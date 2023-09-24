@@ -4,28 +4,21 @@
 \alias{pcmp}
 \title{Calculate multi-period average growth}
 \usage{
-pcmp(ser_in, lag_in = 1)
+pcmp(x, lag = 4)
 }
 \arguments{
-\item{ser_in}{name of xts series for which growth is calculated}
+\item{x}{ts-boxable object for which growth is calculated (in levels)}
 
-\item{lag_in}{length of period over which growth is calculated}
+\item{lag}{number of period over which growth is calculated}
 }
 \value{
-series containing the average growth of ser_in (in percent)
+object of the same type as the input ontaining the average growth of x (in percent)
 }
 \description{
 Calculate multi-period average growth
 }
 \examples{
-`ncen@us.sola` <- ts(NA_real_, start = 2016, end = 2021, freq = 1) |> tsbox::ts_xts()
-`ncen@us.sola`["2016/2021"] <- c(323127513, 325511184, 327891911, 330268840, 332639102, 334998398)
-test1 <- AtoQ(`ncen@us.sola`)
-tsbox::ts_c(pcmp(`ncen@us.sola`, lag_in = 3), tsbox::ts_pc(`ncen@us.sola`))
-tsbox::ts_c(
-  pcmp(test1, lag_in = 4),
-  tsbox::ts_pcy(test1),
-  tsbox::ts_pca(test1),
-  tsbox::ts_pc(test1)
-)
+quarterly_data_example |>
+  pcmp(20) |>
+  tail()
 }

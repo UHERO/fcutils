@@ -5,10 +5,10 @@
 \title{Three-panel plot of levels, index, and growth rates}
 \usage{
 plot_comp_3(
-  sers,
-  indx_start = as.character(Sys.Date() - lubridate::years(15)),
-  rng_start = as.character(Sys.Date() - lubridate::years(15)),
-  rng_end = as.character(Sys.Date()),
+  x,
+  indx_start = as.character(Sys.Date() - lubridate::years(10)),
+  rng_start = as.character(Sys.Date() - lubridate::years(10)),
+  rng_end = as.character(Sys.Date() + lubridate::years(2)),
   height = 300,
   width = 900,
   yoy_gr = TRUE,
@@ -16,7 +16,7 @@ plot_comp_3(
 )
 }
 \arguments{
-\item{sers}{a vector of series to plot}
+\item{x}{ts-boxable object to plot}
 
 \item{indx_start}{base period for the indexed series ("YYYY-MM-DD")}
 
@@ -39,13 +39,10 @@ a list with three dygraph plots (level, index, growth)
 Three-panel plot of levels, index, and growth rates
 }
 \examples{
-`ncen@us.sola` <- ts(NA_real_, start = 2016, end = 2021, freq = 1) |> tsbox::ts_xts()
-`ncen@us.sola`["2016/2021"] <- c(323127513, 325511184, 327891911, 330268840, 332639102, 334998398)
-test1 <- AtoQ(`ncen@us.sola`)
-plot_comp_3(tsbox::ts_c(`ncen@us.sola`, test1), rng_start = "2017-01-01")
+monthly_data_example |>
+  plot_comp_3()
 quarterly_data_example |>
   tsbox::ts_long() |>
-  tsbox::ts_xts() |>
-  magrittr::extract(, c("E_NF_HI", "ECT_HI", "EMN_HI")) |>
+  tsbox::ts_pick("E_TU_HI", "ECT_HI", "EMN_HI") |>
   plot_comp_3()
 }

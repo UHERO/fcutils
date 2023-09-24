@@ -5,24 +5,22 @@
 #
 # Author: Peter Fuleky
 # Date: October 1, 2019
-# To do: modify time series utilities
-# so they accept xts, long and wide tbl (see ma())
+# To do:
 
 
 # **************************
 # data retrieval and manipulation ----
 # **************************
 
+
 #' Download a single series from udaman using series name
 #'
-#' @param ser_id udaman series name
-#' @param expand "true" or "raw" ("true" downloads formatted data, "raw"
-#'   downloads raw units)
+#' @param ser_id udaman series name (character)
+#' @param expand "true" or "raw" ("true" downloads formatted data, "raw" downloads raw units)
 #' @param rename "compact" (default), "full", "no". "compact": @ replaced by _
 #'   and no frequency; "full": @ replaced by __ and . by _; "no": no renaming,
 #'   keep UDAMAN names
-#' @param descr if TRUE add to the udaman series name the series description in
-#'   parentheses
+#' @param descr if TRUE add to the udaman series name the series description in parentheses (default: FALSE)
 #'
 #' @return time and data for a single series combined in a tibble
 #'
@@ -30,6 +28,7 @@
 #' Store the udaman token in the .Renviron file using the following format:
 #' udaman_token = "this is your UDAMAN token"
 #'
+#' @noRd
 #' @examplesIf interactive()
 #' get_series_1(ser_id = "VISNS@HI.M")
 get_series_1 <- function(ser_id, expand = "true", rename = "compact", descr = FALSE) {
@@ -43,7 +42,7 @@ get_series_1 <- function(ser_id, expand = "true", rename = "compact", descr = FA
   values <- uhero_data$data$observations$transformationResults$values[[1]]
   series <- dplyr::bind_cols(time = lubridate::ymd(dates), values = as.numeric(values))
   name <- uhero_data$data$series$name
-  if(name == "") {
+  if (name == "") {
     series <- dplyr::bind_cols(time = seq(lubridate::ymd("2000-01-01"), lubridate::ymd("2010-01-01"), by = "year"), values = rep(NA_real_, 11))
     name <- ser_id
   }
@@ -73,17 +72,15 @@ get_series_1 <- function(ser_id, expand = "true", rename = "compact", descr = FA
 
 #' Download a set of series from udaman using series names
 #'
-#' @param ser_id_vec vector of series names
+#' @param ser_id_vec vector of series names (character)
 #' @param format "wide" (default) or "long" or "xts"
-#' @param expand "true" (default) or "raw" ("true" downloads formatted data,
-#'   "raw" downloads raw units)
+#' @param expand "true" (default) or "raw" ("true" downloads formatted data, "raw" downloads raw units)
 #' @param rename "compact" (default), "full", "no". "compact": @ replaced by _
 #'   and no frequency; "full": @ replaced by __ and . by _; "no": no renaming,
 #'   keep UDAMAN names
 #' @param freq if frequency is missing from series names (or want to modify freq
-#'   in existing names) specify frequency, e.g. "M".
-#' @param descr if TRUE add to the udaman series name the series description in
-#'   parentheses
+#'   in existing names) specify frequency (character), e.g. "M".
+#' @param descr if TRUE add to the udaman series name the series description in parentheses (default: FALSE)
 #'
 #' @return time and data for all series combined in an object specified by the
 #'   format option
@@ -120,15 +117,13 @@ get_series <- function(ser_id_vec, format = "wide", expand = "true", rename = "c
 
 #' Download series listed in an export table from udaman
 #'
-#' @param exp_id export id
+#' @param exp_id export id (character or numeric)
 #' @param format "wide" (default) or "long" or "xts"
-#' @param expand "true" or "raw" ("true" downloads formatted data, "raw"
-#'   downloads raw units)
+#' @param expand "true" or "raw" ("true" downloads formatted data, "raw" downloads raw units)
 #' @param rename "compact" (default), "full", "no". "compact": @ replaced by _
 #'   and no frequency; "full": @ replaced by __ and . by _; "no": no renaming,
 #'   keep UDAMAN names
-#' @param descr if TRUE add to the udaman series name the series description in
-#'   parentheses
+#' @param descr if TRUE add to the udaman series name the series description in parentheses (default: FALSE)
 #'
 #' @return time and data for all series combined in a tibble
 #' @export
@@ -193,6 +188,8 @@ get_series_exp <- function(exp_id, format = "wide", expand = "true", rename = "c
   }
   return(data_out)
 }
+
+
 # OLD VERSION USING USER NAME AND PASSWORD
 # get_series_exp <- function(exp_id, format = "wide", save_loc = "data/raw") {
 #   url <- "https://udaman.uhero.hawaii.edu/"
@@ -219,10 +216,10 @@ get_series_exp <- function(exp_id, format = "wide", expand = "true", rename = "c
 
 #' Create xts and fill with values
 #'
-#' @param start date of series start (string: "yyyy-mm-dd")
-#' @param end date of series end (string: "yyyy-mm-dd")
-#' @param per periodicity of series (string: "quarter", "year")
-#' @param val values to fill in (scalar or vector)
+#' @param start date of series start (character: "yyyy-mm-dd")
+#' @param end date of series end (character: "yyyy-mm-dd")
+#' @param per periodicity of series (character: "quarter", "year")
+#' @param val values to fill in (numeric scalar or vector)
 #'
 #' @return an xts series
 #' @export
@@ -268,7 +265,7 @@ make_xts <- function(start = bnk_start, end = bnk_end, per = "year", val = NA_re
 
 #' Construct a series name from variable components and retrieve the series
 #'
-#' @param ser_in a variable name (string with substituted expressions)
+#' @param ser_in a variable name (character string with substituted expressions)
 #' @param env environment where the expression should be evaluated
 #'
 #' @return variable
@@ -287,11 +284,11 @@ get_var <- function(ser_in, env = parent.frame()) {
 
 #' Format series names to udaman format (mnemonic@loc.freq)
 #'
-#' @param ser_in series name (string "mnemonic_loc", "mnemonic__loc_freq")
+#' @param ser_in series names (character "mnemonic_loc", "mnemonic__loc_freq", mnemonic@loc.freq")
 #' @param freq frequency of the series, required if not contained in the series
-#'   name (string "D", "W", "M", "Q", "S", "A")
+#'   name (character "D", "W", "M", "Q", "S", "A")
 #'
-#' @return series name following udaman convention "mnemonic@loc.freq"
+#' @return series names following udaman convention "mnemonic@loc.freq"
 #' @export
 #'
 #' @examples
@@ -330,10 +327,11 @@ rename_udaman <- function(ser_in, freq = NULL) {
   return(stringr::str_c(mnemonic, loc, freq))
 }
 
-#' Save an xts or a wide data frame with time series in tsd format
+
+#' Save a ts-boxable object in tsd format
 #'
 #' @param x a ts-boxable object (only M, Q, A frequency)
-#' @param file string denoting the location and name of the output file
+#' @param file character string denoting the location and name of the output file
 #'
 #' @return nothing (silently save the contents of the tsd file to a user defined
 #'   location)
@@ -342,11 +340,9 @@ rename_udaman <- function(ser_in, freq = NULL) {
 #' @examplesIf interactive()
 #' quarterly_data_example |> write_tsd("out.tsd")
 write_tsd <- function(x, file) {
-  # convert the xts or wide data frame to tslist
-  wide_df <- is_wide(x)
-  x_mod <- if (wide_df) tsbox::ts_long(x) else tsbox::ts_tbl(x)
-  in_list <- x_mod %>%
-    tidyr::drop_na() %>%
+  # convert the ts-boxable object to tslist
+  x_mod <- conv_long(x)
+  in_list <- x_mod$long_form %>%
     tsbox::ts_tslist()
 
   # get summary info about the time series
@@ -451,6 +447,7 @@ write_tsd <- function(x, file) {
   to_save %>% readr::write_file(file)
 }
 
+
 #' Copy a data frame to clipboard
 #'
 #' @param x tibble (or data frame) to be copied
@@ -465,82 +462,84 @@ copy_tbl <- function(x) {
 }
 
 
-#' Check if a data frame is in long format
-#'
-#' @param x tibble or data frame
-#'
-#' @return returns TRUE for long format data frame (id, time, value columns), FALSE otherwise
-#' @export
-#'
-#' @examples
-#' monthly_data_example |> is_long()
-#' monthly_data_example |> tsbox::ts_long() |> is_long()
-is_long <- function(x) {
-  rc <- tsbox::relevant_class(x)
-  if (!(rc %in% c("data.frame", "tbl_df", "data.table"))) {
-    return(FALSE)
-  }
+# DON'T NEED THIS FUNCTION, ONLY NEED TO CHECK FOR WIDE
+# #' Check if a data frame is in long format
+# #'
+# #' @param x tibble or data frame
+# #'
+# #' @return returns TRUE for long format data frame (id, time, value columns), FALSE otherwise
+# #' @export
+# #'
+# #' @examples
+# #' monthly_data_example |> is_long()
+# #' monthly_data_example |> tsbox::ts_long() |> is_long()
+# is_long <- function(x) {
+#   rc <- tsbox::relevant_class(x)
+#   if (!(rc %in% c("data.frame", "tbl_df", "data.table"))) {
+#     return(FALSE)
+#   }
+#
+#   x <- as.data.frame(x)
+#
+#   all.names <- colnames(x)
+#   if (any(c("time", "times", "date", "dates") %in% tolower(colnames(x)))) {
+#     time.name <- "time"
+#   } else {
+#     stop(
+#       "No [time] column detected. ",
+#       "To be explicit, name time column 'time'."
+#     )
+#   }
+#
+#   time.pos <- which(all.names == time.name)
+#   id.names <- setdiff(all.names[1:time.pos], time.name)
+#   value.names <- setdiff(all.names[time.pos:length(all.names)], time.name)
+#
+#   # character cols or factors should be considered ids, with message
+#   value.classes <- vapply(x[, value.names], class, "")
+#   value.names.that.are.ids <- names(value.classes)[value.classes %in% c("character", "factor")]
+#
+#   if (length(value.names.that.are.ids) > 0) {
+#     # message(
+#     #   "Found character or factor columns right to the [time] column.\n",
+#     #   "These will be treated as [id] columns: ",
+#     #   paste(paste0("'", value.names.that.are.ids, "'"), collapse = ", ")
+#     # )
+#     value.names <- setdiff(value.names, value.names.that.are.ids)
+#     id.names <- union(id.names, value.names.that.are.ids)
+#   }
+#
+#   if (length(value.names) == 0L) {
+#     stop(
+#       "No [value] column detected. ",
+#       "[value] column(s) must be right of the [time] column."
+#     )
+#   }
+#   if (length(value.names) > 1L) {
+#     # message(
+#     #   "Long tables should have a single [value] column.\n",
+#     #   "The data contains the following [value] columns: ",
+#     #   paste(paste0("'", value.names, "'"), collapse = ", ")
+#     # )
+#     return(FALSE)
+#   } else if (length(id.names) == 0L) {
+#     # message(
+#     #   "Long tables should have a single [id] column. ",
+#     #   "The data contains no [id] columns."
+#     # )
+#     return(FALSE)
+#   } else if (length(id.names) > 1L) {
+#     # message(
+#     #   "Long tables should have a single [id] column.\n",
+#     #   "The data contains the following [id] columns: ",
+#     #   paste(paste0("'", id.names, "'"), collapse = ", ")
+#     # )
+#     return(FALSE)
+#   } else {
+#     return(TRUE)
+#   }
+# }
 
-  x <- as.data.frame(x)
-
-  all.names <- colnames(x)
-  if (any(c("time", "times", "date", "dates") %in% tolower(colnames(x)))) {
-    time.name <- "time"
-  } else {
-    stop(
-      "No [time] column detected. ",
-      "To be explicit, name time column 'time'."
-    )
-  }
-
-  time.pos <- which(all.names == time.name)
-  id.names <- setdiff(all.names[1:time.pos], time.name)
-  value.names <- setdiff(all.names[time.pos:length(all.names)], time.name)
-
-  # character cols or factors should be considered ids, with message
-  value.classes <- vapply(x[, value.names], class, "")
-  value.names.that.are.ids <- names(value.classes)[value.classes %in% c("character", "factor")]
-
-  if (length(value.names.that.are.ids) > 0) {
-    # message(
-    #   "Found character or factor columns right to the [time] column.\n",
-    #   "These will be treated as [id] columns: ",
-    #   paste(paste0("'", value.names.that.are.ids, "'"), collapse = ", ")
-    # )
-    value.names <- setdiff(value.names, value.names.that.are.ids)
-    id.names <- union(id.names, value.names.that.are.ids)
-  }
-
-  if (length(value.names) == 0L) {
-    stop(
-      "No [value] column detected. ",
-      "[value] column(s) must be right of the [time] column."
-    )
-  }
-  if (length(value.names) > 1L) {
-    # message(
-    #   "Long tables should have a single [value] column.\n",
-    #   "The data contains the following [value] columns: ",
-    #   paste(paste0("'", value.names, "'"), collapse = ", ")
-    # )
-    return(FALSE)
-  } else if (length(id.names) == 0L) {
-    # message(
-    #   "Long tables should have a single [id] column. ",
-    #   "The data contains no [id] columns."
-    # )
-    return(FALSE)
-  } else if (length(id.names) > 1L) {
-    # message(
-    #   "Long tables should have a single [id] column.\n",
-    #   "The data contains the following [id] columns: ",
-    #   paste(paste0("'", id.names, "'"), collapse = ", ")
-    # )
-    return(FALSE)
-  } else {
-    return(TRUE)
-  }
-}
 
 #' Check if a data frame is in wide format
 #'
@@ -551,8 +550,12 @@ is_long <- function(x) {
 #'
 #' @examples
 #' monthly_data_example |> is_wide()
-#' monthly_data_example |> tsbox::ts_long() |> is_wide()
-#' dat_in <- monthly_data_example |> tsbox::ts_long() |> tsbox::ts_tslist()
+#' monthly_data_example |>
+#'   tsbox::ts_long() |>
+#'   is_wide()
+#' dat_in <- monthly_data_example |>
+#'   tsbox::ts_long() |>
+#'   tsbox::ts_tslist()
 #' wide_df <- is_wide(dat_in)
 #' x_mod <- if (wide_df) tsbox::ts_long(dat_in) else tsbox::ts_tbl(dat_in)
 #' ans <- if (wide_df) tsbox::ts_wide(x_mod) else tsbox::copy_class(x_mod, dat_in)
@@ -611,74 +614,148 @@ is_wide <- function(x) {
 }
 
 
+#' Convert "ts-boxable" objects into long format
+#'
+#' @param x a "tx-boxable" object to be converted
+#'
+#' @return a list(long_form, was_wide, ser_names), where
+#' x_mod is a ts-boxable object in long format with id, time and value columns,
+#' was_wide is TRUE if x is a wide data frame, FALSE otherwise,
+#' ser_names are the names of the series in x.
+#' @export
+#'
+#' @details This function converts wide data frames and other ts-boxable objects
+#' to the long format (wide data frames are not ts-boxable). In addition, it
+#' ensures that objects containing a single time series have an id column.
+#'
+#' @examples
+#' quarterly_data_example |>
+#'   conv_long()
+#' quarterly_data_example |>
+#'   tsbox::ts_long() |>
+#'   tsbox::ts_xts() |>
+#'   conv_long()
+#' quarterly_data_example |>
+#'   tsbox::ts_long() |>
+#'   tsbox::ts_pick("E_NF_HI") |>
+#'   tsbox::ts_xts() |>
+#'   conv_long()
+#' quarterly_data_example |>
+#'   tsbox::ts_long() |>
+#'   tsbox::ts_xts() |>
+#'   tsbox::ts_pick("E_NF_HI") |>
+#'   conv_long()
+conv_long <- function(x) {
+  # need xts series names for differential treatment of univariate data
+  ser_names_1 <- names(x)
+  # check if wide table
+  wide_form <- is_wide(x)
+  # convert to long table (all formats incl. xts)
+  x_mod <-
+    {
+      if (wide_form) tsbox::ts_long(x) else tsbox::ts_tbl(x)
+    } %>%
+    tidyr::drop_na()
+  # need long tbl series names for differential treatment of univariate data
+  ser_names_2 <- tsbox::ts_summary(x_mod) %>%
+    dplyr::pull(.data$id)
+  ser_names <- if (length(ser_names_1) == 1) ser_names_1 else if (length(ser_names_2) == 1) ser_names_2 else ser_names_2
+  # add an id column to univariate data
+  x_mod <- x_mod %>%
+    {
+      if (length(ser_names) == 1) {
+        dplyr::mutate(., id = ser_names, .before = "time")
+      } else {
+        .
+      }
+    }
+
+  return(list(long_form = x_mod, was_wide = wide_form, ser_names = ser_names))
+}
+
 
 # **************************
 # time series utility functions ----
 # **************************
 
-#' Interpolate a single series from quarterly to monthly freq
+
+#' Interpolate a single time series from low to high freqency
 #'
-#' @param var_q vector containing a single variable at quarterly freq
-#' @param ts_start starting period as c(year, quarter) e.g. c(2001, 1)
-#' @param conv_type match the quarterly value via "first", "last", "sum",
-#'   "average"
+#' @param x a single time series (e.g. xts) at low freq (e.g. annual or quarterly)
+#' @param conv_type match the quarterly value via "first", "last", "sum", "mean"
+#' @param target_freq target frequency "quarter" (default) or "month"
 #'
-#' @return vector containing a single variable at monthly freq
-#' @export
+#' @return time series at the target frequency
 #'
-#' @examples
-#' `ncen@us.sola` <- ts(NA_real_, start = 2016, end = 2021, freq = 1) |> tsbox::ts_xts()
-#' `ncen@us.sola`["2016/2021"] <- c(323127513, 325511184, 327891911, 330268840, 332639102, 334998398)
-#' test1 <- AtoQ(`ncen@us.sola`)
-#' QtoM_1(test1, c(2010, 1), "average")
-QtoM_1 <- function(var_q, ts_start, conv_type) {
-  var_q_ts <- stats::ts(var_q, frequency = 4, start = ts_start)
+#' @noRd
+#' @examplesIf interactive()
+#' quarterly_data_example |>
+#'   tsbox::ts_long() |>
+#'   tsbox::ts_pick("E_NF_HI") |>
+#'   tsbox::ts_xts() |>
+#'   disagg_1(conv_type = "mean", target_freq = "month") |>
+#'   tsbox::ts_plot()
+disagg_1 <- function(x, conv_type, target_freq) {
   tempdisagg::td(
-    formula = var_q_ts ~ 1,
+    formula = x ~ 1,
     conversion = conv_type,
-    to = "monthly",
-    method = "denton-cholette"
+    to = target_freq,
+    method = "fast"
   ) %>%
     stats::predict()
 }
 
 
-#' Interpolate a tibble of series from quaterly to monthly freq
+#' Interpolate univariate or multivariate time series from low to high frequency
 #'
-#' @param data_q tibble containing variables at quarterly freq the first column
-#'   of data_q named "time" contains dates
-#' @param conv_type match the quarterly value via "first", "last", "sum",
-#'   "average"
+#' @param x a tx-boxable object at a low frequency (e.g. annual or quarterly)
+#' @param conv_type match the quarterly value via "first", "last", "sum", "mean"
+#' @param target_freq target frequency "quarter" or "month"
 #'
-#' @return tibble containing variables at monthly freq
+#' @return interpolated object of the same type as the input
 #' @export
 #'
 #' @examples
-#' `ncen@us.sola` <- ts(NA_real_, start = 2016, end = 2021, freq = 1) |> tsbox::ts_xts()
-#' `ncen@us.sola`["2016/2021"] <- c(323127513, 325511184, 327891911, 330268840, 332639102, 334998398)
-#' test1 <- AtoQ(`ncen@us.sola`)
-#' QtoM(tsbox::ts_tbl(test1), "average")
-#' tsbox::ts_frequency(QtoM(tsbox::ts_tbl(test1), "average") |> tsbox::ts_xts())
-QtoM <- function(data_q, conv_type) {
-  data_q_names <- colnames(data_q)
-  data_q_dates <- lubridate::ymd(data_q$time)
-  data_q_first <- dplyr::first(data_q_dates)
-  data_q_last <- dplyr::last(data_q_dates)
-  data_q_start <- c(lubridate::year(data_q_first), lubridate::quarter(data_q_first))
-  data_m <- data_q %>%
-    dplyr::select(-.data$time) %>%
-    purrr::map(QtoM_1, data_q_start, conv_type) %>%
-    purrr::reduce(stats::ts.union) %>%
-    tibble::as_tibble()
-  data_m_dates <- seq(data_q_first, data_q_last + months(2), by = "months") %>%
-    tibble::enframe(name = NULL)
-  data_m <- dplyr::bind_cols(data_m_dates, data_m) %>%
-    dplyr::rename_with(~data_q_names)
-  return(data_m)
+#' quarterly_data_example |>
+#'   disagg(conv_type = "mean", target_freq = "month")
+#' quarterly_data_example |>
+#'   disagg(conv_type = "mean", target_freq = "month") |>
+#'   tsbox::ts_long() |>
+#'   tsbox::ts_frequency(to = "quarter", aggregate = "mean") |>
+#'   tsbox::ts_wide() # this matches original data
+#' quarterly_data_example |>
+#'   tsbox::ts_long() |>
+#'   tsbox::ts_pick("E_NF_HI") |>
+#'   disagg(conv_type = "mean", target_freq = "month") |>
+#'   tsbox::ts_plot() # works with a single series too
+disagg <- function(x, conv_type = "mean", target_freq = "quarter") {
+  # convert to long format and return additional details
+  x_mod <- conv_long(x)
+
+  # drop missing values convert to xts and interpolate
+  x_mod_int <- x_mod$long_form %>%
+    tsbox::ts_xts() %>%
+    tsbox::ts_apply(fun = disagg_1, conv_type = conv_type, target_freq = target_freq) %>%
+    # univariate data requires special treatment
+    {
+      if (length(x_mod$ser_names) == 1) {
+        tsbox::ts_tbl(.) %>%
+          tsbox::ts_long() %>%
+          dplyr::mutate(id = x_mod$ser_names)
+      } else {
+        tsbox::ts_tbl(.)
+      }
+    }
+
+  # reclass the output to match the input
+  ans <- if (x_mod$was_wide) tsbox::ts_wide(x_mod_int) else tsbox::copy_class(x_mod_int, x)
+
+  return(ans)
 }
 
 
-#' Linear interpolation based on aremos command reference page 292
+#' Linear interpolation based on AREMOS command reference page 292
+#' (superseded by disagg())
 #'
 #' @param ser_in the xts series to be interpolated (freq = a)
 #' @param aggr interpolation method: aggregate via mean (default) or sum
@@ -687,9 +764,14 @@ QtoM <- function(data_q, conv_type) {
 #' @export
 #'
 #' @examples
-#' `ncen@us.sola` <- ts(NA_real_, start = 2016, end = 2021, freq = 1) |> tsbox::ts_xts()
-#' `ncen@us.sola`["2016/2021"] <- c(323127513, 325511184, 327891911, 330268840, 332639102, 334998398)
-#' test1 <- AtoQ(`ncen@us.sola`)
+#' quarterly_data_example |>
+#'   tsbox::ts_long() |>
+#'   tsbox::ts_xts() |>
+#'   tsbox::ts_pick("E_NF_HI") |>
+#'   QtoA() |> # this matches with below
+#'   AtoQ() |>
+#'   QtoA() |> # this matches with above
+#'   tsbox::ts_plot()
 AtoQ <- function(ser_in, aggr = "mean") {
   ser_out_name <- names(ser_in)
   ser_out_dates <- tibble::tibble(time = seq.Date(
@@ -715,7 +797,8 @@ AtoQ <- function(ser_in, aggr = "mean") {
 }
 
 
-#' Conversion from quarterly to annual frequency
+#' Aggregate from quarterly to annual frequency
+#' (superseded by tsbox::ts_frequency())
 #'
 #' @param ser_in the xts series to be converted (freq = q)
 #' @param	aggr aggregate via mean (default) or sum
@@ -724,12 +807,14 @@ AtoQ <- function(ser_in, aggr = "mean") {
 #' @export
 #'
 #' @examples
-#' `ncen@us.sola` <- ts(NA_real_, start = 2016, end = 2021, freq = 1) |> tsbox::ts_xts()
-#' `ncen@us.sola`["2016/2021"] <- c(323127513, 325511184, 327891911, 330268840, 332639102, 334998398)
-#' test1 <- AtoQ(`ncen@us.sola`)
-#' test2 <- QtoA(test1) # for stock type variables mean, for flow type variables sum
-#' print(test1)
-#' print(cbind(`ncen@us.sola`, test2))
+#' quarterly_data_example |>
+#'   tsbox::ts_long() |>
+#'   tsbox::ts_xts() |>
+#'   tsbox::ts_pick("E_NF_HI") |>
+#'   QtoA() |> # this matches with below
+#'   AtoQ() |>
+#'   QtoA() |> # this matches with above
+#'   tsbox::ts_plot()
 QtoA <- function(ser_in, aggr = "mean") {
   ser_out <- tsbox::ts_frequency(ser_in, to = "year", aggregate = aggr)
   colnames(ser_out) <- colnames(ser_in) %>%
@@ -741,239 +826,332 @@ QtoA <- function(ser_in, aggr = "mean") {
 
 #' Year to date sum or average
 #'
-#' @param long_tbl_in a long tibble of time series (produced by ts_long() for
-#'   example)
-#' @param avg if true, the year to date average, if false, the year to date sum
+#' @param x a ts-boxable object
+#' @param avg if TRUE (default), return year to date average, if FALSE, return year to date sum
 #'
-#' @return a long tibble of time series containing year to date sum or average
+#' @return object of the same type as the input containing year to date sum or average
 #' @export
 #'
 #' @examples
 #' monthly_data_example |>
-#'   tsbox::ts_long() |>
 #'   ytd_cum()
-ytd_cum <- function(long_tbl_in, avg = TRUE) {
-  long_tbl_out <- long_tbl_in %>%
+#' monthly_data_example |>
+#'   tsbox::ts_long() |>
+#'   tsbox::ts_pick("VISNS_HI") |>
+#'   tsbox::ts_xts() |>
+#'   ytd_cum(avg = FALSE) |>
+#'   tsbox::ts_plot()
+ytd_cum <- function(x, avg = TRUE) {
+  # convert to long format and return additional details
+  x_mod <- conv_long(x)
+
+  x_mod_ytd <- x_mod$long_form %>%
     dplyr::mutate(yr = lubridate::floor_date(.data$time, "year")) %>%
     dplyr::group_by(.data$id, .data$yr) %>%
     dplyr::mutate(value = if (avg) dplyr::cummean(.data$value) else cumsum(.data$value)) %>%
     dplyr::ungroup() %>%
-    dplyr::select(-.data$yr)
-  return(long_tbl_out)
-}
+    dplyr::select(!"yr")
 
+  # reclass the output to match the input
+  ans <- if (x_mod$was_wide) tsbox::ts_wide(x_mod_ytd) else tsbox::copy_class(x_mod_ytd, x)
+
+  return(ans)
+}
 
 #' Year to date growth rate
 #'
-#' @param long_tbl_in a long tibble of time series (produced by ts_long() for
-#'   example)
-#' @param avg if true, the year to date average, if false, the year to date sum
-#'   for calculation
+#' @param x a ts-boxable object
 #'
-#' @return a long tibble of time series containing year to date growth rate
+#' @return object of the same type as the input containing year to date growth rate
 #' @export
 #'
 #' @examples
 #' monthly_data_example |>
 #'   tsbox::ts_long() |>
+#'   tsbox::ts_pick("VISNS_HI") |>
+#'   tsbox::ts_xts() |>
 #'   ytd_gr() |>
 #'   tail()
-ytd_gr <- function(long_tbl_in, avg = TRUE) {
-  long_tbl_out <- long_tbl_in %>%
-    ytd_cum(avg) %>%
+ytd_gr <- function(x) {
+  # convert to long format and return additional details
+  x_mod <- conv_long(x)
+
+  x_mod_ytd_gr <- x_mod$long_form %>%
+    ytd_cum() %>%
     tsbox::ts_pcy()
-  return(long_tbl_out)
+
+  # reclass the output to match the input
+  ans <- if (x_mod$was_wide) tsbox::ts_wide(x_mod_ytd_gr) else tsbox::copy_class(x_mod_ytd_gr, x)
+
+  return(ans)
 }
 
 
 #' Month to date sum or average
 #'
-#' @param long_tbl_in a long tibble of time series (produced by ts_long() for
-#'   example)
-#' @param avg if true, the year to date average, if false, the year to date sum
+#' @param x a ts-boxable object
+#' @param avg if TRUE (default), return month to date average, if FALSE, return month to date sum
 #'
-#' @return a long tibble of time series containing year to date sum or average
+#' @return object of the same type as the input containing year to date sum or average
 #' @export
 #'
 #' @examples
 #' daily_data_example |>
-#'   tsbox::ts_long() |>
 #'   mtd_cum()
 #' test <- daily_data_example |>
-#'   dplyr::select(time, "VAPNS_HI") |>
 #'   tsbox::ts_long() |>
+#'   tsbox::ts_pick("VAPNS_HI") |>
 #'   mtd_cum()
-#' @examplesIf interactive()
-#' test %ts/% tsbox::ts_lag(test, "3 years") |> tail()
-mtd_cum <- function(long_tbl_in, avg = TRUE) {
-  long_tbl_out <- long_tbl_in %>%
+#' tsbox::`%ts/%`(test, tsbox::ts_lag(test, "6 months")) |> tail()
+mtd_cum <- function(x, avg = TRUE) {
+  # convert to long format and return additional details
+  x_mod <- conv_long(x)
+
+  x_mod_mtd <- x_mod$long_form %>%
     dplyr::mutate(yrmo = lubridate::floor_date(.data$time, "month")) %>%
     dplyr::group_by(.data$id, .data$yrmo) %>%
     dplyr::mutate(value = if (avg) dplyr::cummean(.data$value) else cumsum(.data$value)) %>%
     dplyr::ungroup() %>%
-    dplyr::select(-.data$yrmo)
-  return(long_tbl_out)
+    dplyr::select(!"yrmo")
+
+  # reclass the output to match the input
+  ans <- if (x_mod$was_wide) tsbox::ts_wide(x_mod_mtd) else tsbox::copy_class(x_mod_mtd, x)
+
+  return(ans)
 }
 
 
 #' Month to date growth rate
 #'
-#' @param long_tbl_in a long tibble of time series (produced by ts_long() for
-#'   example)
-#' @param avg if true, the year to date average, if false, the year to date sum
-#'   for calculation
+#' @param x a ts-boxable object
 #'
-#' @return a long tibble of time series containing year to date growth rate
+#' @return object of the same type as the input containing month to date growth rate
 #' @export
 #'
 #' @examples
 #' daily_data_example |>
-#'   tsbox::ts_long() |>
 #'   mtd_gr() |>
 #'   tail()
-mtd_gr <- function(long_tbl_in, avg = TRUE) {
-  long_tbl_out <- long_tbl_in %>%
-    mtd_cum(avg) %>%
+mtd_gr <- function(x) {
+  # convert to long format and return additional details
+  x_mod <- conv_long(x)
+
+  x_mod_mtd_gr <- x_mod$long_form %>%
+    mtd_cum() %>%
     tsbox::ts_pcy()
-  return(long_tbl_out)
+
+  # reclass the output to match the input
+  ans <- if (x_mod$was_wide) tsbox::ts_wide(x_mod_mtd_gr) else tsbox::copy_class(x_mod_mtd_gr, x)
+
+  return(ans)
 }
 
 
 #' Period to date sum or average
 #'
-#' @param long_tbl_in a long tibble of time series (produced by ts_long() for
-#'   example)
+#' @param x a ts-boxable object
 #' @param per unit of time supplied to floor_date() (for ytd per = "year"
 #'   (default), for mtd per = "month")
-#' @param avg if true (default), the year to date average, if false, the year to
-#'   date sum
+#' @param avg if TRUE (default), retorn period to date average, if FALSE, return period to date sum
 #'
-#' @return a long tibble of time series containing year to date sum or average
+#' @return object of the same type as the input containing period to date sum or average
 #' @export
 #'
 #' @examples
-#' monthly_data_example |>
+#' daily_data_example |>
+#'   ptd_cum("week")
+#' test <- daily_data_example |>
 #'   tsbox::ts_long() |>
-#'   ptd_cum()
-ptd_cum <- function(long_tbl_in, per = "year", avg = TRUE) {
-  long_tbl_out <- long_tbl_in %>%
+#'   tsbox::ts_pick("VAPNS_HI") |>
+#'   ptd_cum("week")
+#' tsbox::`%ts/%`(test, tsbox::ts_lag(test, "4 weeks")) |>
+#'   tsbox::`%ts-%`(1) |>
+#'   tsbox::`%ts*%`(100) |>
+#'   tail()
+ptd_cum <- function(x, per = "year", avg = TRUE) {
+  # convert to long format and return additional details
+  x_mod <- conv_long(x)
+
+  x_mod_ptd <- x_mod$long_form %>%
     dplyr::mutate(time_per = lubridate::floor_date(.data$time, per)) %>%
     dplyr::group_by(.data$id, .data$time_per) %>%
     dplyr::mutate(value = if (avg) dplyr::cummean(.data$value) else cumsum(.data$value)) %>%
     dplyr::ungroup() %>%
-    dplyr::select(-.data$time_per)
-  return(long_tbl_out)
+    dplyr::select(!"time_per")
+
+  # reclass the output to match the input
+  ans <- if (x_mod$was_wide) tsbox::ts_wide(x_mod_ptd) else tsbox::copy_class(x_mod_ptd, x)
+
+  return(ans)
 }
 
 
 #' Period to date growth rate
 #'
-#' @param long_tbl_in a long tibble of time series (produced by ts_long() for
-#'   example)
+#' @param x a ts-boxable object
 #' @param per unit of time supplied to floor_date() (for ytd per = "year"
 #'   (default), for mtd per = "month")
 #' @param lag_length period over which growth is calculated (e.g. "1 year"
 #'   (default), "3 years", etc. See ?ts_lag() for options)
-#' @param avg if true, the year to date average, if false, the year to date sum
-#'   for calculation
 #'
-#' @return a long tibble of time series containing year to date growth rate
+#' @return object of the same type as the input containing period to date growth rate
 #' @export
 #'
 #' @examples
 #' monthly_data_example |>
-#'   tsbox::ts_long() |>
 #'   ptd_gr() |>
 #'   tail()
 #' monthly_data_example |>
 #'   dplyr::select(time, "VAPNS_HI") |>
-#'   tsbox::ts_long() |>
 #'   ptd_gr(per = "month", lag_length = "3 years") |>
 #'   tail()
-ptd_gr <- function(long_tbl_in, per = "year", lag_length = "1 year", avg = TRUE) {
-  long_tbl_out <- long_tbl_in %>%
-    ptd_cum(per, avg) %>%
+#' daily_data_example |>
+#'   ptd_gr("week")
+#' daily_data_example |>
+#'   tsbox::ts_long() |>
+#'   tsbox::ts_pick("VAPNS_HI") |>
+#'   ptd_gr("week", "4 weeks") %>%
+#'   tail()
+ptd_gr <- function(x, per = "year", lag_length = "1 year") {
+  # convert to long format and return additional details
+  x_mod <- conv_long(x)
+
+  x_mod_ptd_gr <- x_mod$long_form %>%
+    ptd_cum(per) %>%
     {
       (. %ts/% tsbox::ts_lag(., lag_length) %ts-% 1) %ts*% 100
     }
-  return(long_tbl_out)
+
+  # reclass the output to match the input
+  ans <- if (x_mod$was_wide) tsbox::ts_wide(x_mod_ptd_gr) else tsbox::copy_class(x_mod_ptd_gr, x)
+
+  return(ans)
 }
 
 
 #' Convert annualized growth to quarterly growth
 #'
-#' @param ser_in the series containing annualized growth (in percent)
+#' @param x ts-boxable object containing annualized growth (in percent)
+#' @param freq numeric frequency of the time series e.g. 4 for quarterly
 #'
-#' @return series containing quarterly growth (in percent)
+#' @return object of the same type as the input containing quarterly growth (in percent)
 #' @export
 #'
 #' @examples
-#' `ncen@us.sola` <- ts(NA_real_, start = 2016, end = 2021, freq = 1) |> tsbox::ts_xts()
-#' `ncen@us.sola`["2016/2021"] <- c(323127513, 325511184, 327891911, 330268840, 332639102, 334998398)
-#' test1 <- AtoQ(`ncen@us.sola`)
-#' tsbox::ts_c(test1 |> tsbox::ts_pca() |> pca_to_pc(), test1 |> tsbox::ts_pc())
-pca_to_pc <- function(ser_in) {
-  ((1 + ser_in / 100)^0.25 - 1) * 100
+#' quarterly_data_example |>
+#'   tsbox::ts_long() |>
+#'   tsbox::ts_pca() |>
+#'   pca_to_pc() |>
+#'   tail()
+#' tsbox::ts_c(
+#'   quarterly_data_example |>
+#'     tsbox::ts_long() |>
+#'     tsbox::ts_pca() |>
+#'     pca_to_pc(),
+#'   quarterly_data_example |>
+#'     tsbox::ts_long() |>
+#'     tsbox::ts_pc()
+#' ) |>
+#'   dplyr::arrange(id, time) |>
+#'   tsbox::ts_wide()
+pca_to_pc <- function(x, freq = 4) {
+  # convert to long format and return additional details
+  x_mod <- conv_long(x)
+
+  x_mod_pc <- x_mod$long_form %>%
+    dplyr::mutate(value = ((1 + .data$value / 100)^(1 / freq) - 1) * 100)
+
+  # reclass the output to match the input
+  ans <- if (x_mod$was_wide) tsbox::ts_wide(x_mod_pc) else tsbox::copy_class(x_mod_pc, x)
+
+  return(ans)
 }
 
 
 #' Convert quarterly growth to annualized growth
 #'
-#' @param ser_in series containing quarterly growth (in percent)
+#' @param x ts-boxable object containing quarterly growth (in percent)
+#' @param freq numeric frequency of the time series e.g. 4 for quarterly
 #'
-#' @return the series containing annualized growth (in percent)
+#' @return object of the same type as the input containing annualized growth (in percent)
 #' @export
 #'
 #' @examples
-#' `ncen@us.sola` <- ts(NA_real_, start = 2016, end = 2021, freq = 1) |> tsbox::ts_xts()
-#' `ncen@us.sola`["2016/2021"] <- c(323127513, 325511184, 327891911, 330268840, 332639102, 334998398)
-#' test1 <- AtoQ(`ncen@us.sola`)
-#' tsbox::ts_c(test1 |> tsbox::ts_pc() |> pc_to_pca(), test1 |> tsbox::ts_pca())
-pc_to_pca <- function(ser_in) {
-  ((1 + ser_in / 100)^4 - 1) * 100
+#' quarterly_data_example |>
+#'   tsbox::ts_long() |>
+#'   tsbox::ts_pc() |>
+#'   pc_to_pca() |>
+#'   tail()
+#' tsbox::ts_c(
+#'   quarterly_data_example |>
+#'     tsbox::ts_long() |>
+#'     tsbox::ts_pc() |>
+#'     pc_to_pca(),
+#'   quarterly_data_example |>
+#'     tsbox::ts_long() |>
+#'     tsbox::ts_pca()
+#' ) |>
+#'   dplyr::arrange(id, time) |>
+#'   tsbox::ts_wide()
+pc_to_pca <- function(x, freq = 4) {
+  # convert to long format and return additional details
+  x_mod <- conv_long(x)
+
+  x_mod_pc <- x_mod$long_form %>%
+    dplyr::mutate(value = ((1 + .data$value / 100)^freq - 1) * 100)
+
+  # reclass the output to match the input
+  ans <- if (x_mod$was_wide) tsbox::ts_wide(x_mod_pc) else tsbox::copy_class(x_mod_pc, x)
+
+  return(ans)
 }
 
 
 #' Calculate multi-period average growth
 #'
-#' @param ser_in name of xts series for which growth is calculated
-#' @param lag_in length of period over which growth is calculated
+#' @param x ts-boxable object for which growth is calculated (in levels)
+#' @param lag number of period over which growth is calculated
 #'
-#' @return series containing the average growth of ser_in (in percent)
+#' @return object of the same type as the input ontaining the average growth of x (in percent)
 #' @export
 #'
 #' @examples
-#' `ncen@us.sola` <- ts(NA_real_, start = 2016, end = 2021, freq = 1) |> tsbox::ts_xts()
-#' `ncen@us.sola`["2016/2021"] <- c(323127513, 325511184, 327891911, 330268840, 332639102, 334998398)
-#' test1 <- AtoQ(`ncen@us.sola`)
-#' tsbox::ts_c(pcmp(`ncen@us.sola`, lag_in = 3), tsbox::ts_pc(`ncen@us.sola`))
-#' tsbox::ts_c(
-#'   pcmp(test1, lag_in = 4),
-#'   tsbox::ts_pcy(test1),
-#'   tsbox::ts_pca(test1),
-#'   tsbox::ts_pc(test1)
-#' )
-pcmp <- function(ser_in, lag_in = 1) {
-  ser_in <- tsbox::ts_xts(ser_in)
-  ser_out <- (((ser_in / tsbox::ts_lag(ser_in, lag_in))^(1 / lag_in)) - 1) * 100
-  return(ser_out)
+#' quarterly_data_example |>
+#'   pcmp(20) |>
+#'   tail()
+pcmp <- function(x, lag = 4) {
+  # convert to long format and return additional details
+  x_mod <- conv_long(x)
+
+  x_mod_pcmp <- x_mod$long_form %>%
+    tsbox::ts_tslist() %>%
+    purrr::map(~ (((.x / tsbox::ts_lag(.x, lag))^(1 / lag)) - 1) * 100) %>%
+    magrittr::set_attr("class", c("list", "tslist")) %>%
+    tsbox::ts_tbl()
+
+  # reclass the output to match the input
+  ans <- if (x_mod$was_wide) tsbox::ts_wide(x_mod_pcmp) else tsbox::copy_class(x_mod_pcmp, x)
+
+  return(ans)
 }
 
 
 #' Find the date of the first observation (NAs are dropped)
 #'
-#' @param ser_in an xts series
+#' @param x ts-boxable object
 #'
-#' @return date associated with first observation
+#' @return dates associated with first observation
 #' @export
 #'
 #' @examples
-#' `ncen@us.sola` <- ts(NA_real_, start = 2016, end = 2021, freq = 1) |> tsbox::ts_xts()
-#' `ncen@us.sola`["2017/2021"] <- c(325511184, 327891911, 330268840, 332639102, 334998398)
-#' find_start(`ncen@us.sola`)
-find_start <- function(ser_in) {
-  # ser_in %>% na.omit() %>% start()
-  ser_in %>%
+#' quarterly_data_example |>
+#'   dplyr::mutate(E_NF_HI = dplyr::if_else(time < "2000-01-01", NA_real_, E_NF_HI)) |>
+#'   find_start()
+find_start <- function(x) {
+  # convert to long format and return additional details
+  x_mod <- conv_long(x)
+
+  x_mod$long_form %>%
     tsbox::ts_summary() %>%
     dplyr::pull(.data$start)
 }
@@ -981,18 +1159,20 @@ find_start <- function(ser_in) {
 
 #' Find the date of the last observation (NAs are dropped)
 #'
-#' @param ser_in an xts series
+#' @param x ts-boxable object
 #'
 #' @return date associated with last observation
 #' @export
 #'
 #' @examples
-#' `ncen@us.sola` <- ts(NA_real_, start = 2016, end = 2060, freq = 1) |> tsbox::ts_xts()
-#' `ncen@us.sola`["2016/2018"] <- c(323127513, 325511184, 327891911)
-#' find_end(`ncen@us.sola`)
-find_end <- function(ser_in) {
-  # ser_in %>% na.omit() %>% end()
-  ser_in %>%
+#' quarterly_data_example |>
+#'   dplyr::mutate(E_NF_HI = dplyr::if_else(time > "2022-01-01", NA_real_, E_NF_HI)) |>
+#'   find_end()
+find_end <- function(x) {
+  # convert to long format and return additional details
+  x_mod <- conv_long(x)
+
+  x_mod$long_form %>%
     tsbox::ts_summary() %>%
     dplyr::pull(.data$end)
 }
@@ -1050,20 +1230,22 @@ pq <- function(dat1 = "", dat2 = "") {
 }
 
 
-#' Concatenate date formatted as yyyyQq or yyyy.q to obtain single period
-#' DON'T USE!!! USE lubridate::yq() INSTEAD
-#'
-#' @param dat1 date of period start (string: yyyyQq or yyyy.q)
-#'
-#' @return string containing date range
-#' @export
-#'
-#' @examples
-#' pq_1("2010Q1")
-#' pq_1(2010.1)
-pq_1 <- function(dat1 = "") {
-  if (dat1 != "") dat1 %>% lubridate::yq()
-}
+# #' DON'T USE!!! USE lubridate::yq() INSTEAD
+# #' Concatenate date formatted as yyyyQq or yyyy.q to obtain single period
+# #'
+# #' @param dat1 date of period start (string: yyyyQq or yyyy.q)
+# #'
+# #' @return string containing date range
+# #' @export
+# #'
+# #' @examples
+# #' pq_1("2010Q1")
+# #' pq_1(2010.1)
+# pq_1 <- function(dat1 = "") {
+#   if (dat1 != "") dat1 %>% lubridate::yq()
+# }
+
+
 #' Concatenate dates formatted as yyyy to obtain period
 #'
 #' @param dat1 year of period start (string or numeric: yyyy)
@@ -1132,46 +1314,27 @@ nqtrs <- function(dat1 = "", dat2 = "") {
 
 #' Backward looking moving average
 #'
-#' @param ser series (xts, long or wide tbl)
-#' @param ord numeric order (window length) of moving average
+#' @param x ts-boxable object
+#' @param order numeric order (window length) of moving average, includes contemporaneous observation
 #'
-#' @return object with same class as input containing moving average
+#' @return object of the same type as the input containing moving average
 #' @export
 #'
 #' @examples
-#' test <- make_xts(
-#'   start = lubridate::ymd("2010-01-01"), end = lubridate::ymd("2015-01-01"),
-#'   per = "quarter", val = 0:20
-#' ) |>
-#'   magrittr::set_names(c("test"))
-#' test <- test |>
-#'   cbind(test * 2) |>
-#'   magrittr::set_names(c("test1", "test2"))
-#' test |> ma(3)
-#' test |>
-#'   tsbox::ts_tbl() |>
-#'   ma(3)
-#' test |>
-#'   tsbox::ts_tbl() |>
-#'   tsbox::ts_wide() |>
-#'   ma(3)
-ma <- function(ser, ord) {
-  if ("xts" %in% class(ser)) { # xts
-    ser %>%
-      tsbox::ts_tbl() %>%
-      tsbox::ts_wide() %>%
-      dplyr::mutate(dplyr::across(-.data$time, ~ slider::slide_dbl(.x, mean, .before = ord - 1, .complete = TRUE))) %>%
-      tsbox::ts_long() %>%
-      tsbox::ts_xts()
-  } else if (setequal(c("id", "time", "value"), colnames(ser))) { # long tbl
-    ser %>%
-      tsbox::ts_wide() %>%
-      dplyr::mutate(dplyr::across(-.data$time, ~ slider::slide_dbl(.x, mean, .before = ord - 1, .complete = TRUE))) %>%
-      tsbox::ts_long()
-  } else { # wide tbl
-    ser %>%
-      dplyr::mutate(dplyr::across(-.data$time, ~ slider::slide_dbl(.x, mean, .before = ord - 1, .complete = TRUE)))
-  }
+#' quarterly_data_example |>
+#'   ma(4) |>
+#'   head()
+ma <- function(x, order) {
+  # convert to long format and return additional details
+  x_mod <- conv_long(x)
+
+  x_mod_ma <- x_mod$long_form %>%
+    dplyr::mutate(value = slider::slide_dbl(.data$value, mean, .before = order - 1, .complete = TRUE), .by = "id")
+
+  # reclass the output to match the input
+  ans <- if (x_mod$was_wide) tsbox::ts_wide(x_mod_ma) else tsbox::copy_class(x_mod_ma, x)
+
+  return(ans)
 }
 
 
@@ -1180,7 +1343,7 @@ ma <- function(ser, ord) {
 # **************************
 #' Interactive plot with level and growth rate
 #'
-#' @param ser time series to plot (e.g. history, oldsol, sol)
+#' @param x ts-boxable object to plot (e.g. time series of history, oldsol, sol)
 #' @param rng_start start of zoom range ("YYYY-MM-DD")
 #' @param rng_end end of the zoom range ("YYYY-MM-DD")
 #' @param height height of a single panel (px)
@@ -1192,39 +1355,27 @@ ma <- function(ser, ord) {
 #' @export
 #'
 #' @examples
-#' `ncen@us.sola` <- ts(NA_real_, start = 2016, end = 2021, freq = 1) |> tsbox::ts_xts()
-#' `ncen@us.sola`["2016/2021"] <- c(323127513, 325511184, 327891911, 330268840, 332639102, 334998398)
-#' `ncen@us.oldsola` <- `ncen@us.sola`
-#' `ncen@us.oldsola`["2020/2021"] <- c(352639102, 374998398)
-#' `ncen@us.a` <- `ncen@us.sola`
-#' `ncen@us.a`["2020/2021"] <- NA
-#' test1 <- tsbox::ts_tslist(tsbox::ts_c(`ncen@us.sola`, `ncen@us.oldsola`, `ncen@us.a`)) |>
-#'   purrr::map(AtoQ) |>
-#'   purrr::reduce(tsbox::ts_c) |>
-#'   magrittr::set_names(c("ncen@us.sola", "ncen@us.oldsola", "ncen@us.a"))
-#' plot_1(tsbox::ts_c(`ncen@us.sola`, `ncen@us.oldsola`, `ncen@us.a`), rng_start = "2017-01-01")
-#' plot_1(test1, rng_start = "2017-01-01", gr_1 = FALSE)
-#' test1 <- AtoQ(`ncen@us.sola`)
-#' plot_1(`ncen@us.sola`, rng_start = "2017-01-01")
-#' plot_1(test1, rng_start = "2017-01-01")
+#' monthly_data_example |>
+#'   plot_1()
 #' quarterly_data_example |>
 #'   tsbox::ts_long() |>
-#'   tsbox::ts_xts() |>
-#'   magrittr::extract(, c("E_NF_HI", "ECT_HI", "EMN_HI")) |>
+#'   tsbox::ts_pick("E_TU_HI", "ECT_HI", "EMN_HI") |>
 #'   plot_1()
-plot_1 <- function(ser, rng_start = as.character(Sys.Date() - lubridate::years(15)), rng_end = as.character(Sys.Date()), height = 300, width = 900, yoy_gr = TRUE, gr_1 = TRUE) {
-  ser_names <- ser %>%
-    tsbox::ts_xts() %>%
-    names()
+plot_1 <- function(x, rng_start = as.character(Sys.Date() - lubridate::years(10)), rng_end = as.character(Sys.Date() + lubridate::years(2)), height = 300, width = 900, yoy_gr = TRUE, gr_1 = TRUE) {
+  # convert to long format and return additional details
+  x_mod <- conv_long(x)
+
+  ser_names <- x_mod$ser_names
 
   ser_names_pct <- if (gr_1) stringr::str_glue("{ser_names}%")[1] else stringr::str_glue("{ser_names}%")
 
-  ser_plot <- ser %>%
+  ser_plot <- x_mod$long_form %>%
     tsbox::ts_xts() %>%
     {
       if (yoy_gr) tsbox::ts_c(., tsbox::ts_pcy(.)) else tsbox::ts_c(., tsbox::ts_pc(.))
     } %>%
-    magrittr::extract(, 1:length(c(ser_names, ser_names_pct))) %>%
+    # magrittr::extract(, 1:length(c(ser_names, ser_names_pct))) %>%
+    tsbox::ts_pick(1:length(c(ser_names, ser_names_pct))) %>%
     magrittr::set_names(c(ser_names, ser_names_pct)) %>%
     tsbox::ts_dygraphs(main = ser_names[1], group = "comp", height = height, width = width) %>%
     dygraphs::dyAxis("y", label = "% change") %>%
@@ -1250,7 +1401,7 @@ plot_1 <- function(ser, rng_start = as.character(Sys.Date() - lubridate::years(1
 
 #' Interactive lineplot with two axes
 #'
-#' @param ser time series to plot (e.g. history, oldsol, sol)
+#' @param x ts-boxable object to plot (e.g. time series of history, oldsol, sol)
 #' @param rng_start start of zoom range ("YYYY-MM-DD")
 #' @param rng_end end of the zoom range ("YYYY-MM-DD")
 #' @param height height of a single panel (px)
@@ -1260,29 +1411,19 @@ plot_1 <- function(ser, rng_start = as.character(Sys.Date() - lubridate::years(1
 #' @export
 #'
 #' @examples
-#' `ncen@us.sola` <- ts(NA_real_, start = 2016, end = 2021, freq = 1) |> tsbox::ts_xts()
-#' `ncen@us.sola`["2016/2021"] <- c(323127513, 325511184, 327891911, 330268840, 332639102, 334998398)
-#' `ncen@us.oldsola` <- `ncen@us.sola`
-#' `ncen@us.oldsola`["2020/2021"] <- c(352639102, 374998398)
-#' `ncen@us.a` <- `ncen@us.sola`
-#' `ncen@us.a`["2020/2021"] <- NA
-#' test1 <- tsbox::ts_tslist(tsbox::ts_c(`ncen@us.sola`, `ncen@us.oldsola`, `ncen@us.a`)) |>
-#'   purrr::map(AtoQ) |>
-#'   purrr::reduce(tsbox::ts_c) |>
-#'   magrittr::set_names(c("ncen@us.sola", "ncen@us.oldsola", "ncen@us.a"))
-#' plot_2ax(tsbox::ts_c(`ncen@us.sola`, `ncen@us.oldsola`, `ncen@us.a`), rng_start = "2017-01-01")
-#' plot_2ax(test1, rng_start = "2017-01-01")
+#' monthly_data_example |>
+#'   plot_2ax()
 #' quarterly_data_example |>
 #'   tsbox::ts_long() |>
-#'   tsbox::ts_xts() |>
-#'   magrittr::extract(, c("E_NF_HI", "ECT_HI", "EMN_HI")) |>
+#'   tsbox::ts_pick("E_TU_HI", "ECT_HI", "EMN_HI") |>
 #'   plot_2ax()
-plot_2ax <- function(ser, rng_start = as.character(Sys.Date() - lubridate::years(15)), rng_end = as.character(Sys.Date()), height = 300, width = 900) {
-  ser_names <- ser %>%
-    tsbox::ts_xts() %>%
-    names()
+plot_2ax <- function(x, rng_start = as.character(Sys.Date() - lubridate::years(10)), rng_end = as.character(Sys.Date() + lubridate::years(2)), height = 300, width = 900) {
+  # convert to long format and return additional details
+  x_mod <- conv_long(x)
 
-  ser_plot <- ser %>%
+  ser_names <- x_mod$ser_names
+
+  ser_plot <- x_mod$long_form %>%
     tsbox::ts_xts() %>%
     tsbox::ts_dygraphs(main = ser_names[1] %>% stringr::str_replace_all("@.*", ""), group = "comp", height = height, width = width) %>%
     dygraphs::dyAxis("y", label = "series 1") %>%
@@ -1308,7 +1449,7 @@ plot_2ax <- function(ser, rng_start = as.character(Sys.Date() - lubridate::years
 
 #' Interactive plot with level and growth rate for forecast series
 #'
-#' @param ser time series to plot (min 1, max 3) (e.g. current fcst, old fcst, history)
+#' @param x ts-boxable object to plot (min 1, max 3 time series) (e.g. current fcst, old fcst, history)
 #' @param rng_start start of zoom range ("YYYY-MM-DD")
 #' @param rng_end end of the zoom range ("YYYY-MM-DD")
 #' @param add_table should a data table be appended to the plot? (default = TRUE)
@@ -1322,33 +1463,20 @@ plot_2ax <- function(ser, rng_start = as.character(Sys.Date() - lubridate::years
 #' @export
 #'
 #' @examples
-#' `ncen@us.sola` <- ts(NA_real_, start = 2016, end = 2021, freq = 1) |> tsbox::ts_xts()
-#' `ncen@us.sola`["2016/2021"] <- c(323127513, 325511184, 327891911, 330268840, 332639102, 334998398)
-#' `ncen@us.oldsola` <- `ncen@us.sola`
-#' `ncen@us.oldsola`["2020/2021"] <- c(352639102, 374998398)
-#' `ncen@us.a` <- `ncen@us.sola`
-#' `ncen@us.a`["2020/2021"] <- NA
-#' test1 <- tsbox::ts_tslist(tsbox::ts_c(`ncen@us.sola`, `ncen@us.oldsola`, `ncen@us.a`)) |>
-#'   purrr::map(AtoQ) |>
-#'   purrr::reduce(tsbox::ts_c) |>
-#'   magrittr::set_names(c("ncen@us.sola", "ncen@us.oldsola", "ncen@us.a"))
-#' plot_fc(tsbox::ts_c(`ncen@us.sola`, `ncen@us.oldsola`, `ncen@us.a`), rng_start = "2017-01-01")
-#' plot_fc(test1, rng_start = "2017-01-01")
-#' test1 <- AtoQ(`ncen@us.sola`)
-#' plot_fc(`ncen@us.sola`, rng_start = "2017-01-01")
-#' plot_fc(test1, rng_start = "2017-01-01")
+#' monthly_data_example |>
+#'   plot_fc()
 #' quarterly_data_example |>
 #'   tsbox::ts_long() |>
-#'   tsbox::ts_xts() |>
-#'   magrittr::extract(, c("E_NF_HI", "ECT_HI", "EMN_HI")) |>
+#'   tsbox::ts_pick("E_TU_HI", "ECT_HI", "EMN_HI") |>
 #'   plot_fc()
-plot_fc <- function(ser, rng_start = as.character(Sys.Date() - lubridate::years(15)), rng_end = as.character(Sys.Date()), add_table = TRUE, table_start = rng_start, table_end = rng_end, height = 300, width = 900, yoy_gr = TRUE) {
-  ser_names <- ser %>%
-    tsbox::ts_xts() %>%
-    names()
+plot_fc <- function(x, rng_start = as.character(Sys.Date() - lubridate::years(10)), rng_end = as.character(Sys.Date() + lubridate::years(2)), add_table = TRUE, table_start = rng_start, table_end = rng_end, height = 300, width = 900, yoy_gr = TRUE) {
+  # convert to long format and return additional details
+  x_mod <- conv_long(x)
+
+  ser_names <- x_mod$ser_names
 
   # series to plot
-  ser_to_plot <- ser %>%
+  ser_to_plot <- x_mod$long_form %>%
     tsbox::ts_xts() %>%
     {
       if (yoy_gr) tsbox::ts_c(., tsbox::ts_pcy(.[, 1])) else tsbox::ts_c(., tsbox::ts_pc(.[, 1]))
@@ -1371,7 +1499,7 @@ plot_fc <- function(ser, rng_start = as.character(Sys.Date() - lubridate::years(
     dygraphs::dyRangeSelector(dateWindow = c(rng_start, rng_end), height = 30, strokeColor = "red") %>%
     dygraphs::dyLegend(show = "follow", labelsSeparateLines = TRUE)
 
-  if(add_table){
+  if (add_table) {
     # generate a table with the data
     ser_tbl <- ser_to_plot %>%
       tsbox::ts_tbl() %>%
@@ -1398,7 +1526,7 @@ plot_fc <- function(ser, rng_start = as.character(Sys.Date() - lubridate::years(
 
 #' Two-panel plot of levels and growth rates
 #'
-#' @param sers a vector of series to plot
+#' @param x ts-boxable object to plot
 #' @param rng_start start of the zoom range ("YYYY-MM-DD")
 #' @param rng_end end of the zoom range ("YYYY-MM-DD")
 #' @param height height of a single panel (px)
@@ -1406,31 +1534,31 @@ plot_fc <- function(ser, rng_start = as.character(Sys.Date() - lubridate::years(
 #' @param yoy_gr year-over-year (default) or annualized growth
 #' @param gr_bar show bars or line (default) for the growth series
 #'
-#' @return a list with two dygraph plots (level, index, growth)
+#' @return a list with two dygraph plots (level, growth)
 #' @export
 #'
 #' @examples
-#' `ncen@us.sola` <- ts(NA_real_, start = 2016, end = 2021, freq = 1) |> tsbox::ts_xts()
-#' `ncen@us.sola`["2016/2021"] <- c(323127513, 325511184, 327891911, 330268840, 332639102, 334998398)
-#' test1 <- AtoQ(`ncen@us.sola`)
-#' plot_comp_2(tsbox::ts_c(`ncen@us.sola`, test1), rng_start = "2017-01-01")
+#' monthly_data_example |>
+#'   plot_comp_2()
 #' quarterly_data_example |>
 #'   tsbox::ts_long() |>
-#'   tsbox::ts_xts() |>
-#'   magrittr::extract(, c("E_NF_HI", "ECT_HI", "EMN_HI")) |>
+#'   tsbox::ts_pick("E_TU_HI", "ECT_HI", "EMN_HI") |>
 #'   plot_comp_2()
-plot_comp_2 <- function(sers, rng_start = as.character(Sys.Date() - lubridate::years(15)), rng_end = as.character(Sys.Date()), height = 300, width = 900, yoy_gr = TRUE, gr_bar = FALSE) {
-  ser_names <- sers %>%
-    tsbox::ts_xts() %>%
-    names()
+plot_comp_2 <- function(x, rng_start = as.character(Sys.Date() - lubridate::years(10)), rng_end = as.character(Sys.Date() + lubridate::years(2)), height = 300, width = 900, yoy_gr = TRUE, gr_bar = FALSE) {
+  # convert to long format and return additional details
+  x_mod <- conv_long(x)
+
+  ser_names <- x_mod$ser_names
+
   plot_level <-
-    sers %>%
+    x_mod$long_form %>%
     tsbox::ts_xts() %>%
     tsbox::ts_dygraphs(main = "Level", group = "comp", height = height, width = width) %>%
-    dygraphs::dyLegend(width = width * 0.90) # %>%
+    dygraphs::dyLegend(width = width * 0.90) %>%
+    dygraphs::dyOptions(colors = uhero_colors[1:length(ser_names)]) # %>%
   # dygraphs::dyOptions(colors = RColorBrewer::brewer.pal(length(ser_names), "Set2"))
   plot_growth <-
-    sers %>%
+    x_mod$long_form %>%
     tsbox::ts_xts() %>%
     {
       if (yoy_gr) tsbox::ts_pcy(.) else tsbox::ts_pc(.)
@@ -1440,6 +1568,7 @@ plot_comp_2 <- function(sers, rng_start = as.character(Sys.Date() - lubridate::y
       if (gr_bar) dygraphs::dyBarChart(.) else .
     } %>%
     dygraphs::dyLegend(width = width * 0.90) %>%
+    dygraphs::dyOptions(colors = uhero_colors[1:length(ser_names)]) %>%
     # dygraphs::dyOptions(colors = RColorBrewer::brewer.pal(length(ser_names), "Set2")) %>%
     dygraphs::dyRangeSelector(dateWindow = c(rng_start, rng_end), height = 30, strokeColor = "red")
 
@@ -1452,7 +1581,7 @@ plot_comp_2 <- function(sers, rng_start = as.character(Sys.Date() - lubridate::y
 
 #' Three-panel plot of levels, index, and growth rates
 #'
-#' @param sers a vector of series to plot
+#' @param x ts-boxable object to plot
 #' @param indx_start base period for the indexed series ("YYYY-MM-DD")
 #' @param rng_start start of the zoom range ("YYYY-MM-DD")
 #' @param rng_end end of the zoom range ("YYYY-MM-DD")
@@ -1465,21 +1594,20 @@ plot_comp_2 <- function(sers, rng_start = as.character(Sys.Date() - lubridate::y
 #' @export
 #'
 #' @examples
-#' `ncen@us.sola` <- ts(NA_real_, start = 2016, end = 2021, freq = 1) |> tsbox::ts_xts()
-#' `ncen@us.sola`["2016/2021"] <- c(323127513, 325511184, 327891911, 330268840, 332639102, 334998398)
-#' test1 <- AtoQ(`ncen@us.sola`)
-#' plot_comp_3(tsbox::ts_c(`ncen@us.sola`, test1), rng_start = "2017-01-01")
+#' monthly_data_example |>
+#'   plot_comp_3()
 #' quarterly_data_example |>
 #'   tsbox::ts_long() |>
-#'   tsbox::ts_xts() |>
-#'   magrittr::extract(, c("E_NF_HI", "ECT_HI", "EMN_HI")) |>
+#'   tsbox::ts_pick("E_TU_HI", "ECT_HI", "EMN_HI") |>
 #'   plot_comp_3()
-plot_comp_3 <- function(sers, indx_start = as.character(Sys.Date() - lubridate::years(15)), rng_start = as.character(Sys.Date() - lubridate::years(15)), rng_end = as.character(Sys.Date()), height = 300, width = 900, yoy_gr = TRUE, gr_bar = FALSE) {
-  ser_names <- sers %>%
-    tsbox::ts_xts() %>%
-    names()
+plot_comp_3 <- function(x, indx_start = as.character(Sys.Date() - lubridate::years(10)), rng_start = as.character(Sys.Date() - lubridate::years(10)), rng_end = as.character(Sys.Date() + lubridate::years(2)), height = 300, width = 900, yoy_gr = TRUE, gr_bar = FALSE) {
+  # convert to long format and return additional details
+  x_mod <- conv_long(x)
+
+  ser_names <- x_mod$ser_names
+
   plot_level <-
-    sers %>%
+    x_mod$long_form %>%
     tsbox::ts_xts() %>%
     tsbox::ts_dygraphs(main = "Level", group = "comp", height = height, width = width) %>%
     dygraphs::dyLegend(width = width * 0.90) %>%
@@ -1487,7 +1615,7 @@ plot_comp_3 <- function(sers, indx_start = as.character(Sys.Date() - lubridate::
   # dygraphs::dyOptions(colors = RColorBrewer::brewer.pal(length(ser_names), "Set2"))
   # plot_level[["elementId"]] <- ser_names %>% extract(1) %>% str_extract("^.*@")
   plot_index <-
-    sers %>%
+    x_mod$long_form %>%
     tsbox::ts_xts() %>%
     tsbox::ts_index(base = indx_start) %>%
     tsbox::ts_dygraphs(main = "Index", group = "comp", height = height, width = width) %>%
@@ -1496,7 +1624,7 @@ plot_comp_3 <- function(sers, indx_start = as.character(Sys.Date() - lubridate::
     dygraphs::dyOptions(colors = uhero_colors[1:length(ser_names)]) # %>%
   # dygraphs::dyOptions(colors = RColorBrewer::brewer.pal(length(ser_names), "Set2"))
   plot_growth <-
-    sers %>%
+    x_mod$long_form %>%
     tsbox::ts_xts() %>%
     {
       if (yoy_gr) tsbox::ts_pcy(.) else tsbox::ts_pc(.)
@@ -1529,25 +1657,29 @@ plot_comp_3 <- function(sers, indx_start = as.character(Sys.Date() - lubridate::
 #' # hold the plots in a list
 #' plot_out <- list()
 #' for (i in monthly_data_example[2:3] |> names()) {
-#'   plot_out[[i]] <- plot_1(monthly_data_example |> tsbox::ts_long() |>
-#'                              dplyr::filter(stringr::str_detect(id, i)),
-#'                              rng_start = as.character(Sys.Date() - lubridate::years( 5)),
-#'                              rng_end = as.character(Sys.Date() + lubridate::years(7)),
-#'                              width = 1500, height = 650, yoy_gr = TRUE)
+#'   plot_out[[i]] <- plot_1(
+#'     monthly_data_example |> tsbox::ts_long() |>
+#'       dplyr::filter(stringr::str_detect(id, i)),
+#'     rng_start = as.character(Sys.Date() - lubridate::years(5)),
+#'     rng_end = as.character(Sys.Date() + lubridate::years(7)),
+#'     width = 1500, height = 650, yoy_gr = TRUE
+#'   )
 #' }
 #' # specify location of the output
 #' save_loc <- stringr::str_c("~/Downloads/plots_", Sys.Date(), ".html")
 #' # combine a list of plots into a single html
 #' @examplesIf interactive()
 #' plot_out |> save_plot_list(save_loc)
-save_plot_list <- function(plot_list, save_loc){
+save_plot_list <- function(plot_list, save_loc) {
   # save list of plots to html
   plot_list %>%
     htmltools::tagList() %>%
     htmltools::browsable() %>%
     htmltools::save_html(file = save_loc)
   # fix the html
-  readr::read_lines(file = save_loc)[-1] %>% stringr::str_replace_all(c("<style>" = "\\\n<title>Plots</title>\\\n<style>", "\\}</style>" = "font-family:Arial,Helvetica,sans-serif;font-size:medium;}</style>")) %>% readr::write_lines(file = save_loc)
+  readr::read_lines(file = save_loc)[-1] %>%
+    stringr::str_replace_all(c("<style>" = "\\\n<title>Plots</title>\\\n<style>", "\\}</style>" = "font-family:Arial,Helvetica,sans-serif;font-size:medium;}</style>")) %>%
+    readr::write_lines(file = save_loc)
   # incorporate dependecies into html
   rmarkdown::pandoc_self_contained_html(input = save_loc, output = save_loc)
   # check out htmlwidgets
@@ -1564,34 +1696,40 @@ save_plot_list <- function(plot_list, save_loc){
 #' @param x a ts-boxable object
 #' @param tbl_start start period for table
 #' @param tbl_end end period for table
-#' @param percent what type of percent should be added ("none", "pc" (default), "pcy", "pca")
-#' @param time_across should time be in column headers and variable names in first column (default TRUE)
+#' @param percent what type of percent should be added ("none", "pc" (default),
+#'   "pcy", "pca")
+#' @param time_across should time be in column headers and variable names in
+#'   first column (default TRUE)
 #' @param tbl_height the height of the table in px (default 800)
-#' @param save_loc file path for saving table incl. extension ("html" or "csv") (default NULL)
+#' @param save_loc file path for saving table incl. extension ("html" or "csv")
+#'   (default NULL)
 #'
 #' @return table formatted for output
 #' @export
 #'
 #' @examples
-#' quarterly_data_example %>% tsbox::ts_long() %>% tsbox::ts_tslist() %>%
-#' gen_table()
+#' quarterly_data_example %>%
+#'   tsbox::ts_long() %>%
+#'   tsbox::ts_tslist() %>%
+#'   gen_table()
 #' gen_table(quarterly_data_example)
 #' gen_table(quarterly_data_example, percent = "none")
 #' gen_table(quarterly_data_example, percent = "pcy", time_across = FALSE)
 #' @examplesIf interactive()
-#' gen_table(quarterly_data_example, percent = "pcy", time_across = FALSE,
-#' save_loc = "~/Downloads/temp.csv")
-#' gen_table(quarterly_data_example, percent = "pcy", time_across = TRUE,
-#' save_loc = "~/Downloads/temp.html")
-gen_table <- function(x, tbl_start = as.character(Sys.Date() - lubridate::years(15)), tbl_end = as.character(Sys.Date()), percent = "pc", time_across = TRUE, tbl_height = 800, save_loc = NULL) {
-  # check if wide table
-  wide_df <- is_wide(x)
-  # convert to long table (all formats incl. xts)
-  x_mod <- if (wide_df) tsbox::ts_long(x) else tsbox::ts_tbl(x)
+#' gen_table(quarterly_data_example,
+#'   percent = "pcy",
+#'   time_across = FALSE, save_loc = "~/Downloads/temp.csv"
+#' )
+#' gen_table(quarterly_data_example,
+#'   percent = "pcy", time_across = TRUE,
+#'   save_loc = "~/Downloads/temp.html"
+#' )
+gen_table <- function(x, tbl_start = as.character(Sys.Date() - lubridate::years(10)), tbl_end = as.character(Sys.Date() + lubridate::years(2)), percent = "pc", time_across = TRUE, tbl_height = 800, save_loc = NULL) {
+  # convert to long format and return additional details
+  x_mod <- conv_long(x)
 
   # add growth rates and format table for output
-  tbl_out <- x_mod %>%
-    tidyr::drop_na() %>%
+  tbl_out <- x_mod$long_form %>%
     {
       if (percent == "pc") {
         tsbox::ts_c(., tsbox::ts_pc(.) %>% dplyr::mutate(id = stringr::str_c(.data$id, " (%)")))
@@ -1627,12 +1765,12 @@ gen_table <- function(x, tbl_start = as.character(Sys.Date() - lubridate::years(
   # html table
   if (ext == "html") {
     if (time_across) {
-    tbl_out %>%
-      reactable::reactable(
-        searchable = TRUE,
-        # Search by case-sensitive text match
+      tbl_out %>%
+        reactable::reactable(
+          searchable = TRUE,
+          # Search by case-sensitive text match
 
-        searchMethod = htmlwidgets::JS("function(rows, columnIds, searchValue) {
+          searchMethod = htmlwidgets::JS("function(rows, columnIds, searchValue) {
         const pattern = new RegExp(searchValue, 'i')
         return rows.filter(function(row) {
         return columnIds.some(function(columnId) {
@@ -1640,24 +1778,24 @@ gen_table <- function(x, tbl_start = as.character(Sys.Date() - lubridate::years(
         })
         })
         }"),
-        columns = list(
-          id = reactable::colDef(
-            sticky = "left"
-          )
-        ),
-        style = list(
-          fontFamily = "monaco, sans-serif, monospace",
-          fontSize = "small"
-        ),
-        striped = TRUE,
-        resizable = TRUE,
-        highlight = TRUE,
-        compact = TRUE,
-        height = tbl_height,
-        defaultPageSize = 1000,
-        defaultColDef = reactable::colDef(format = reactable::colFormat(separators = TRUE, digits = 2))
-      ) %>%
-      htmlwidgets::saveWidget(file = save_loc)
+          columns = list(
+            id = reactable::colDef(
+              sticky = "left"
+            )
+          ),
+          style = list(
+            fontFamily = "monaco, sans-serif, monospace",
+            fontSize = "small"
+          ),
+          striped = TRUE,
+          resizable = TRUE,
+          highlight = TRUE,
+          compact = TRUE,
+          height = tbl_height,
+          defaultPageSize = 1000,
+          defaultColDef = reactable::colDef(format = reactable::colFormat(separators = TRUE, digits = 2))
+        ) %>%
+        htmlwidgets::saveWidget(file = save_loc)
     } else {
       tbl_out %>%
         reactable::reactable(
@@ -1689,6 +1827,7 @@ gen_table <- function(x, tbl_start = as.character(Sys.Date() - lubridate::years(
 
   return(tbl_out)
 }
+
 
 #' Parse lm() output and convert into bimets equation (GETS model development)
 #'
