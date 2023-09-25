@@ -3,7 +3,7 @@
 \docType{data}
 \name{bnk_start}
 \alias{bnk_start}
-\title{define project-wide constants}
+\title{start of data range in the data bank}
 \format{
 scalar yyyy-mm-dd date
 }

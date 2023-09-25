@@ -32,6 +32,7 @@
 #' @examplesIf interactive()
 #' get_series_1(ser_id = "VISNS@HI.M")
 get_series_1 <- function(ser_id, expand = "true", rename = "compact", descr = FALSE) {
+  if (is.null(Sys.getenv("udaman_token"))) stop("UDAMAN token is not available in .Renviron")
   # API call
   url <- stringr::str_c("https://api.uhero.hawaii.edu/v1.u/series?name=", ser_id, "&expand=", expand, "&u=uhero&nocache")
   req <- httr::GET(url, httr::add_headers(Authorization = stringr::str_c("Bearer ", Sys.getenv("udaman_token"))))
@@ -124,6 +125,7 @@ get_series <- function(ser_id_vec, format = "wide", expand = "true", rename = "c
 #'   and no frequency; "full": @ replaced by __ and . by _; "no": no renaming,
 #'   keep UDAMAN names
 #' @param descr if TRUE add to the udaman series name the series description in parentheses (default: FALSE)
+#' @param save_loc file path for saving data incl. extension ("html" or "csv") (default NULL)
 #'
 #' @return time and data for all series combined in a tibble
 #' @export
@@ -135,7 +137,8 @@ get_series <- function(ser_id_vec, format = "wide", expand = "true", rename = "c
 #' @examplesIf interactive()
 #' get_series_exp(exp_id = 74)
 #' get_series_exp(74, format = "xts")
-get_series_exp <- function(exp_id, format = "wide", expand = "true", rename = "compact", descr = FALSE) {
+get_series_exp <- function(exp_id, format = "wide", expand = "true", rename = "compact", descr = FALSE, save_loc = NULL) {
+  if (is.null(Sys.getenv("udaman_token"))) stop("UDAMAN token is not available in .Renviron")
   # API call
   url <- stringr::str_c("https://api.uhero.hawaii.edu/v1.u/package/export?id=", exp_id, "&expand=", expand, "&u=uhero&nocache")
   req <- httr::GET(url, httr::add_headers(Authorization = stringr::str_c("Bearer ", Sys.getenv("udaman_token"))))
@@ -179,6 +182,12 @@ get_series_exp <- function(exp_id, format = "wide", expand = "true", rename = "c
         if (descr) stringr::str_c(., " (", title, ")") else .
       })
   )
+
+  # is a file requested?
+  if (!is.null(save_loc)) {
+    data_tbl %>% readr::write_csv(file = save_loc)
+  }
+
   if (format == "wide") data_out <- data_tbl
   if (format == "long") data_out <- data_tbl %>% tsbox::ts_long()
   if (format == "xts") {
@@ -668,7 +677,9 @@ conv_long <- function(x) {
       } else {
         .
       }
-    }
+    } %>%
+    tsbox::ts_default() %>%
+    tsbox::ts_regular()
 
   return(list(long_form = x_mod, was_wide = wide_form, ser_names = ser_names))
 }
