@@ -690,11 +690,12 @@ conv_long <- function(x) {
 # **************************
 
 
-#' Interpolate a single time series from low to high freqency
+#' Interpolate a single time series from low to high frequency
 #'
 #' @param x a single time series (e.g. xts) at low freq (e.g. annual or quarterly)
 #' @param conv_type match the quarterly value via "first", "last", "sum", "mean"
 #' @param target_freq target frequency "quarter" (default) or "month"
+#' @param pattern a single pattern series that the interpolation should follow
 #'
 #' @return time series at the target frequency
 #'
@@ -702,13 +703,21 @@ conv_long <- function(x) {
 #' @examplesIf interactive()
 #' quarterly_data_example |>
 #'   tsbox::ts_long() |>
+#'   tsbox::ts_ts() |>
 #'   tsbox::ts_pick("E_NF_HI") |>
-#'   tsbox::ts_xts() |>
-#'   disagg_1(conv_type = "mean", target_freq = "month") |>
+#'   disagg_1(conv_type = "mean", target_freq = "month", pattern = NULL) |>
 #'   tsbox::ts_plot()
-disagg_1 <- function(x, conv_type, target_freq) {
+disagg_1 <- function(x, conv_type, target_freq, pattern) {
+  start <- find_start(x)
+  end <- find_end(x, last_day = TRUE)
+  if (is.null(pattern)) {
+    formula <- stats::as.formula("x ~ 1")
+  } else {
+    pattern <- pattern %>% tsbox::ts_span(start, end)
+    formula <- stats::as.formula("x ~ pattern")
+  }
   tempdisagg::td(
-    formula = x ~ 1,
+    formula = formula,
     conversion = conv_type,
     to = target_freq,
     method = "fast"
@@ -722,9 +731,13 @@ disagg_1 <- function(x, conv_type, target_freq) {
 #' @param x a tx-boxable object at a low frequency (e.g. annual or quarterly)
 #' @param conv_type match the quarterly value via "first", "last", "sum", "mean"
 #' @param target_freq target frequency "quarter" or "month"
+#' @param pattern a single high-frequency pattern that the interpolation should follow
 #'
 #' @return interpolated object of the same type as the input
 #' @export
+#'
+#' @details the time-span of the high-frequency pattern has to match or be larger
+#' than the time-span of the low frequency series. NA values are not allowed.
 #'
 #' @examples
 #' quarterly_data_example |>
@@ -734,19 +747,43 @@ disagg_1 <- function(x, conv_type, target_freq) {
 #'   tsbox::ts_long() |>
 #'   tsbox::ts_frequency(to = "quarter", aggregate = "mean") |>
 #'   tsbox::ts_wide() # this matches original data
+#' # works with a single series too
 #' quarterly_data_example |>
 #'   tsbox::ts_long() |>
 #'   tsbox::ts_pick("E_NF_HI") |>
 #'   disagg(conv_type = "mean", target_freq = "month") |>
-#'   tsbox::ts_plot() # works with a single series too
-disagg <- function(x, conv_type = "mean", target_freq = "quarter") {
+#'   tsbox::ts_plot()
+#' # using a high-frequency pattern
+#' quarterly_data_example |>
+#'   tsbox::ts_long() |>
+#'   tsbox::ts_span("2005-01-01", "2020-01-01") |>
+#'   disagg(
+#'     conv_type = "mean", target_freq = "month", pattern = monthly_data_example |>
+#'       tsbox::ts_long() |>
+#'       tsbox::ts_pick("VISNS_HI")
+#'   )
+#' # multiple low-frequency series, same number of high-frequency patterns
+#' purrr::map2(
+#'   quarterly_data_example |>
+#'     tsbox::ts_long() |>
+#'     tsbox::ts_pick("E_NF_HI", "ECT_HI") |>
+#'     tsbox::ts_span("2005-01-01", "2020-01-01") |>
+#'     tsbox::ts_tslist(),
+#'   monthly_data_example |>
+#'     tsbox::ts_long() |>
+#'     tsbox::ts_tslist(),
+#'   ~ disagg(.x, conv_type = "mean", target_freq = "month", pattern = .y)
+#' )
+disagg <- function(x, conv_type = "mean", target_freq = "quarter", pattern = NULL) {
   # convert to long format and return additional details
   x_mod <- conv_long(x)
+  pattern_mod <- if (is.null(pattern)) pattern else conv_long(pattern)$long_form %>% tsbox::ts_ts()
 
   # drop missing values convert to xts and interpolate
   x_mod_int <- x_mod$long_form %>%
-    tsbox::ts_xts() %>%
-    tsbox::ts_apply(fun = disagg_1, conv_type = conv_type, target_freq = target_freq) %>%
+    tsbox::ts_tslist() %>%
+    purrr::map(.f = ~ disagg_1(.x, conv_type = conv_type, target_freq = target_freq, pattern = pattern_mod)) %>%
+    magrittr::set_attr("class", c("list", "tslist")) %>%
     # univariate data requires special treatment
     {
       if (length(x_mod$ser_names) == 1) {
@@ -1171,6 +1208,7 @@ find_start <- function(x) {
 #' Find the date of the last observation (NAs are dropped)
 #'
 #' @param x ts-boxable object
+#' @param last_day should the last day of period be returned (default: FALSE)
 #'
 #' @return date associated with last observation
 #' @export
@@ -1179,13 +1217,29 @@ find_start <- function(x) {
 #' quarterly_data_example |>
 #'   dplyr::mutate(E_NF_HI = dplyr::if_else(time > "2022-01-01", NA_real_, E_NF_HI)) |>
 #'   find_end()
-find_end <- function(x) {
+#' quarterly_data_example |>
+#'   dplyr::mutate(E_NF_HI = dplyr::if_else(time > "2022-01-01", NA_real_, E_NF_HI)) |>
+#'   find_end(TRUE)
+find_end <- function(x, last_day = FALSE) {
   # convert to long format and return additional details
   x_mod <- conv_long(x)
 
-  x_mod$long_form %>%
-    tsbox::ts_summary() %>%
-    dplyr::pull(.data$end)
+  x_mod_summary <- x_mod$long_form %>%
+    tsbox::ts_summary()
+
+  x_mod_summary %>%
+    dplyr::pull(.data$end) %>%
+    {
+      if (last_day) {
+          purrr::map2_vec(.,
+            x_mod_summary %>% dplyr::pull(., .data$diff),
+            ~ lubridate::ceiling_date(.x, unit = .y) %>%
+              lubridate::rollback()
+          )
+      } else {
+        .
+      }
+    }
 }
 
 

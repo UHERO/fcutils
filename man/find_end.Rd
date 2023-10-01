@@ -4,10 +4,12 @@
 \alias{find_end}
 \title{Find the date of the last observation (NAs are dropped)}
 \usage{
-find_end(x)
+find_end(x, last_day = FALSE)
 }
 \arguments{
 \item{x}{ts-boxable object}
+
+\item{last_day}{should the last day of period be returned (default: FALSE)}
 }
 \value{
 date associated with last observation
@@ -19,4 +21,7 @@ Find the date of the last observation (NAs are dropped)
 quarterly_data_example |>
   dplyr::mutate(E_NF_HI = dplyr::if_else(time > "2022-01-01", NA_real_, E_NF_HI)) |>
   find_end()
+quarterly_data_example |>
+  dplyr::mutate(E_NF_HI = dplyr::if_else(time > "2022-01-01", NA_real_, E_NF_HI)) |>
+  find_end(TRUE)
 }

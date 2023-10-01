@@ -4,7 +4,7 @@
 \alias{disagg}
 \title{Interpolate univariate or multivariate time series from low to high frequency}
 \usage{
-disagg(x, conv_type = "mean", target_freq = "quarter")
+disagg(x, conv_type = "mean", target_freq = "quarter", pattern = NULL)
 }
 \arguments{
 \item{x}{a tx-boxable object at a low frequency (e.g. annual or quarterly)}
@@ -12,12 +12,18 @@ disagg(x, conv_type = "mean", target_freq = "quarter")
 \item{conv_type}{match the quarterly value via "first", "last", "sum", "mean"}
 
 \item{target_freq}{target frequency "quarter" or "month"}
+
+\item{pattern}{a single high-frequency pattern that the interpolation should follow}
 }
 \value{
 interpolated object of the same type as the input
 }
 \description{
 Interpolate univariate or multivariate time series from low to high frequency
+}
+\details{
+the time-span of the high-frequency pattern has to match or be larger
+than the time-span of the low frequency series. NA values are not allowed.
 }
 \examples{
 quarterly_data_example |>
@@ -27,9 +33,31 @@ quarterly_data_example |>
   tsbox::ts_long() |>
   tsbox::ts_frequency(to = "quarter", aggregate = "mean") |>
   tsbox::ts_wide() # this matches original data
+# works with a single series too
 quarterly_data_example |>
   tsbox::ts_long() |>
   tsbox::ts_pick("E_NF_HI") |>
   disagg(conv_type = "mean", target_freq = "month") |>
-  tsbox::ts_plot() # works with a single series too
+  tsbox::ts_plot()
+# using a high-frequency pattern
+quarterly_data_example |>
+  tsbox::ts_long() |>
+  tsbox::ts_span("2005-01-01", "2020-01-01") |>
+  disagg(
+    conv_type = "mean", target_freq = "month", pattern = monthly_data_example |>
+      tsbox::ts_long() |>
+      tsbox::ts_pick("VISNS_HI")
+  )
+# multiple low-frequency series, multiple high-frequency patterns
+purrr::map2(
+  quarterly_data_example |>
+    tsbox::ts_long() |>
+    tsbox::ts_pick("E_NF_HI", "ECT_HI") |>
+    tsbox::ts_span("2005-01-01", "2020-01-01") |>
+    tsbox::ts_tslist(),
+  monthly_data_example |>
+    tsbox::ts_long() |>
+    tsbox::ts_tslist(),
+  ~ disagg(.x, conv_type = "mean", target_freq = "month", pattern = .y)
+)
 }
