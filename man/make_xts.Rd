@@ -4,7 +4,7 @@
 \alias{make_xts}
 \title{Create xts and fill with values}
 \usage{
-make_xts(start = bnk_start, end = bnk_end, per = "year", val = NA_real_)
+make_xts(start = bnk_start, end = NULL, per = "year", val = NA_real_)
 }
 \arguments{
 \item{start}{date of series start (character: "yyyy-mm-dd")}
@@ -21,7 +21,14 @@ an xts series
 \description{
 Create xts and fill with values
 }
+\details{
+when end is missing, but val is a vector of more than one element,
+the end date is automatically determined by the length of the val vector.
+if end is missing and val is a scalar, the end date is set to bnk_end.
+}
 \examples{
 make_xts()
 make_xts(start = lubridate::ymd("2010-01-01"), per = "quarter", val = 0)
+make_xts(start = lubridate::ymd("2010-01-01"), per = "q", val = 1:10)
+make_xts(start = lubridate::ymd("2010-01-01"), per = "m", val = 0)
 }

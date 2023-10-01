@@ -233,15 +233,35 @@ get_series_exp <- function(exp_id, format = "wide", expand = "true", rename = "c
 #' @return an xts series
 #' @export
 #'
+#' @details when end is missing, but val is a vector of more than one element,
+#' the end date is automatically determined by the length of the val vector.
+#' if end is missing and val is a scalar, the end date is set to bnk_end.
+#'
 #' @examples
 #' make_xts()
 #' make_xts(start = lubridate::ymd("2010-01-01"), per = "quarter", val = 0)
-make_xts <- function(start = bnk_start, end = bnk_end, per = "year", val = NA_real_) {
-  tibble::tibble(
-    time = seq.Date(start, end, by = per),
-    value = val
-  ) %>%
-    tsbox::ts_xts()
+#' make_xts(start = lubridate::ymd("2010-01-01"), per = "q", val = 1:10)
+#' make_xts(start = lubridate::ymd("2010-01-01"), per = "m", val = 0)
+make_xts <- function(start = bnk_start, end = NULL, per = "year", val = NA_real_) {
+  if (is.null(end) & length(val) == 1) {
+    tibble::tibble(
+      time = seq.Date(from = start, to = bnk_end, by = per),
+      value = val
+    ) %>%
+      tsbox::ts_xts()
+  } else if (is.null(end) & length(val) > 1) {
+    tibble::tibble(
+      time = seq.Date(from = start, by = per, along.with = val),
+      value = val
+    ) %>%
+      tsbox::ts_xts()
+  } else {
+    tibble::tibble(
+      time = seq.Date(from = start, to = end, by = per),
+      value = val
+    ) %>%
+      tsbox::ts_xts()
+  }
 }
 
 

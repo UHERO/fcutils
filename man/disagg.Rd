@@ -48,7 +48,7 @@ quarterly_data_example |>
       tsbox::ts_long() |>
       tsbox::ts_pick("VISNS_HI")
   )
-# multiple low-frequency series, multiple high-frequency patterns
+# multiple low-frequency series, same number of high-frequency patterns
 purrr::map2(
   quarterly_data_example |>
     tsbox::ts_long() |>
