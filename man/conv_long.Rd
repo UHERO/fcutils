@@ -4,19 +4,19 @@
 \alias{conv_long}
 \title{Convert "ts-boxable" objects into long format}
 \usage{
-conv_long(x, long_form_only = FALSE)
+conv_long(x, ser_info = FALSE)
 }
 \arguments{
 \item{x}{a "tx-boxable" object to be converted}
 
-\item{long_form_only}{should only the long form be returned (TRUE) or additional
-details too (default: FALSE)}
+\item{ser_info}{should additional details be returned (TRUE) or
+only the long format of x (default: FALSE)}
 }
 \value{
-a list(long_form, was_wide, ser_names), where
-x_mod is a ts-boxable object in long format with id, time and value columns,
-was_wide is TRUE if x is a wide data frame, FALSE otherwise,
-ser_names are the names of the series in x.
+if \code{ser_info == TRUE}, returns a \code{list(long_form, was_wide, ser_names)},
+where \code{x_mod} is a ts-boxable object in long format with \code{id}, \code{time} and \code{value}
+columns, \code{was_wide} is \code{TRUE} if x is a wide data frame, \code{FALSE} otherwise, and
+\code{ser_names} are the names of the series in x.
 }
 \description{
 Convert "ts-boxable" objects into long format
@@ -32,7 +32,7 @@ quarterly_data_example |>
 quarterly_data_example |>
   tsbox::ts_long() |>
   tsbox::ts_xts() |>
-  conv_long()
+  conv_long(ser_info = TRUE)
 quarterly_data_example |>
   tsbox::ts_long() |>
   tsbox::ts_pick("E_NF_HI") |>

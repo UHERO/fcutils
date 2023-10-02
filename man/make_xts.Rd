@@ -25,7 +25,8 @@ Create xts and fill with values
 when end is missing, but val is a vector of more than one element,
 the end date is automatically determined by the length of the val vector.
 if end is missing and val is a scalar, the end date is set to bnk_end.
-if end is missing the remaining arguments have to be named.
+if end is missing the remaining arguments have to be named. if val is a tibble,
+the end date is automatically determined by the number of rows in the tibble.
 }
 \examples{
 make_xts()

@@ -236,7 +236,8 @@ get_series_exp <- function(exp_id, format = "wide", expand = "true", rename = "c
 #' @details when end is missing, but val is a vector of more than one element,
 #' the end date is automatically determined by the length of the val vector.
 #' if end is missing and val is a scalar, the end date is set to bnk_end.
-#' if end is missing the remaining arguments have to be named.
+#' if end is missing the remaining arguments have to be named. if val is a tibble,
+#' the end date is automatically determined by the number of rows in the tibble.
 #'
 #' @examples
 #' make_xts()
@@ -383,7 +384,7 @@ rename_udaman <- function(ser_in, freq = NULL) {
 #' quarterly_data_example |> write_tsd("out.tsd")
 write_tsd <- function(x, file) {
   # convert the ts-boxable object to tslist
-  x_mod <- conv_long(x)
+  x_mod <- conv_long(x, ser_info = TRUE)
   in_list <- x_mod$long_form %>%
     tsbox::ts_tslist()
 
@@ -659,13 +660,13 @@ is_wide <- function(x) {
 #' Convert "ts-boxable" objects into long format
 #'
 #' @param x a "tx-boxable" object to be converted
-#' @param long_form_only should only the long form be returned (TRUE) or additional
-#' details too (default: FALSE)
+#' @param ser_info should additional details be returned (TRUE) or
+#' only the long format of x (default: FALSE)
 #'
-#' @return a list(long_form, was_wide, ser_names), where
-#' x_mod is a ts-boxable object in long format with id, time and value columns,
-#' was_wide is TRUE if x is a wide data frame, FALSE otherwise,
-#' ser_names are the names of the series in x.
+#' @return if `ser_info == TRUE`, returns a `list(long_form, was_wide, ser_names)`,
+#' where `x_mod` is a ts-boxable object in long format with `id`, `time` and `value`
+#' columns, `was_wide` is `TRUE` if x is a wide data frame, `FALSE` otherwise, and
+#' `ser_names` are the names of the series in x.
 #' @export
 #'
 #' @details This function converts wide data frames and other ts-boxable objects
@@ -678,7 +679,7 @@ is_wide <- function(x) {
 #' quarterly_data_example |>
 #'   tsbox::ts_long() |>
 #'   tsbox::ts_xts() |>
-#'   conv_long()
+#'   conv_long(ser_info = TRUE)
 #' quarterly_data_example |>
 #'   tsbox::ts_long() |>
 #'   tsbox::ts_pick("E_NF_HI") |>
@@ -689,7 +690,7 @@ is_wide <- function(x) {
 #'   tsbox::ts_xts() |>
 #'   tsbox::ts_pick("E_NF_HI") |>
 #'   conv_long()
-conv_long <- function(x, long_form_only = FALSE) {
+conv_long <- function(x, ser_info = FALSE) {
   # need xts series names for differential treatment of univariate data
   ser_names_1 <- names(x)
   # check if wide table
@@ -716,10 +717,10 @@ conv_long <- function(x, long_form_only = FALSE) {
     tsbox::ts_default() %>%
     tsbox::ts_regular()
 
-  if (long_form_only) {
-    return(x_mod)
-  } else {
+  if (ser_info) {
     return(list(long_form = x_mod, was_wide = wide_form, ser_names = ser_names))
+  } else {
+    return(x_mod)
   }
 }
 
@@ -815,8 +816,8 @@ disagg_1 <- function(x, conv_type, target_freq, pattern) {
 #' )
 disagg <- function(x, conv_type = "mean", target_freq = "quarter", pattern = NULL) {
   # convert to long format and return additional details
-  x_mod <- conv_long(x)
-  pattern_mod <- if (is.null(pattern)) pattern else conv_long(pattern)$long_form %>% tsbox::ts_ts()
+  x_mod <- conv_long(x, ser_info = TRUE)
+  pattern_mod <- if (is.null(pattern)) pattern else conv_long(pattern) %>% tsbox::ts_ts()
 
   # drop missing values convert to xts and interpolate
   x_mod_int <- x_mod$long_form %>%
@@ -930,7 +931,7 @@ QtoA <- function(ser_in, aggr = "mean") {
 #'   tsbox::ts_plot()
 ytd_cum <- function(x, avg = TRUE) {
   # convert to long format and return additional details
-  x_mod <- conv_long(x)
+  x_mod <- conv_long(x, ser_info = TRUE)
 
   x_mod_ytd <- x_mod$long_form %>%
     dplyr::mutate(yr = lubridate::floor_date(.data$time, "year")) %>%
@@ -961,7 +962,7 @@ ytd_cum <- function(x, avg = TRUE) {
 #'   tail()
 ytd_gr <- function(x) {
   # convert to long format and return additional details
-  x_mod <- conv_long(x)
+  x_mod <- conv_long(x, ser_info = TRUE)
 
   x_mod_ytd_gr <- x_mod$long_form %>%
     ytd_cum() %>%
@@ -992,7 +993,7 @@ ytd_gr <- function(x) {
 #' tsbox::`%ts/%`(test, tsbox::ts_lag(test, "6 months")) |> tail()
 mtd_cum <- function(x, avg = TRUE) {
   # convert to long format and return additional details
-  x_mod <- conv_long(x)
+  x_mod <- conv_long(x, ser_info = TRUE)
 
   x_mod_mtd <- x_mod$long_form %>%
     dplyr::mutate(yrmo = lubridate::floor_date(.data$time, "month")) %>%
@@ -1021,7 +1022,7 @@ mtd_cum <- function(x, avg = TRUE) {
 #'   tail()
 mtd_gr <- function(x) {
   # convert to long format and return additional details
-  x_mod <- conv_long(x)
+  x_mod <- conv_long(x, ser_info = TRUE)
 
   x_mod_mtd_gr <- x_mod$long_form %>%
     mtd_cum() %>%
@@ -1057,7 +1058,7 @@ mtd_gr <- function(x) {
 #'   tail()
 ptd_cum <- function(x, per = "year", avg = TRUE) {
   # convert to long format and return additional details
-  x_mod <- conv_long(x)
+  x_mod <- conv_long(x, ser_info = TRUE)
 
   x_mod_ptd <- x_mod$long_form %>%
     dplyr::mutate(time_per = lubridate::floor_date(.data$time, per)) %>%
@@ -1101,7 +1102,7 @@ ptd_cum <- function(x, per = "year", avg = TRUE) {
 #'   tail()
 ptd_gr <- function(x, per = "year", lag_length = "1 year") {
   # convert to long format and return additional details
-  x_mod <- conv_long(x)
+  x_mod <- conv_long(x, ser_info = TRUE)
 
   x_mod_ptd_gr <- x_mod$long_form %>%
     ptd_cum(per) %>%
@@ -1143,7 +1144,7 @@ ptd_gr <- function(x, per = "year", lag_length = "1 year") {
 #'   tsbox::ts_wide()
 pca_to_pc <- function(x, freq = 4) {
   # convert to long format and return additional details
-  x_mod <- conv_long(x)
+  x_mod <- conv_long(x, ser_info = TRUE)
 
   x_mod_pc <- x_mod$long_form %>%
     dplyr::mutate(value = ((1 + .data$value / 100)^(1 / freq) - 1) * 100)
@@ -1182,7 +1183,7 @@ pca_to_pc <- function(x, freq = 4) {
 #'   tsbox::ts_wide()
 pc_to_pca <- function(x, freq = 4) {
   # convert to long format and return additional details
-  x_mod <- conv_long(x)
+  x_mod <- conv_long(x, ser_info = TRUE)
 
   x_mod_pc <- x_mod$long_form %>%
     dplyr::mutate(value = ((1 + .data$value / 100)^freq - 1) * 100)
@@ -1208,7 +1209,7 @@ pc_to_pca <- function(x, freq = 4) {
 #'   tail()
 pcmp <- function(x, lag = 4) {
   # convert to long format and return additional details
-  x_mod <- conv_long(x)
+  x_mod <- conv_long(x, ser_info = TRUE)
 
   x_mod_pcmp <- x_mod$long_form %>%
     tsbox::ts_tslist() %>%
@@ -1236,7 +1237,7 @@ pcmp <- function(x, lag = 4) {
 #'   find_start()
 find_start <- function(x) {
   # convert to long format and return additional details
-  x_mod <- conv_long(x)
+  x_mod <- conv_long(x, ser_info = TRUE)
 
   x_mod$long_form %>%
     tsbox::ts_summary() %>%
@@ -1261,7 +1262,7 @@ find_start <- function(x) {
 #'   find_end(TRUE)
 find_end <- function(x, last_day = FALSE) {
   # convert to long format and return additional details
-  x_mod <- conv_long(x)
+  x_mod <- conv_long(x, ser_info = TRUE)
 
   x_mod_summary <- x_mod$long_form %>%
     tsbox::ts_summary()
@@ -1430,7 +1431,7 @@ nqtrs <- function(dat1 = "", dat2 = "") {
 #'   head()
 ma <- function(x, order) {
   # convert to long format and return additional details
-  x_mod <- conv_long(x)
+  x_mod <- conv_long(x, ser_info = TRUE)
 
   x_mod_ma <- x_mod$long_form %>%
     dplyr::mutate(value = slider::slide_dbl(.data$value, mean, .before = order - 1, .complete = TRUE), .by = "id")
@@ -1467,7 +1468,7 @@ ma <- function(x, order) {
 #'   plot_1()
 plot_1 <- function(x, rng_start = as.character(Sys.Date() - lubridate::years(10)), rng_end = as.character(Sys.Date() + lubridate::years(2)), height = 300, width = 900, yoy_gr = TRUE, gr_1 = TRUE) {
   # convert to long format and return additional details
-  x_mod <- conv_long(x)
+  x_mod <- conv_long(x, ser_info = TRUE)
 
   ser_names <- x_mod$ser_names
 
@@ -1523,7 +1524,7 @@ plot_1 <- function(x, rng_start = as.character(Sys.Date() - lubridate::years(10)
 #'   plot_2ax()
 plot_2ax <- function(x, rng_start = as.character(Sys.Date() - lubridate::years(10)), rng_end = as.character(Sys.Date() + lubridate::years(2)), height = 300, width = 900) {
   # convert to long format and return additional details
-  x_mod <- conv_long(x)
+  x_mod <- conv_long(x, ser_info = TRUE)
 
   ser_names <- x_mod$ser_names
 
@@ -1575,7 +1576,7 @@ plot_2ax <- function(x, rng_start = as.character(Sys.Date() - lubridate::years(1
 #'   plot_fc()
 plot_fc <- function(x, rng_start = as.character(Sys.Date() - lubridate::years(10)), rng_end = as.character(Sys.Date() + lubridate::years(2)), add_table = TRUE, table_start = rng_start, table_end = rng_end, height = 300, width = 900, yoy_gr = TRUE) {
   # convert to long format and return additional details
-  x_mod <- conv_long(x)
+  x_mod <- conv_long(x, ser_info = TRUE)
 
   ser_names <- x_mod$ser_names
 
@@ -1650,7 +1651,7 @@ plot_fc <- function(x, rng_start = as.character(Sys.Date() - lubridate::years(10
 #'   plot_comp_2()
 plot_comp_2 <- function(x, rng_start = as.character(Sys.Date() - lubridate::years(10)), rng_end = as.character(Sys.Date() + lubridate::years(2)), height = 300, width = 900, yoy_gr = TRUE, gr_bar = FALSE) {
   # convert to long format and return additional details
-  x_mod <- conv_long(x)
+  x_mod <- conv_long(x, ser_info = TRUE)
 
   ser_names <- x_mod$ser_names
 
@@ -1706,7 +1707,7 @@ plot_comp_2 <- function(x, rng_start = as.character(Sys.Date() - lubridate::year
 #'   plot_comp_3()
 plot_comp_3 <- function(x, indx_start = as.character(Sys.Date() - lubridate::years(10)), rng_start = as.character(Sys.Date() - lubridate::years(10)), rng_end = as.character(Sys.Date() + lubridate::years(2)), height = 300, width = 900, yoy_gr = TRUE, gr_bar = FALSE) {
   # convert to long format and return additional details
-  x_mod <- conv_long(x)
+  x_mod <- conv_long(x, ser_info = TRUE)
 
   ser_names <- x_mod$ser_names
 
@@ -1830,7 +1831,7 @@ save_plot_list <- function(plot_list, save_loc) {
 #' )
 gen_table <- function(x, tbl_start = as.character(Sys.Date() - lubridate::years(10)), tbl_end = as.character(Sys.Date() + lubridate::years(2)), percent = "pc", time_across = TRUE, tbl_height = 800, save_loc = NULL) {
   # convert to long format and return additional details
-  x_mod <- conv_long(x)
+  x_mod <- conv_long(x, ser_info = TRUE)
 
   # add growth rates and format table for output
   tbl_out <- x_mod$long_form %>%
