@@ -13,7 +13,7 @@ make_xts(start = bnk_start, end = NULL, per = "year", val = NA_real_)
 
 \item{per}{periodicity of series (character: "quarter", "year")}
 
-\item{val}{values to fill in (numeric scalar or vector)}
+\item{val}{values to fill in (numeric scalar, vector, or tibble)}
 }
 \value{
 an xts series
@@ -25,10 +25,13 @@ Create xts and fill with values
 when end is missing, but val is a vector of more than one element,
 the end date is automatically determined by the length of the val vector.
 if end is missing and val is a scalar, the end date is set to bnk_end.
+if end is missing the remaining arguments have to be named.
 }
 \examples{
 make_xts()
 make_xts(start = lubridate::ymd("2010-01-01"), per = "quarter", val = 0)
 make_xts(start = lubridate::ymd("2010-01-01"), per = "q", val = 1:10)
 make_xts(start = lubridate::ymd("2010-01-01"), per = "m", val = 0)
+make_xts(start = lubridate::ymd("2010-01-01"), per = "q",
+         val = tibble::tibble(E_NF_HON = c(1:10), ECT_HI = c(11:20)))
 }

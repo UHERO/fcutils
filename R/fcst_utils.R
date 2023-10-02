@@ -228,7 +228,7 @@ get_series_exp <- function(exp_id, format = "wide", expand = "true", rename = "c
 #' @param start date of series start (character: "yyyy-mm-dd")
 #' @param end date of series end (character: "yyyy-mm-dd")
 #' @param per periodicity of series (character: "quarter", "year")
-#' @param val values to fill in (numeric scalar or vector)
+#' @param val values to fill in (numeric scalar, vector, or tibble)
 #'
 #' @return an xts series
 #' @export
@@ -236,30 +236,43 @@ get_series_exp <- function(exp_id, format = "wide", expand = "true", rename = "c
 #' @details when end is missing, but val is a vector of more than one element,
 #' the end date is automatically determined by the length of the val vector.
 #' if end is missing and val is a scalar, the end date is set to bnk_end.
+#' if end is missing the remaining arguments have to be named.
 #'
 #' @examples
 #' make_xts()
 #' make_xts(start = lubridate::ymd("2010-01-01"), per = "quarter", val = 0)
 #' make_xts(start = lubridate::ymd("2010-01-01"), per = "q", val = 1:10)
 #' make_xts(start = lubridate::ymd("2010-01-01"), per = "m", val = 0)
+#' make_xts(start = lubridate::ymd("2010-01-01"), per = "q",
+#'          val = tibble::tibble(E_NF_HON = c(1:10), ECT_HI = c(11:20)))
 make_xts <- function(start = bnk_start, end = NULL, per = "year", val = NA_real_) {
-  if (is.null(end) & length(val) == 1) {
+  if ("tbl_df" %in% class(val)) {
+    dplyr::bind_cols(
+      tibble::tibble(time = seq.Date(from = start, by = per, length.out = nrow(val))),
+      val
+    ) %>%
+      tsbox::ts_long() %>%
+      tsbox::ts_xts()
+  } else if (is.null(end) & length(val) == 1) {
     tibble::tibble(
       time = seq.Date(from = start, to = bnk_end, by = per),
       value = val
     ) %>%
+      tsbox::ts_long() %>%
       tsbox::ts_xts()
   } else if (is.null(end) & length(val) > 1) {
     tibble::tibble(
       time = seq.Date(from = start, by = per, along.with = val),
       value = val
     ) %>%
+      tsbox::ts_long() %>%
       tsbox::ts_xts()
   } else {
     tibble::tibble(
       time = seq.Date(from = start, to = end, by = per),
       value = val
     ) %>%
+      tsbox::ts_long() %>%
       tsbox::ts_xts()
   }
 }
