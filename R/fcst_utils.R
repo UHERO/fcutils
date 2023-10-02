@@ -659,6 +659,8 @@ is_wide <- function(x) {
 #' Convert "ts-boxable" objects into long format
 #'
 #' @param x a "tx-boxable" object to be converted
+#' @param long_form_only should only the long form be returned (TRUE) or additional
+#' details too (default: FALSE)
 #'
 #' @return a list(long_form, was_wide, ser_names), where
 #' x_mod is a ts-boxable object in long format with id, time and value columns,
@@ -687,7 +689,7 @@ is_wide <- function(x) {
 #'   tsbox::ts_xts() |>
 #'   tsbox::ts_pick("E_NF_HI") |>
 #'   conv_long()
-conv_long <- function(x) {
+conv_long <- function(x, long_form_only = FALSE) {
   # need xts series names for differential treatment of univariate data
   ser_names_1 <- names(x)
   # check if wide table
@@ -714,7 +716,11 @@ conv_long <- function(x) {
     tsbox::ts_default() %>%
     tsbox::ts_regular()
 
-  return(list(long_form = x_mod, was_wide = wide_form, ser_names = ser_names))
+  if (long_form_only) {
+    return(x_mod)
+  } else {
+    return(list(long_form = x_mod, was_wide = wide_form, ser_names = ser_names))
+  }
 }
 
 

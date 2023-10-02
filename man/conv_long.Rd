@@ -4,10 +4,13 @@
 \alias{conv_long}
 \title{Convert "ts-boxable" objects into long format}
 \usage{
-conv_long(x)
+conv_long(x, long_form_only = FALSE)
 }
 \arguments{
 \item{x}{a "tx-boxable" object to be converted}
+
+\item{long_form_only}{should only the long form be returned (TRUE) or additional
+details too (default: FALSE)}
 }
 \value{
 a list(long_form, was_wide, ser_names), where
