@@ -13,9 +13,9 @@ conv_long(x, ser_info = FALSE)
 only the long format of x (default: FALSE)}
 }
 \value{
-if \code{ser_info == TRUE}, returns a \code{list(long_form, was_wide, ser_names)},
-where \code{x_mod} is a ts-boxable object in long format with \code{id}, \code{time} and \code{value}
-columns, \code{was_wide} is \code{TRUE} if x is a wide data frame, \code{FALSE} otherwise, and
+returns a ts-boxable object in long format with \code{id}, \code{time} and
+\code{value} columns. if \code{ser_info = TRUE}, also returns the following attributes:
+\code{was_wide} is \code{TRUE} if x is a wide data frame, \code{FALSE} otherwise, and
 \code{ser_names} are the names of the series in x.
 }
 \description{
