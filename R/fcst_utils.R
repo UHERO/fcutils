@@ -385,7 +385,7 @@ rename_udaman <- function(ser_in, freq = NULL) {
 write_tsd <- function(x, file) {
   # convert the ts-boxable object to tslist
   x_mod <- conv_long(x, ser_info = TRUE)
-  in_list <- x_mod$long_form %>%
+  in_list <- x_mod %>%
     tsbox::ts_tslist()
 
   # get summary info about the time series
@@ -663,9 +663,9 @@ is_wide <- function(x) {
 #' @param ser_info should additional details be returned (TRUE) or
 #' only the long format of x (default: FALSE)
 #'
-#' @return if `ser_info == TRUE`, returns a `list(long_form, was_wide, ser_names)`,
-#' where `x_mod` is a ts-boxable object in long format with `id`, `time` and `value`
-#' columns, `was_wide` is `TRUE` if x is a wide data frame, `FALSE` otherwise, and
+#' @return returns a ts-boxable object in long format with `id`, `time` and
+#' `value` columns. if `ser_info = TRUE`, also returns the following attributes:
+#' `was_wide` is `TRUE` if x is a wide data frame, `FALSE` otherwise, and
 #' `ser_names` are the names of the series in x.
 #' @export
 #'
@@ -694,11 +694,11 @@ conv_long <- function(x, ser_info = FALSE) {
   # need xts series names for differential treatment of univariate data
   ser_names_1 <- names(x)
   # check if wide table
-  wide_form <- is_wide(x)
+  was_wide <- is_wide(x)
   # convert to long table (all formats incl. xts)
   x_mod <-
     {
-      if (wide_form) tsbox::ts_long(x) else tsbox::ts_tbl(x)
+      if (was_wide) tsbox::ts_long(x) else tsbox::ts_tbl(x)
     } %>%
     tidyr::drop_na()
   # need long tbl series names for differential treatment of univariate data
@@ -718,10 +718,11 @@ conv_long <- function(x, ser_info = FALSE) {
     tsbox::ts_regular()
 
   if (ser_info) {
-    return(list(long_form = x_mod, was_wide = wide_form, ser_names = ser_names))
-  } else {
-    return(x_mod)
+    attr(x_mod, "was_wide") <- was_wide
+    attr(x_mod, "ser_names") <- ser_names
   }
+
+  return(x_mod)
 }
 
 
@@ -748,11 +749,11 @@ conv_long <- function(x, ser_info = FALSE) {
 #'   disagg_1(conv_type = "mean", target_freq = "month", pattern = NULL) |>
 #'   tsbox::ts_plot()
 disagg_1 <- function(x, conv_type, target_freq, pattern) {
-  start <- find_start(x)
-  end <- find_end(x, last_day = TRUE)
   if (is.null(pattern)) {
     formula <- stats::as.formula("x ~ 1")
   } else {
+    start <- find_start(x)
+    end <- find_end(x, last_day = TRUE)
     pattern <- pattern %>% tsbox::ts_span(start, end)
     formula <- stats::as.formula("x ~ pattern")
   }
@@ -820,23 +821,23 @@ disagg <- function(x, conv_type = "mean", target_freq = "quarter", pattern = NUL
   pattern_mod <- if (is.null(pattern)) pattern else conv_long(pattern) %>% tsbox::ts_ts()
 
   # drop missing values convert to xts and interpolate
-  x_mod_int <- x_mod$long_form %>%
+  x_mod_int <- x_mod %>%
     tsbox::ts_tslist() %>%
     purrr::map(.f = ~ disagg_1(.x, conv_type = conv_type, target_freq = target_freq, pattern = pattern_mod)) %>%
     magrittr::set_attr("class", c("list", "tslist")) %>%
     # univariate data requires special treatment
     {
-      if (length(x_mod$ser_names) == 1) {
+      if (length(attr(x_mod, "ser_names")) == 1) {
         tsbox::ts_tbl(.) %>%
           tsbox::ts_long() %>%
-          dplyr::mutate(id = x_mod$ser_names)
+          dplyr::mutate(id = attr(x_mod, "ser_names"))
       } else {
         tsbox::ts_tbl(.)
       }
     }
 
   # reclass the output to match the input
-  ans <- if (x_mod$was_wide) tsbox::ts_wide(x_mod_int) else tsbox::copy_class(x_mod_int, x)
+  ans <- if (attr(x_mod, "was_wide")) tsbox::ts_wide(x_mod_int) else tsbox::copy_class(x_mod_int, x)
 
   return(ans)
 }
@@ -933,7 +934,7 @@ ytd_cum <- function(x, avg = TRUE) {
   # convert to long format and return additional details
   x_mod <- conv_long(x, ser_info = TRUE)
 
-  x_mod_ytd <- x_mod$long_form %>%
+  x_mod_ytd <- x_mod %>%
     dplyr::mutate(yr = lubridate::floor_date(.data$time, "year")) %>%
     dplyr::group_by(.data$id, .data$yr) %>%
     dplyr::mutate(value = if (avg) dplyr::cummean(.data$value) else cumsum(.data$value)) %>%
@@ -941,7 +942,7 @@ ytd_cum <- function(x, avg = TRUE) {
     dplyr::select(!"yr")
 
   # reclass the output to match the input
-  ans <- if (x_mod$was_wide) tsbox::ts_wide(x_mod_ytd) else tsbox::copy_class(x_mod_ytd, x)
+  ans <- if (attr(x_mod, "was_wide")) tsbox::ts_wide(x_mod_ytd) else tsbox::copy_class(x_mod_ytd, x)
 
   return(ans)
 }
@@ -964,12 +965,12 @@ ytd_gr <- function(x) {
   # convert to long format and return additional details
   x_mod <- conv_long(x, ser_info = TRUE)
 
-  x_mod_ytd_gr <- x_mod$long_form %>%
+  x_mod_ytd_gr <- x_mod %>%
     ytd_cum() %>%
     tsbox::ts_pcy()
 
   # reclass the output to match the input
-  ans <- if (x_mod$was_wide) tsbox::ts_wide(x_mod_ytd_gr) else tsbox::copy_class(x_mod_ytd_gr, x)
+  ans <- if (attr(x_mod, "was_wide")) tsbox::ts_wide(x_mod_ytd_gr) else tsbox::copy_class(x_mod_ytd_gr, x)
 
   return(ans)
 }
@@ -995,7 +996,7 @@ mtd_cum <- function(x, avg = TRUE) {
   # convert to long format and return additional details
   x_mod <- conv_long(x, ser_info = TRUE)
 
-  x_mod_mtd <- x_mod$long_form %>%
+  x_mod_mtd <- x_mod %>%
     dplyr::mutate(yrmo = lubridate::floor_date(.data$time, "month")) %>%
     dplyr::group_by(.data$id, .data$yrmo) %>%
     dplyr::mutate(value = if (avg) dplyr::cummean(.data$value) else cumsum(.data$value)) %>%
@@ -1003,7 +1004,7 @@ mtd_cum <- function(x, avg = TRUE) {
     dplyr::select(!"yrmo")
 
   # reclass the output to match the input
-  ans <- if (x_mod$was_wide) tsbox::ts_wide(x_mod_mtd) else tsbox::copy_class(x_mod_mtd, x)
+  ans <- if (attr(x_mod, "was_wide")) tsbox::ts_wide(x_mod_mtd) else tsbox::copy_class(x_mod_mtd, x)
 
   return(ans)
 }
@@ -1024,12 +1025,12 @@ mtd_gr <- function(x) {
   # convert to long format and return additional details
   x_mod <- conv_long(x, ser_info = TRUE)
 
-  x_mod_mtd_gr <- x_mod$long_form %>%
+  x_mod_mtd_gr <- x_mod %>%
     mtd_cum() %>%
     tsbox::ts_pcy()
 
   # reclass the output to match the input
-  ans <- if (x_mod$was_wide) tsbox::ts_wide(x_mod_mtd_gr) else tsbox::copy_class(x_mod_mtd_gr, x)
+  ans <- if (attr(x_mod, "was_wide")) tsbox::ts_wide(x_mod_mtd_gr) else tsbox::copy_class(x_mod_mtd_gr, x)
 
   return(ans)
 }
@@ -1060,7 +1061,7 @@ ptd_cum <- function(x, per = "year", avg = TRUE) {
   # convert to long format and return additional details
   x_mod <- conv_long(x, ser_info = TRUE)
 
-  x_mod_ptd <- x_mod$long_form %>%
+  x_mod_ptd <- x_mod %>%
     dplyr::mutate(time_per = lubridate::floor_date(.data$time, per)) %>%
     dplyr::group_by(.data$id, .data$time_per) %>%
     dplyr::mutate(value = if (avg) dplyr::cummean(.data$value) else cumsum(.data$value)) %>%
@@ -1068,7 +1069,7 @@ ptd_cum <- function(x, per = "year", avg = TRUE) {
     dplyr::select(!"time_per")
 
   # reclass the output to match the input
-  ans <- if (x_mod$was_wide) tsbox::ts_wide(x_mod_ptd) else tsbox::copy_class(x_mod_ptd, x)
+  ans <- if (attr(x_mod, "was_wide")) tsbox::ts_wide(x_mod_ptd) else tsbox::copy_class(x_mod_ptd, x)
 
   return(ans)
 }
@@ -1104,14 +1105,14 @@ ptd_gr <- function(x, per = "year", lag_length = "1 year") {
   # convert to long format and return additional details
   x_mod <- conv_long(x, ser_info = TRUE)
 
-  x_mod_ptd_gr <- x_mod$long_form %>%
+  x_mod_ptd_gr <- x_mod %>%
     ptd_cum(per) %>%
     {
       (. %ts/% tsbox::ts_lag(., lag_length) %ts-% 1) %ts*% 100
     }
 
   # reclass the output to match the input
-  ans <- if (x_mod$was_wide) tsbox::ts_wide(x_mod_ptd_gr) else tsbox::copy_class(x_mod_ptd_gr, x)
+  ans <- if (attr(x_mod, "was_wide")) tsbox::ts_wide(x_mod_ptd_gr) else tsbox::copy_class(x_mod_ptd_gr, x)
 
   return(ans)
 }
@@ -1146,11 +1147,11 @@ pca_to_pc <- function(x, freq = 4) {
   # convert to long format and return additional details
   x_mod <- conv_long(x, ser_info = TRUE)
 
-  x_mod_pc <- x_mod$long_form %>%
+  x_mod_pc <- x_mod %>%
     dplyr::mutate(value = ((1 + .data$value / 100)^(1 / freq) - 1) * 100)
 
   # reclass the output to match the input
-  ans <- if (x_mod$was_wide) tsbox::ts_wide(x_mod_pc) else tsbox::copy_class(x_mod_pc, x)
+  ans <- if (attr(x_mod, "was_wide")) tsbox::ts_wide(x_mod_pc) else tsbox::copy_class(x_mod_pc, x)
 
   return(ans)
 }
@@ -1185,11 +1186,11 @@ pc_to_pca <- function(x, freq = 4) {
   # convert to long format and return additional details
   x_mod <- conv_long(x, ser_info = TRUE)
 
-  x_mod_pc <- x_mod$long_form %>%
+  x_mod_pc <- x_mod %>%
     dplyr::mutate(value = ((1 + .data$value / 100)^freq - 1) * 100)
 
   # reclass the output to match the input
-  ans <- if (x_mod$was_wide) tsbox::ts_wide(x_mod_pc) else tsbox::copy_class(x_mod_pc, x)
+  ans <- if (attr(x_mod, "was_wide")) tsbox::ts_wide(x_mod_pc) else tsbox::copy_class(x_mod_pc, x)
 
   return(ans)
 }
@@ -1211,14 +1212,14 @@ pcmp <- function(x, lag = 4) {
   # convert to long format and return additional details
   x_mod <- conv_long(x, ser_info = TRUE)
 
-  x_mod_pcmp <- x_mod$long_form %>%
+  x_mod_pcmp <- x_mod %>%
     tsbox::ts_tslist() %>%
     purrr::map(~ (((.x / tsbox::ts_lag(.x, lag))^(1 / lag)) - 1) * 100) %>%
     magrittr::set_attr("class", c("list", "tslist")) %>%
     tsbox::ts_tbl()
 
   # reclass the output to match the input
-  ans <- if (x_mod$was_wide) tsbox::ts_wide(x_mod_pcmp) else tsbox::copy_class(x_mod_pcmp, x)
+  ans <- if (attr(x_mod, "was_wide")) tsbox::ts_wide(x_mod_pcmp) else tsbox::copy_class(x_mod_pcmp, x)
 
   return(ans)
 }
@@ -1239,7 +1240,7 @@ find_start <- function(x) {
   # convert to long format and return additional details
   x_mod <- conv_long(x, ser_info = TRUE)
 
-  x_mod$long_form %>%
+  x_mod %>%
     tsbox::ts_summary() %>%
     dplyr::pull(.data$start)
 }
@@ -1264,7 +1265,7 @@ find_end <- function(x, last_day = FALSE) {
   # convert to long format and return additional details
   x_mod <- conv_long(x, ser_info = TRUE)
 
-  x_mod_summary <- x_mod$long_form %>%
+  x_mod_summary <- x_mod %>%
     tsbox::ts_summary()
 
   x_mod_summary %>%
@@ -1433,11 +1434,11 @@ ma <- function(x, order) {
   # convert to long format and return additional details
   x_mod <- conv_long(x, ser_info = TRUE)
 
-  x_mod_ma <- x_mod$long_form %>%
+  x_mod_ma <- x_mod %>%
     dplyr::mutate(value = slider::slide_dbl(.data$value, mean, .before = order - 1, .complete = TRUE), .by = "id")
 
   # reclass the output to match the input
-  ans <- if (x_mod$was_wide) tsbox::ts_wide(x_mod_ma) else tsbox::copy_class(x_mod_ma, x)
+  ans <- if (attr(x_mod, "was_wide")) tsbox::ts_wide(x_mod_ma) else tsbox::copy_class(x_mod_ma, x)
 
   return(ans)
 }
@@ -1470,11 +1471,11 @@ plot_1 <- function(x, rng_start = as.character(Sys.Date() - lubridate::years(10)
   # convert to long format and return additional details
   x_mod <- conv_long(x, ser_info = TRUE)
 
-  ser_names <- x_mod$ser_names
+  ser_names <- attr(x_mod, "ser_names")
 
   ser_names_pct <- if (gr_1) stringr::str_glue("{ser_names}%")[1] else stringr::str_glue("{ser_names}%")
 
-  ser_plot <- x_mod$long_form %>%
+  ser_plot <- x_mod %>%
     tsbox::ts_xts() %>%
     {
       if (yoy_gr) tsbox::ts_c(., tsbox::ts_pcy(.)) else tsbox::ts_c(., tsbox::ts_pc(.))
@@ -1526,9 +1527,9 @@ plot_2ax <- function(x, rng_start = as.character(Sys.Date() - lubridate::years(1
   # convert to long format and return additional details
   x_mod <- conv_long(x, ser_info = TRUE)
 
-  ser_names <- x_mod$ser_names
+  ser_names <- attr(x_mod, "ser_names")
 
-  ser_plot <- x_mod$long_form %>%
+  ser_plot <- x_mod %>%
     tsbox::ts_xts() %>%
     tsbox::ts_dygraphs(main = ser_names[1] %>% stringr::str_replace_all("@.*", ""), group = "comp", height = height, width = width) %>%
     dygraphs::dyAxis("y", label = "series 1") %>%
@@ -1578,10 +1579,10 @@ plot_fc <- function(x, rng_start = as.character(Sys.Date() - lubridate::years(10
   # convert to long format and return additional details
   x_mod <- conv_long(x, ser_info = TRUE)
 
-  ser_names <- x_mod$ser_names
+  ser_names <- attr(x_mod, "ser_names")
 
   # series to plot
-  ser_to_plot <- x_mod$long_form %>%
+  ser_to_plot <- x_mod %>%
     tsbox::ts_xts() %>%
     {
       if (yoy_gr) tsbox::ts_c(., tsbox::ts_pcy(.[, 1])) else tsbox::ts_c(., tsbox::ts_pc(.[, 1]))
@@ -1653,17 +1654,17 @@ plot_comp_2 <- function(x, rng_start = as.character(Sys.Date() - lubridate::year
   # convert to long format and return additional details
   x_mod <- conv_long(x, ser_info = TRUE)
 
-  ser_names <- x_mod$ser_names
+  ser_names <- attr(x_mod, "ser_names")
 
   plot_level <-
-    x_mod$long_form %>%
+    x_mod %>%
     tsbox::ts_xts() %>%
     tsbox::ts_dygraphs(main = "Level", group = "comp", height = height, width = width) %>%
     dygraphs::dyLegend(width = width * 0.90) %>%
     dygraphs::dyOptions(colors = uhero_colors[1:length(ser_names)]) # %>%
   # dygraphs::dyOptions(colors = RColorBrewer::brewer.pal(length(ser_names), "Set2"))
   plot_growth <-
-    x_mod$long_form %>%
+    x_mod %>%
     tsbox::ts_xts() %>%
     {
       if (yoy_gr) tsbox::ts_pcy(.) else tsbox::ts_pc(.)
@@ -1709,10 +1710,10 @@ plot_comp_3 <- function(x, indx_start = as.character(Sys.Date() - lubridate::yea
   # convert to long format and return additional details
   x_mod <- conv_long(x, ser_info = TRUE)
 
-  ser_names <- x_mod$ser_names
+  ser_names <- attr(x_mod, "ser_names")
 
   plot_level <-
-    x_mod$long_form %>%
+    x_mod %>%
     tsbox::ts_xts() %>%
     tsbox::ts_dygraphs(main = "Level", group = "comp", height = height, width = width) %>%
     dygraphs::dyLegend(width = width * 0.90) %>%
@@ -1720,7 +1721,7 @@ plot_comp_3 <- function(x, indx_start = as.character(Sys.Date() - lubridate::yea
   # dygraphs::dyOptions(colors = RColorBrewer::brewer.pal(length(ser_names), "Set2"))
   # plot_level[["elementId"]] <- ser_names %>% extract(1) %>% str_extract("^.*@")
   plot_index <-
-    x_mod$long_form %>%
+    x_mod %>%
     tsbox::ts_xts() %>%
     tsbox::ts_index(base = indx_start) %>%
     tsbox::ts_dygraphs(main = "Index", group = "comp", height = height, width = width) %>%
@@ -1729,7 +1730,7 @@ plot_comp_3 <- function(x, indx_start = as.character(Sys.Date() - lubridate::yea
     dygraphs::dyOptions(colors = uhero_colors[1:length(ser_names)]) # %>%
   # dygraphs::dyOptions(colors = RColorBrewer::brewer.pal(length(ser_names), "Set2"))
   plot_growth <-
-    x_mod$long_form %>%
+    x_mod %>%
     tsbox::ts_xts() %>%
     {
       if (yoy_gr) tsbox::ts_pcy(.) else tsbox::ts_pc(.)
@@ -1834,7 +1835,7 @@ gen_table <- function(x, tbl_start = as.character(Sys.Date() - lubridate::years(
   x_mod <- conv_long(x, ser_info = TRUE)
 
   # add growth rates and format table for output
-  tbl_out <- x_mod$long_form %>%
+  tbl_out <- x_mod %>%
     {
       if (percent == "pc") {
         tsbox::ts_c(., tsbox::ts_pc(.) %>% dplyr::mutate(id = stringr::str_c(.data$id, " (%)")))
