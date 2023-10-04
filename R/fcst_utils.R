@@ -491,14 +491,14 @@ write_tsd <- function(x, file) {
 }
 
 
-#' Copy a data frame to clipboard
+#' Copy a data frame to clipboard (only works on MacOS)
 #'
 #' @param x tibble (or data frame) to be copied
 #'
 #' @return copy_tbl() returns the input x invisibly
 #' @export
 #'
-#' @examples
+#' @examplesIf interactive()
 #' monthly_data_example |> copy_tbl()
 copy_tbl <- function(x) {
   readr::write_delim(x, pipe("pbcopy"), delim = "\t")
