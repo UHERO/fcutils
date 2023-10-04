@@ -749,11 +749,11 @@ conv_long <- function(x, ser_info = FALSE) {
 #'   disagg_1(conv_type = "mean", target_freq = "month", pattern = NULL) |>
 #'   tsbox::ts_plot()
 disagg_1 <- function(x, conv_type, target_freq, pattern) {
-  start <- find_start(x)
-  end <- find_end(x, last_day = TRUE)
   if (is.null(pattern)) {
     formula <- stats::as.formula("x ~ 1")
   } else {
+    start <- find_start(x)
+    end <- find_end(x, last_day = TRUE)
     pattern <- pattern %>% tsbox::ts_span(start, end)
     formula <- stats::as.formula("x ~ pattern")
   }
