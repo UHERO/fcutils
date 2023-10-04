@@ -10,12 +10,6 @@
     <loc>https://uhero.github.io/fcutils/LICENSE.html</loc>
   </url>
   <url>
-    <loc>https://uhero.github.io/fcutils/articles/fcutils-vignette.html</loc>
-  </url>
-  <url>
-    <loc>https://uhero.github.io/fcutils/articles/index.html</loc>
-  </url>
-  <url>
     <loc>https://uhero.github.io/fcutils/authors.html</loc>
   </url>
   <url>
@@ -28,19 +22,22 @@
     <loc>https://uhero.github.io/fcutils/reference/QtoA.html</loc>
   </url>
   <url>
-    <loc>https://uhero.github.io/fcutils/reference/QtoM.html</loc>
-  </url>
-  <url>
-    <loc>https://uhero.github.io/fcutils/reference/QtoM_1.html</loc>
-  </url>
-  <url>
     <loc>https://uhero.github.io/fcutils/reference/bnk_end.html</loc>
   </url>
   <url>
     <loc>https://uhero.github.io/fcutils/reference/bnk_start.html</loc>
   </url>
   <url>
+    <loc>https://uhero.github.io/fcutils/reference/conv_long.html</loc>
+  </url>
+  <url>
     <loc>https://uhero.github.io/fcutils/reference/copy_tbl.html</loc>
+  </url>
+  <url>
+    <loc>https://uhero.github.io/fcutils/reference/daily_data_example.html</loc>
+  </url>
+  <url>
+    <loc>https://uhero.github.io/fcutils/reference/disagg.html</loc>
   </url>
   <url>
     <loc>https://uhero.github.io/fcutils/reference/extract_data.html</loc>
@@ -55,10 +52,10 @@
     <loc>https://uhero.github.io/fcutils/reference/find_start.html</loc>
   </url>
   <url>
-    <loc>https://uhero.github.io/fcutils/reference/get_series.html</loc>
+    <loc>https://uhero.github.io/fcutils/reference/gen_table.html</loc>
   </url>
   <url>
-    <loc>https://uhero.github.io/fcutils/reference/get_series_1.html</loc>
+    <loc>https://uhero.github.io/fcutils/reference/get_series.html</loc>
   </url>
   <url>
     <loc>https://uhero.github.io/fcutils/reference/get_series_exp.html</loc>
@@ -73,6 +70,9 @@
     <loc>https://uhero.github.io/fcutils/reference/index.html</loc>
   </url>
   <url>
+    <loc>https://uhero.github.io/fcutils/reference/is_wide.html</loc>
+  </url>
+  <url>
     <loc>https://uhero.github.io/fcutils/reference/ma.html</loc>
   </url>
   <url>
@@ -80,6 +80,9 @@
   </url>
   <url>
     <loc>https://uhero.github.io/fcutils/reference/model_equation.html</loc>
+  </url>
+  <url>
+    <loc>https://uhero.github.io/fcutils/reference/monthly_data_example.html</loc>
   </url>
   <url>
     <loc>https://uhero.github.io/fcutils/reference/mtd_cum.html</loc>
@@ -127,9 +130,6 @@
     <loc>https://uhero.github.io/fcutils/reference/pq.html</loc>
   </url>
   <url>
-    <loc>https://uhero.github.io/fcutils/reference/pq_1.html</loc>
-  </url>
-  <url>
     <loc>https://uhero.github.io/fcutils/reference/ptd_cum.html</loc>
   </url>
   <url>
@@ -140,6 +140,9 @@
   </url>
   <url>
     <loc>https://uhero.github.io/fcutils/reference/qtrs.html</loc>
+  </url>
+  <url>
+    <loc>https://uhero.github.io/fcutils/reference/quarterly_data_example.html</loc>
   </url>
   <url>
     <loc>https://uhero.github.io/fcutils/reference/rename_udaman.html</loc>

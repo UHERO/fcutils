@@ -21,22 +21,10 @@
       <ul class="navbar-nav me-auto"><li class="active nav-item">
   <a class="nav-link" href="../reference/index.html">Reference</a>
 </li>
-<li class="nav-item dropdown">
-  <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown" role="button" aria-expanded="false" aria-haspopup="true" id="dropdown-articles">Articles</a>
-  <div class="dropdown-menu" aria-labelledby="dropdown-articles">
-    <a class="dropdown-item" href="../articles/fcutils-vignette.html">fcutils-vignette</a>
-  </div>
-</li>
       </ul><form class="form-inline my-2 my-lg-0" role="search">
         <input type="search" class="form-control me-sm-2" aria-label="Toggle navigation" name="search-input" data-search-index="../search.json" id="search-input" placeholder="Search for" autocomplete="off"></form>
 
-      <ul class="navbar-nav"><li class="nav-item">
-  <a class="external-link nav-link" href="https://github.com/UHERO/fcutils/" aria-label="github">
-    <span class="fab fa fab fa-github fa-lg"></span>
-     
-  </a>
-</li>
-      </ul></div>
+      <ul class="navbar-nav"></ul></div>
 
     
   </div>
@@ -61,22 +49,14 @@
           
           <code><a href="AtoQ.html">AtoQ()</a></code> 
         </dt>
-        <dd>Linear interpolation based on aremos command reference page 292</dd>
+        <dd>Linear interpolation based on AREMOS command reference page 292
+(superseded by disagg())</dd>
       </dl><dl><dt>
           
           <code><a href="QtoA.html">QtoA()</a></code> 
         </dt>
-        <dd>Conversion from quarterly to annual frequency</dd>
-      </dl><dl><dt>
-          
-          <code><a href="QtoM.html">QtoM()</a></code> 
-        </dt>
-        <dd>Interpolate a tibble of series from quaterly to monthly freq</dd>
-      </dl><dl><dt>
-          
-          <code><a href="QtoM_1.html">QtoM_1()</a></code> 
-        </dt>
-        <dd>Interpolate a single series from quarterly to monthly freq</dd>
+        <dd>Aggregate from quarterly to annual frequency
+(superseded by tsbox::ts_frequency())</dd>
       </dl><dl><dt>
           
           <code><a href="bnk_end.html">bnk_end</a></code> 
@@ -86,12 +66,27 @@
           
           <code><a href="bnk_start.html">bnk_start</a></code> 
         </dt>
-        <dd>define project-wide constants</dd>
+        <dd>start of data range in the data bank</dd>
+      </dl><dl><dt>
+          
+          <code><a href="conv_long.html">conv_long()</a></code> 
+        </dt>
+        <dd>Convert "ts-boxable" objects into long format</dd>
       </dl><dl><dt>
           
           <code><a href="copy_tbl.html">copy_tbl()</a></code> 
         </dt>
         <dd>Copy a data frame to clipboard</dd>
+      </dl><dl><dt>
+          
+          <code><a href="daily_data_example.html">daily_data_example</a></code> 
+        </dt>
+        <dd>daily data for examples</dd>
+      </dl><dl><dt>
+          
+          <code><a href="disagg.html">disagg()</a></code> 
+        </dt>
+        <dd>Interpolate univariate or multivariate time series from low to high frequency</dd>
       </dl><dl><dt>
           
           <code><a href="extract_data.html">extract_data()</a></code> 
@@ -109,14 +104,14 @@
         <dd>Find the date of the first observation (NAs are dropped)</dd>
       </dl><dl><dt>
           
+          <code><a href="gen_table.html">gen_table()</a></code> 
+        </dt>
+        <dd>Generate a table with time series</dd>
+      </dl><dl><dt>
+          
           <code><a href="get_series.html">get_series()</a></code> 
         </dt>
         <dd>Download a set of series from udaman using series names</dd>
-      </dl><dl><dt>
-          
-          <code><a href="get_series_1.html">get_series_1()</a></code> 
-        </dt>
-        <dd>Download a single series from udaman using series name</dd>
       </dl><dl><dt>
           
           <code><a href="get_series_exp.html">get_series_exp()</a></code> 
@@ -134,6 +129,11 @@
         <dd>In place addition</dd>
       </dl><dl><dt>
           
+          <code><a href="is_wide.html">is_wide()</a></code> 
+        </dt>
+        <dd>Check if a data frame is in wide format</dd>
+      </dl><dl><dt>
+          
           <code><a href="ma.html">ma()</a></code> 
         </dt>
         <dd>Backward looking moving average</dd>
@@ -147,6 +147,11 @@
           <code><a href="model_equation.html">model_equation()</a></code> 
         </dt>
         <dd>Parse lm() output and convert into bimets equation (GETS model development)</dd>
+      </dl><dl><dt>
+          
+          <code><a href="monthly_data_example.html">monthly_data_example</a></code> 
+        </dt>
+        <dd>monthly data for examples</dd>
       </dl><dl><dt>
           
           <code><a href="mtd_cum.html">mtd_cum()</a></code> 
@@ -219,12 +224,6 @@
         <dd>Concatenate dates formatted as yyyyQq or yyyy.q to obtain period</dd>
       </dl><dl><dt>
           
-          <code><a href="pq_1.html">pq_1()</a></code> 
-        </dt>
-        <dd>Concatenate date formatted as yyyyQq or yyyy.q to obtain single period
-DON'T USE!!! USE lubridate::yq() INSTEAD</dd>
-      </dl><dl><dt>
-          
           <code><a href="ptd_cum.html">ptd_cum()</a></code> 
         </dt>
         <dd>Period to date sum or average</dd>
@@ -243,6 +242,11 @@ DON'T USE!!! USE lubridate::yq() INSTEAD</dd>
           <code><a href="qtrs.html">qtrs()</a></code> 
         </dt>
         <dd>Convert period in quarters to period in months</dd>
+      </dl><dl><dt>
+          
+          <code><a href="quarterly_data_example.html">quarterly_data_example</a></code> 
+        </dt>
+        <dd>quarterly data for examples</dd>
       </dl><dl><dt>
           
           <code><a href="rename_udaman.html">rename_udaman()</a></code> 
@@ -277,7 +281,7 @@ DON'T USE!!! USE lubridate::yq() INSTEAD</dd>
           
           <code><a href="write_tsd.html">write_tsd()</a></code> 
         </dt>
-        <dd>Save an xts or a wide data frame with time series in tsd format</dd>
+        <dd>Save a ts-boxable object in tsd format</dd>
       </dl><dl><dt>
           
           <code><a href="ymd_to_yQq.html">ymd_to_yQq()</a></code> 
@@ -298,7 +302,7 @@ DON'T USE!!! USE lubridate::yq() INSTEAD</dd>
 
 
     <footer><div class="pkgdown-footer-left">
-  <p></p><p>Developed by Peter Fuleky.</p>
+  <p></p><p>Developed by First Last.</p>
 </div>
 
 <div class="pkgdown-footer-right">

@@ -21,22 +21,10 @@
       <ul class="navbar-nav me-auto"><li class="active nav-item">
   <a class="nav-link" href="../reference/index.html">Reference</a>
 </li>
-<li class="nav-item dropdown">
-  <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown" role="button" aria-expanded="false" aria-haspopup="true" id="dropdown-articles">Articles</a>
-  <div class="dropdown-menu" aria-labelledby="dropdown-articles">
-    <a class="dropdown-item" href="../articles/fcutils-vignette.html">fcutils-vignette</a>
-  </div>
-</li>
       </ul><form class="form-inline my-2 my-lg-0" role="search">
         <input type="search" class="form-control me-sm-2" aria-label="Toggle navigation" name="search-input" data-search-index="../search.json" id="search-input" placeholder="Search for" autocomplete="off"></form>
 
-      <ul class="navbar-nav"><li class="nav-item">
-  <a class="external-link nav-link" href="https://github.com/UHERO/fcutils/" aria-label="github">
-    <span class="fab fa fab fa-github fa-lg"></span>
-     
-  </a>
-</li>
-      </ul></div>
+      <ul class="navbar-nav"></ul></div>
 
     
   </div>
@@ -44,7 +32,7 @@
 <div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
       <img src="" class="logo" alt=""><h1>Format series names to udaman format (mnemonic@loc.freq)</h1>
-      <small class="dont-index">Source: <a href="https://github.com/UHERO/fcutils/blob/HEAD/R/fcst_utils.R" class="external-link"><code>R/fcst_utils.R</code></a></small>
+      
       <div class="d-none name"><code>rename_udaman.Rd</code></div>
     </div>
 
@@ -60,19 +48,19 @@
     <div class="section level2">
     <h2 id="arguments">Arguments<a class="anchor" aria-label="anchor" href="#arguments"></a></h2>
     <dl><dt>ser_in</dt>
-<dd><p>series name (string "mnemonic_loc", "mnemonic__loc_freq")</p></dd>
+<dd><p>series names (character "mnemonic_loc", "mnemonic__loc_freq", mnemonic@loc.freq")</p></dd>
 
 
 <dt>freq</dt>
 <dd><p>frequency of the series, required if not contained in the series
-name (string "D", "W", "M", "Q", "S", "A")</p></dd>
+name (character "D", "W", "M", "Q", "S", "A")</p></dd>
 
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
     
 
-<p>series name following udaman convention "mnemonic@loc.freq"</p>
+<p>series names following udaman convention "mnemonic@loc.freq"</p>
     </div>
 
     <div class="section level2">
@@ -85,17 +73,162 @@ name (string "D", "W", "M", "Q", "S", "A")</p></dd>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "E_NF@HI.M" "ECT@HI.M"  "VAP@HAW.W"</span>
 <span class="r-in"><span><span class="fu">rename_udaman</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"SH_US@HI.M"</span>, <span class="st">"SH_JP__HON_M"</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "SH_US@HI.M" "SH_JP@JP.M"</span>
-<span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span> <span class="co"># interactive()</span></span></span>
-<span class="r-in"><span><span class="fu"><a href="get_series_exp.html">get_series_exp</a></span><span class="op">(</span><span class="fl">74</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/rename.html" class="external-link">rename_with</a></span><span class="op">(</span><span class="op">~</span> <span class="fu">rename_udaman</span><span class="op">(</span><span class="va">.</span>, freq <span class="op">=</span> <span class="st">"M"</span><span class="op">)</span>, .cols <span class="op">=</span> <span class="op">-</span><span class="fl">1</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="fu"><a href="get_series_exp.html">get_series_exp</a></span><span class="op">(</span><span class="fl">74</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/rename.html" class="external-link">rename_with</a></span><span class="op">(</span><span class="va">rename_udaman</span>, freq <span class="op">=</span> <span class="st">"M"</span>, .cols <span class="op">=</span> <span class="op">!</span><span class="va">time</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="fu"><a href="get_series_exp.html">get_series_exp</a></span><span class="op">(</span><span class="fl">74</span><span class="op">)</span> <span class="op">|&gt;</span></span></span>
+<span class="r-in"><span><span class="va">quarterly_data_example</span> <span class="op">|&gt;</span> <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/rename.html" class="external-link">rename_with</a></span><span class="op">(</span><span class="op">~</span> <span class="fu">rename_udaman</span><span class="op">(</span><span class="va">.</span>, freq <span class="op">=</span> <span class="st">"M"</span><span class="op">)</span>, .cols <span class="op">=</span> <span class="op">-</span><span class="fl">1</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 102 × 31</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    time       `E_NF@HI.M` `ECT@HI.M` `EMN@HI.M` `EWT@HI.M` `ERT@HI.M`</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;date&gt;</span>           <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 1</span> 1998-01-01        531.       23.3       15.9       15.9       65.2</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 2</span> 1998-04-01        531.       23.0       15.8       15.9       64.6</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 3</span> 1998-07-01        533.       23         15.8       15.9       64.2</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 4</span> 1998-10-01        531.       23.0       15.8       16         64.2</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 5</span> 1999-01-01        530.       22.8       15.8       15.8       64.1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 6</span> 1999-04-01        533.       22.9       15.9       15.8       64.8</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 7</span> 1999-07-01        537.       22.9       16.1       15.8       65.1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 8</span> 1999-10-01        541.       23.3       16.3       16.0       65.9</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 9</span> 2000-01-01        544.       24.3       16.3       16.2       66.0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">10</span> 2000-04-01        551.       25         16.4       16.2       66.0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># ℹ 92 more rows</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># ℹ 25 more variables: `E_TRADE@HI.M` &lt;dbl&gt;, `E_TU@HI.M` &lt;dbl&gt;,</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;">#   `ETWTANS@HI.M` &lt;dbl&gt;, `ETWNS@HI.M` &lt;dbl&gt;, `EUT@HI.M` &lt;dbl&gt;,</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;">#   `EIF@HI.M` &lt;dbl&gt;, `EFI@HI.M` &lt;dbl&gt;, `E_FIR@HI.M` &lt;dbl&gt;, `ERE@HI.M` &lt;dbl&gt;,</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;">#   `EPS@HI.M` &lt;dbl&gt;, `E_PBS@HI.M` &lt;dbl&gt;, `E_ELSE@HI.M` &lt;dbl&gt;,</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;">#   `EMA@HI.M` &lt;dbl&gt;, `EAD@HI.M` &lt;dbl&gt;, `EED@HI.M` &lt;dbl&gt;, `EHC@HI.M` &lt;dbl&gt;,</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;">#   `EAF@HI.M` &lt;dbl&gt;, `EAFAC@HI.M` &lt;dbl&gt;, `EAFFD@HI.M` &lt;dbl&gt;, …</span></span>
+<span class="r-in"><span><span class="va">quarterly_data_example</span> <span class="op">|&gt;</span> <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/rename.html" class="external-link">rename_with</a></span><span class="op">(</span><span class="va">rename_udaman</span>, freq <span class="op">=</span> <span class="st">"M"</span>, .cols <span class="op">=</span> <span class="op">!</span><span class="va">time</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 102 × 31</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    time       `E_NF@HI.M` `ECT@HI.M` `EMN@HI.M` `EWT@HI.M` `ERT@HI.M`</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;date&gt;</span>           <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 1</span> 1998-01-01        531.       23.3       15.9       15.9       65.2</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 2</span> 1998-04-01        531.       23.0       15.8       15.9       64.6</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 3</span> 1998-07-01        533.       23         15.8       15.9       64.2</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 4</span> 1998-10-01        531.       23.0       15.8       16         64.2</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 5</span> 1999-01-01        530.       22.8       15.8       15.8       64.1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 6</span> 1999-04-01        533.       22.9       15.9       15.8       64.8</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 7</span> 1999-07-01        537.       22.9       16.1       15.8       65.1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 8</span> 1999-10-01        541.       23.3       16.3       16.0       65.9</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 9</span> 2000-01-01        544.       24.3       16.3       16.2       66.0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">10</span> 2000-04-01        551.       25         16.4       16.2       66.0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># ℹ 92 more rows</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># ℹ 25 more variables: `E_TRADE@HI.M` &lt;dbl&gt;, `E_TU@HI.M` &lt;dbl&gt;,</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;">#   `ETWTANS@HI.M` &lt;dbl&gt;, `ETWNS@HI.M` &lt;dbl&gt;, `EUT@HI.M` &lt;dbl&gt;,</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;">#   `EIF@HI.M` &lt;dbl&gt;, `EFI@HI.M` &lt;dbl&gt;, `E_FIR@HI.M` &lt;dbl&gt;, `ERE@HI.M` &lt;dbl&gt;,</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;">#   `EPS@HI.M` &lt;dbl&gt;, `E_PBS@HI.M` &lt;dbl&gt;, `E_ELSE@HI.M` &lt;dbl&gt;,</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;">#   `EMA@HI.M` &lt;dbl&gt;, `EAD@HI.M` &lt;dbl&gt;, `EED@HI.M` &lt;dbl&gt;, `EHC@HI.M` &lt;dbl&gt;,</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;">#   `EAF@HI.M` &lt;dbl&gt;, `EAFAC@HI.M` &lt;dbl&gt;, `EAFFD@HI.M` &lt;dbl&gt;, …</span></span>
+<span class="r-in"><span><span class="va">quarterly_data_example</span> <span class="op">|&gt;</span></span></span>
 <span class="r-in"><span>  <span class="fu">tsbox</span><span class="fu">::</span><span class="fu"><a href="https://docs.ropensci.org/tsbox/reference/ts_long.html" class="external-link">ts_long</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span></span></span>
-<span class="r-in"><span>  <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>id <span class="op">=</span> <span class="fu">rename_udaman</span><span class="op">(</span><span class="va">id</span>, freq <span class="op">=</span> <span class="st">"M"</span><span class="op">)</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="fu"><a href="get_series_exp.html">get_series_exp</a></span><span class="op">(</span><span class="fl">318</span>, rename <span class="op">=</span> <span class="st">"full"</span><span class="op">)</span> <span class="op">|&gt;</span></span></span>
-<span class="r-in"><span>  <span class="fu">tsbox</span><span class="fu">::</span><span class="fu"><a href="https://docs.ropensci.org/tsbox/reference/ts_long.html" class="external-link">ts_long</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span></span></span>
-<span class="r-in"><span>  <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>id <span class="op">=</span> <span class="fu">rename_udaman</span><span class="op">(</span><span class="va">id</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span></span>
+<span class="r-in"><span>  <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>id <span class="op">=</span> <span class="fu">rename_udaman</span><span class="op">(</span><span class="va">id</span>, freq <span class="op">=</span> <span class="st">"M"</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span></span>
 <span class="r-in"><span>  <span class="fu">tsbox</span><span class="fu">::</span><span class="fu"><a href="https://docs.ropensci.org/tsbox/reference/ts_ts.html" class="external-link">ts_xts</a></span><span class="op">(</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="op">}</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>            E_NF.HI.M ECT.HI.M EMN.HI.M EWT.HI.M ERT.HI.M E_TRADE.HI.M E_TU.HI.M</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1998-01-01    530.51    23.26    15.89    15.87    65.17        81.03     27.89</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1998-04-01    531.21    22.99    15.76    15.93    64.63        80.56     27.86</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1998-07-01    532.70    23.00    15.80    15.90    64.23        80.14     27.60</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1998-10-01    531.48    23.05    15.78    16.00    64.20        80.22     27.32</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1999-01-01    529.51    22.79    15.76    15.77    64.07        79.83     27.03</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1999-04-01    533.21    22.86    15.93    15.83    64.80        80.63     27.43</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1999-07-01    537.34    22.93    16.13    15.83    65.13        80.96     27.56</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1999-10-01    541.26    23.31    16.27    16.03    65.93        81.97     27.91</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2000-01-01    544.44    24.26    16.26    16.23    66.03        82.26     27.96</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2000-04-01    551.10    25.00    16.43    16.23    66.03        82.27     28.13</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>        ...                                                                     </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2021-01-01    559.18    37.36    11.72    16.03    61.80        77.82     26.39</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2021-04-01    583.66    37.40    12.00    16.33    63.07        79.40     29.50</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2021-07-01    601.51    36.85    12.39    16.67    63.97        80.65     31.05</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2021-10-01    603.71    36.75    12.45    16.93    64.53        81.45     31.65</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2022-01-01    607.64    36.82    12.39    17.10    64.40        81.49     31.72</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2022-04-01    612.17    36.89    12.49    17.30    64.63        81.93     32.66</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2022-07-01    624.58    37.15    12.65    17.43    65.37        82.82     33.65</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2022-10-01    627.67    38.76    12.66    17.40    65.17        82.56     33.19</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2023-01-01    631.39    38.85    12.78    17.40    64.97        82.38     33.95</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2023-04-01    630.92    37.24    12.91    17.33    65.03        82.38     34.04</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>            ETWTANS.HI.M ETWNS.HI.M EUT.HI.M EIF.HI.M EFI.HI.M E_FIR.HI.M</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1998-01-01         10.0       25.0     2.79    11.27    17.83      29.99</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1998-04-01         10.0       25.1     2.79    11.47    17.79      29.99</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1998-07-01         10.1       24.9     2.76    11.53    18.24      30.37</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1998-10-01         10.0       24.7     2.73    11.67    18.15      30.32</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1999-01-01          9.7       24.2     2.66    11.40    17.83      29.99</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1999-04-01         10.0       24.7     2.69    11.30    17.59      29.86</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1999-07-01         10.2       24.9     2.71    11.63    17.33      29.46</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1999-10-01         10.3       25.3     2.74    11.70    17.17      29.31</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2000-01-01         10.4       25.2     2.64    11.70    16.36      28.89</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2000-04-01         10.6       25.5     2.66    12.50    16.10      28.73</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>        ...                                                              </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2021-01-01          7.7       22.9     3.20     7.83    16.16      26.59</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2021-04-01          8.1       25.8     3.58     7.83    16.10      27.14</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2021-07-01          8.6       27.2     3.77     7.97    16.09      27.59</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2021-10-01          9.0       28.3     3.84     8.30    16.09      27.75</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2022-01-01          8.9       28.3     3.48     8.23    15.82      27.52</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2022-04-01          9.2       28.9     3.59     7.97    15.69      27.69</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2022-07-01          9.5       29.7     3.70     8.57    15.62      27.95</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2022-10-01          9.6       30.0     3.65     8.70    15.46      27.86</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2023-01-01          9.7       30.1     3.71     8.90    15.35      27.65</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2023-04-01          9.8       30.1     3.70     9.03    15.11      27.28</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>            ERE.HI.M EPS.HI.M E_PBS.HI.M E_ELSE.HI.M EMA.HI.M EAD.HI.M EED.HI.M</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1998-01-01    12.17    19.13       54.4      108.27     6.30    29.00    10.50</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1998-04-01    12.20    19.03       54.5      109.01     6.30    29.13    10.77</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1998-07-01    12.13    19.10       54.6      109.34     6.30    29.17    10.90</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1998-10-01    12.17    19.00       54.2      109.26     6.20    29.03    10.90</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1999-01-01    12.17    18.87       54.5      109.24     6.13    29.47    10.97</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1999-04-01    12.27    19.10       55.2      109.98     6.10    30.00    10.90</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1999-07-01    12.13    18.97       55.7      111.11     6.00    30.73    11.10</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1999-10-01    12.13    19.27       57.0      112.83     6.03    31.73    11.07</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2000-01-01    12.53    19.70       57.5      114.25     5.83    32.00    11.40</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2000-04-01    12.63    20.10       58.5      115.96     5.93    32.43    11.23</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>        ...                                                                    </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2021-01-01    10.43    24.87       66.3      117.66     8.17    33.23    12.23</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2021-04-01    11.03    25.47       68.6      122.08     8.37    34.73    12.67</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2021-07-01    11.50    25.63       69.1      125.21     8.47    35.03    13.07</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2021-10-01    11.67    25.80       70.1      128.01     8.40    35.90    13.53</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2022-01-01    11.70    25.73       70.9      129.57     8.70    36.50    13.67</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2022-04-01    12.00    25.83       71.1      130.58     8.63    36.67    13.73</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2022-07-01    12.33    26.17       72.0      133.06     8.60    37.20    13.93</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2022-10-01    12.40    26.47       71.5      133.75     8.73    36.33    14.43</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2023-01-01    12.30    26.53       71.9      134.98     8.70    36.63    14.63</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2023-04-01    12.17    26.73       72.7      136.48     8.67    37.30    15.17</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>            EHC.HI.M EAF.HI.M EAFAC.HI.M EAFFD.HI.M EOS.HI.M EGV.HI.M EGVFD.HI.M</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1998-01-01    46.36    86.16      38.51      47.66    21.77   111.63      30.49</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1998-04-01    47.03    86.23      38.01      48.22    21.87   111.77      30.36</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1998-07-01    47.74    85.77      37.44      48.33    21.87   112.93      30.31</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1998-10-01    47.95    85.95      37.57      48.38    21.90   111.67      30.35</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1999-01-01    47.53    85.93      37.67      48.26    21.83   111.40      30.26</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1999-04-01    48.23    86.63      37.58      49.05    21.97   111.67      30.13</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1999-07-01    48.46    86.36      36.86      49.51    22.00   114.33      30.43</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1999-10-01    48.61    87.81      38.15      49.66    22.37   113.27      30.47</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2000-01-01    48.79    88.12      38.05      50.08    22.67   113.63      30.69</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2000-04-01    49.23    89.70      38.72      50.99    22.87   115.63      31.93</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>        ...                                                                     </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2021-01-01    71.69    71.12      20.62      50.50    23.53   118.80      34.72</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2021-04-01    72.20    84.47      27.90      56.57    23.87   119.47      34.87</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2021-07-01    72.22    92.62      33.06      59.57    24.87   122.97      34.79</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2021-10-01    71.95    93.85      33.81      60.05    25.33   119.80      34.52</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2022-01-01    72.49    96.29      35.26      61.02    25.63   119.33      34.49</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2022-04-01    72.13    98.93      36.38      62.54    25.97   118.87      34.63</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2022-07-01    72.15   101.55      37.35      64.20    26.43   123.63      34.85</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2022-10-01    72.76   105.09      38.81      66.28    26.73   121.03      34.79</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2023-01-01    72.55   107.28      39.27      68.01    27.07   121.00      34.88</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2023-04-01    72.21   105.98      38.96      67.02    27.00   122.43      35.18</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>            EGVST.HI.M EGVSTEDNS.HI.M EGVLC.HI.M</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1998-01-01      64.40           43.0      16.73</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1998-04-01      64.60           44.5      16.80</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1998-07-01      65.43           35.9      17.20</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1998-10-01      64.60           43.1      16.73</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1999-01-01      64.43           43.1      16.70</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1999-04-01      64.93           44.7      16.60</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1999-07-01      67.13           36.9      16.77</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1999-10-01      66.17           44.5      16.63</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2000-01-01      66.33           43.9      16.60</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2000-04-01      67.03           46.0      16.67</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>        ...                                     </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2021-01-01      65.30           44.5      18.77</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2021-04-01      65.90           46.1      18.70</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2021-07-01      69.73           42.2      18.47</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2021-10-01      66.83           46.7      18.43</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2022-01-01      66.40           46.0      18.43</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2022-04-01      65.73           47.1      18.50</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2022-07-01      70.37           42.7      18.43</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2022-10-01      67.70           48.3      18.53</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2023-01-01      67.43           47.1      18.70</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2023-04-01      68.47           49.1      18.80</span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc"><h2>On this page</h2>
@@ -103,7 +236,7 @@ name (string "D", "W", "M", "Q", "S", "A")</p></dd>
 
 
     <footer><div class="pkgdown-footer-left">
-  <p></p><p>Developed by Peter Fuleky.</p>
+  <p></p><p>Developed by First Last.</p>
 </div>
 
 <div class="pkgdown-footer-right">
