@@ -7,11 +7,12 @@
 make_xts(start = bnk_start, end = NULL, per = "year", val = NA_real_)
 }
 \arguments{
-\item{start}{date of series start (character: "yyyy-mm-dd")}
+\item{start}{date of series start (character: "yyyy-mm-dd", "yyyyqq", "yyyy")}
 
-\item{end}{date of series end (character: "yyyy-mm-dd")}
+\item{end}{date of series end (character: "yyyy-mm-dd", "yyyyqq", "yyyy")}
 
-\item{per}{periodicity of series (character: "quarter", "year")}
+\item{per}{periodicity of series (character: "year" - default)
+if date format of start is quarterly, automatically set to "quarter"}
 
 \item{val}{values to fill in (numeric scalar, vector, or tibble)}
 }
@@ -30,9 +31,11 @@ the end date is automatically determined by the number of rows in the tibble.
 }
 \examples{
 make_xts()
-make_xts(start = lubridate::ymd("2010-01-01"), per = "quarter", val = 0)
-make_xts(start = lubridate::ymd("2010-01-01"), per = "q", val = 1:10)
-make_xts(start = lubridate::ymd("2010-01-01"), per = "m", val = 0)
-make_xts(start = lubridate::ymd("2010-01-01"), per = "q",
+make_xts(val = 0, per = "m")
+make_xts(start = 20100101, per = "quarter", val = 0)
+make_xts(start = 2010.1, per = "q", val = 1:10)
+make_xts(2010.1, val = 1:10) # automatically set per = "quarter"
+make_xts(start = "2010-01-01", per = "m", val = 0)
+make_xts(start = 201001, per = "q",
          val = tibble::tibble(E_NF_HON = c(1:10), ECT_HI = c(11:20)))
 }
