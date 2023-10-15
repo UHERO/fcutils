@@ -303,12 +303,12 @@ make_xts <- function(start = bnk_start, end = NULL, per = "year", val = NA_real_
 #' remaining period between start and end is filled with zeros.
 #'
 #' @examples
-#' add_seq()
-#' add_seq(201002, 201504, 1, 2)
-#' add_seq(20100101, 20601201, 1, 2, per = "month")
-#' add_seq(20100101, from = 1, to = 2, per = "quarter")
-#' add_seq(2010.2, 2015.4, 1, 2, "ECT_HI")
-add_seq <- function(start = bnk_start, end = bnk_end, from = 0, to = 0, ser_name = "value", per = "year") {
+#' addf()
+#' addf(201002, 201504, 1, 2)
+#' addf(20100101, 20601201, 1, 2, per = "month")
+#' addf(20100101, from = 1, to = 2, per = "quarter")
+#' addf(2010.2, 2015.4, 1, 2, "ECT_HI")
+addf <- function(start = bnk_start, end = bnk_end, from = 0, to = 0, ser_name = "value", per = "year") {
   if (nchar(as.character(start)) > 4 & nchar(as.character(start)) < 8 | per == "quarter") {
     per <- "quarter"
     start <- to_ymd(start) %>% lubridate::quarter(type = "year.quarter")
