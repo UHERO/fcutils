@@ -225,9 +225,10 @@ get_series_exp <- function(exp_id, format = "wide", expand = "true", rename = "c
 
 #' Create xts and fill with values
 #'
-#' @param start date of series start (character: "yyyy-mm-dd")
-#' @param end date of series end (character: "yyyy-mm-dd")
-#' @param per periodicity of series (character: "quarter", "year")
+#' @param start date of series start (character: "yyyy-mm-dd", "yyyyqq", "yyyy")
+#' @param end date of series end (character: "yyyy-mm-dd", "yyyyqq", "yyyy")
+#' @param per periodicity of series (character: "year" - default)
+#'   if date format of start is quarterly, automatically set to "quarter"
 #' @param val values to fill in (numeric scalar, vector, or tibble)
 #'
 #' @return an xts series
@@ -241,12 +242,17 @@ get_series_exp <- function(exp_id, format = "wide", expand = "true", rename = "c
 #'
 #' @examples
 #' make_xts()
-#' make_xts(start = lubridate::ymd("2010-01-01"), per = "quarter", val = 0)
-#' make_xts(start = lubridate::ymd("2010-01-01"), per = "q", val = 1:10)
-#' make_xts(start = lubridate::ymd("2010-01-01"), per = "m", val = 0)
-#' make_xts(start = lubridate::ymd("2010-01-01"), per = "q",
+#' make_xts(val = 0, per = "m")
+#' make_xts(start = 20100101, per = "quarter", val = 0)
+#' make_xts(start = 2010.1, per = "q", val = 1:10)
+#' make_xts(2010.1, val = 1:10) # automatically set per = "quarter"
+#' make_xts(start = "2010-01-01", per = "m", val = 0)
+#' make_xts(start = 201001, per = "q",
 #'          val = tibble::tibble(E_NF_HON = c(1:10), ECT_HI = c(11:20)))
 make_xts <- function(start = bnk_start, end = NULL, per = "year", val = NA_real_) {
+  if (nchar(as.character(start)) > 4 & nchar(as.character(start)) < 8) per <- "quarter"
+  start <- to_ymd(start)
+  end <- if(!is.null(end)) to_ymd(end) else NULL
   if ("tbl_df" %in% class(val)) {
     dplyr::bind_cols(
       tibble::tibble(time = seq.Date(from = start, by = per, length.out = nrow(val))),
@@ -275,6 +281,47 @@ make_xts <- function(start = bnk_start, end = NULL, per = "year", val = NA_real_
     ) %>%
       tsbox::ts_long() %>%
       tsbox::ts_xts()
+  }
+}
+
+
+#' Create xts addfactor
+#'
+#' @param start start date of linear interpolation (character: "yyyy-mm-dd", "yyyyqq", "yyyy")
+#' @param end end date of linear interpolation (character: "yyyy-mm-dd", "yyyyqq", "yyyy")
+#' @param from first value for linear interpolation (numeric)
+#' @param to last value for linear interpolation (numeric)
+#' @param ser_name name of the xts series (string)
+#' @param per periodicity of series (character: "year" - default)
+#'   if date format of start is quarterly, automatically set to "quarter"
+#'
+#' @return a single xts series spanning bnk_start-bnk_end
+#' @export
+#'
+#' @details this is a wrapper around make_xts with some additional functionality.
+#' the start and end dates specify the span of the non-zero add-factor value. the
+#' remaining period between start and end is filled with zeros.
+#'
+#' @examples
+#' add_seq()
+#' add_seq(201002, 201504, 1, 2)
+#' add_seq(20100101, 20601201, 1, 2, per = "month")
+#' add_seq(20100101, from = 1, to = 2, per = "quarter")
+#' add_seq(2010.2, 2015.4, 1, 2, "ECT_HI")
+add_seq <- function(start = bnk_start, end = bnk_end, from = 0, to = 0, ser_name = "value", per = "year") {
+  if (nchar(as.character(start)) > 4 & nchar(as.character(start)) < 8 | per == "quarter") {
+    per <- "quarter"
+    start <- to_ymd(start) %>% lubridate::quarter(type = "year.quarter")
+    end <- to_ymd(end) %>% lubridate::quarter(type = "year.quarter")
+    make_xts(start, end, per = per, val = seq.int(from, to, length.out = nqtrs(start, end))) %>%
+      tsbox::ts_bind(make_xts(val = 0)) %>%
+      magrittr::set_names(ser_name)
+  } else {
+    start <- to_ymd(start)
+    end <- to_ymd(end) %>% lubridate::floor_date(unit = per)
+    make_xts(start, end, per = per, val = seq.int(from, to, length.out = lubridate::time_length(end - start, unit = per) + 1)) %>%
+      tsbox::ts_bind(make_xts(val = 0, per = per)) %>%
+      magrittr::set_names(ser_name)
   }
 }
 
@@ -1384,6 +1431,22 @@ ymd_to_yQq <- function(x) {
   x %>%
     lubridate::quarter(type = "year.quarter") %>%
     stringr::str_replace("\\.", "Q")
+}
+
+
+#' Parse strings into dates in yyyy-mm-dd format
+#'
+#' @param x string (string: yyyymmdd, yyyyqq, yyyy.q, yyyy)
+#'
+#' @return formatted dates (yyyy-mm-dd)
+#' @export
+#'
+#' @examples
+#' to_ymd(c("2010.0211", 202002, 2020.2, "2020"))
+to_ymd <- function(x) {
+  x %>%
+    lubridate::parse_date_time(orders = c("ymd", "yq", "y")) %>%
+    lubridate::ymd()
 }
 
 
