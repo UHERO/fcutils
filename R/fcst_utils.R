@@ -314,7 +314,7 @@ addf <- function(start = bnk_start, end = bnk_end, from = 0, to = 0, ser_name = 
     start <- to_ymd(start) %>% lubridate::quarter(type = "year.quarter")
     end <- to_ymd(end) %>% lubridate::quarter(type = "year.quarter")
     make_xts(start, end, per = per, val = seq.int(from, to, length.out = nqtrs(start, end))) %>%
-      tsbox::ts_bind(make_xts(val = 0)) %>%
+      tsbox::ts_bind(make_xts(val = 0, per = per)) %>%
       magrittr::set_names(ser_name)
   } else {
     start <- to_ymd(start)
