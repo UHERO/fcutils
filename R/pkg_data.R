@@ -8,7 +8,7 @@
 #' @keywords data
 # NULL
 "bnk_start"
-bnk_start <- lubridate::ymd("1900-01-01")
+bnk_start <- lubridate::ymd("1970-01-01")
 
 #' end of data range in the data bank
 #' @name bnk_end
