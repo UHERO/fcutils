@@ -65,7 +65,7 @@ uhero_colors_light <- c("#90C3DC", "#FFD9BD", "#CAEA8D", "#D2B8F6", "#AAEEF4", "
 #' @references \url{uhero.hawaii.edu}
 #' @keywords data
 # NULL
-# colorspace::adjust_transparency(uhero_colors_light, alpha = 0.5)
+# colorspace::adjust_transparency(uhero_colors, alpha = 0.5)
 "uhero_colors_50"
 uhero_colors_50 <- c("#1D667F80", "#F6A01B80", "#9BBB5980", "#8064A280", "#7EC4CA80", "#50505080", "#FF000080")
 
@@ -108,6 +108,6 @@ uhero_colors_50 <- c("#1D667F80", "#F6A01B80", "#9BBB5980", "#8064A280", "#7EC4C
 # daily_data_example |> save(file = "daily_data_example.rda")
 "daily_data_example"
 
-# usethis::use_data(bnk_start, bnk_end, uhero_colors, uhero_colors_light, uhero_colors_50, internal = FALSE)
+# usethis::use_data(bnk_start, bnk_end, uhero_colors, uhero_colors_light, uhero_colors_50, internal = FALSE, overwrite = TRUE)
 # usethis::use_data(quarterly_data_example, monthly_data_example, daily_data_example, internal = FALSE, overwrite = TRUE)
 
