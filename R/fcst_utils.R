@@ -923,7 +923,7 @@ AtoQ <- function(ser_in, aggr = "mean") {
   dat_end <- tsbox::ts_summary(ser_out)$end
   increment <- (tsbox::ts_lag(ser_out, -4) - ser_out) / 4
   increment <- increment %>% tsbox::ts_bind(tsbox::ts_lag(increment, 4)[stringr::str_c(dat_end - months(9), "/", dat_end)])
-  ser_out[p(dat_start + months(3), dat_end)] <- (as.numeric(ser_out[dat_start]) + tsbox::ts_lag(increment, 1)[p(dat_start + months(3), dat_end)] %>% cumsum()) %>% as.numeric()
+  ser_out[stringr::str_c(dat_start + months(3), "/", dat_end)] <- (as.numeric(ser_out[dat_start]) + tsbox::ts_lag(increment, 1)[stringr::str_c(dat_start + months(3), "/", dat_end)] %>% cumsum()) %>% as.numeric()
   ser_out <- ser_out - 1.5 * increment
   if (aggr != "mean") ser_out <- ser_out / 4
   colnames(ser_out) <- colnames(ser_in) %>%
@@ -1343,10 +1343,13 @@ find_end <- function(x, last_day = FALSE) {
 #' p("2010-01-01", "2020-01-01")
 #' p(20100101, 20200101)
 #' p(2010.1, 2020.4)
+#' p(,2020.4)
 #' p("2010Q1", "2020Q4")
 #' p(2010, 2020) # for annual period only
 p <- function(dat1 = "", dat2 = "") {
-  stringr::str_c(to_ymd(dat1), to_ymd(dat2), sep = "/")
+  if (nchar(dat1) != 0) dat1 <- to_ymd(dat1)
+  if (nchar(dat2) != 0) dat2 <- to_ymd(dat2)
+  stringr::str_c(dat1, dat2, sep = "/")
 }
 
 

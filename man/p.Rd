@@ -21,6 +21,7 @@ Concatenate dates to obtain period
 p("2010-01-01", "2020-01-01")
 p(20100101, 20200101)
 p(2010.1, 2020.4)
+p(,2020.4)
 p("2010Q1", "2020Q4")
 p(2010, 2020) # for annual period only
 }
