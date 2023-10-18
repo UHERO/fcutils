@@ -746,8 +746,7 @@ conv_long <- function(x, ser_info = FALSE) {
   x_mod <-
     {
       if (was_wide) tsbox::ts_long(x) else tsbox::ts_tbl(x)
-    } %>%
-    tidyr::drop_na()
+    }
   # need long tbl series names for differential treatment of univariate data
   ser_names_2 <- tsbox::ts_summary(x_mod) %>%
     dplyr::pull(.data$id)
@@ -867,8 +866,9 @@ disagg <- function(x, conv_type = "mean", target_freq = "quarter", pattern = NUL
   x_mod <- conv_long(x, ser_info = TRUE)
   pattern_mod <- if (is.null(pattern)) pattern else conv_long(pattern) %>% tsbox::ts_ts()
 
-  # drop missing values convert to xts and interpolate
+  # convert to tslist and interpolate
   x_mod_int <- x_mod %>%
+    # tidyr::drop_na() %>%
     tsbox::ts_tslist() %>%
     purrr::map(.f = ~ disagg_1(.x, conv_type = conv_type, target_freq = target_freq, pattern = pattern_mod)) %>%
     magrittr::set_attr("class", c("list", "tslist")) %>%
