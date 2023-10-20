@@ -433,6 +433,7 @@ write_tsd <- function(x, file) {
   # convert the ts-boxable object to tslist
   x_mod <- conv_long(x, ser_info = TRUE)
   in_list <- x_mod %>%
+    tidyr::drop_na() %>%
     tsbox::ts_tslist()
 
   # get summary info about the time series
