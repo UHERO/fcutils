@@ -21,7 +21,7 @@ get_series(
 \item{expand}{"true" (default) or "raw" ("true" downloads formatted data, "raw" downloads raw units)}
 
 \item{rename}{"compact" (default), "full", "no". "compact": @ replaced by _
-and no frequency; "full": @ replaced by __ and . by _; "no": no renaming,
+and no frequency; "full": @ replaced by \emph{AT} and . by _; "no": no renaming,
 keep UDAMAN names}
 
 \item{freq}{if frequency is missing from series names (or want to modify freq
@@ -50,5 +50,6 @@ get_series(c("VISNS@HI.M"), format = "xts")
 get_series(c("VISNS@HI.M"), format = "xts", descr = TRUE)
 get_series(c("E_NF_HI", "ECT_HI", "E_TU_HAW"), freq = "M")
 get_series(c("E_NF__HI_M", "ECT__HI_M", "VAP__HI_W"))
+get_series(c("E_NF_AT_HI_M", "ECT_AT_HI_M", "VAP_AT_HI_W"))
 \dontshow{\}) # examplesIf}
 }

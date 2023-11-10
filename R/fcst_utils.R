@@ -18,7 +18,7 @@
 #' @param ser_id udaman series name (character)
 #' @param expand "true" or "raw" ("true" downloads formatted data, "raw" downloads raw units)
 #' @param rename "compact" (default), "full", "no". "compact": @ replaced by _
-#'   and no frequency; "full": @ replaced by __ and . by _; "no": no renaming,
+#'   and no frequency; "full": @ replaced by _AT_ and . by _; "no": no renaming,
 #'   keep UDAMAN names
 #' @param descr if TRUE add to the udaman series name the series description in parentheses (default: FALSE)
 #'
@@ -57,7 +57,7 @@ get_series_1 <- function(ser_id, expand = "true", rename = "compact", descr = FA
         if (descr) stringr::str_c(., " (", title, ", ", geo, ")") else .
       }),
     rename == "full" ~ c("time", name %>%
-      stringr::str_replace_all(c("\\.([A-Z])" = "_\\1", "@" = "__", "OCUP%" = "OCUPP")) %>%
+      stringr::str_replace_all(c("\\.([A-Z])" = "_\\1", "@" = "_AT_", "OCUP%" = "OCUPP")) %>%
       {
         if (descr) stringr::str_c(., " (", title, ", ", geo, ")") else .
       }),
@@ -77,7 +77,7 @@ get_series_1 <- function(ser_id, expand = "true", rename = "compact", descr = FA
 #' @param format "wide" (default) or "long" or "xts"
 #' @param expand "true" (default) or "raw" ("true" downloads formatted data, "raw" downloads raw units)
 #' @param rename "compact" (default), "full", "no". "compact": @ replaced by _
-#'   and no frequency; "full": @ replaced by __ and . by _; "no": no renaming,
+#'   and no frequency; "full": @ replaced by _AT_ and . by _; "no": no renaming,
 #'   keep UDAMAN names
 #' @param freq if frequency is missing from series names (or want to modify freq
 #'   in existing names) specify frequency (character), e.g. "M".
@@ -99,6 +99,7 @@ get_series_1 <- function(ser_id, expand = "true", rename = "compact", descr = FA
 #' get_series(c("VISNS@HI.M"), format = "xts", descr = TRUE)
 #' get_series(c("E_NF_HI", "ECT_HI", "E_TU_HAW"), freq = "M")
 #' get_series(c("E_NF__HI_M", "ECT__HI_M", "VAP__HI_W"))
+#' get_series(c("E_NF_AT_HI_M", "ECT_AT_HI_M", "VAP_AT_HI_W"))
 get_series <- function(ser_id_vec, format = "wide", expand = "true", rename = "compact", freq = NULL, descr = FALSE) {
   ser_tbl <- ser_id_vec %>%
     rename_udaman(., freq = freq) %>%
@@ -122,7 +123,7 @@ get_series <- function(ser_id_vec, format = "wide", expand = "true", rename = "c
 #' @param format "wide" (default) or "long" or "xts"
 #' @param expand "true" or "raw" ("true" downloads formatted data, "raw" downloads raw units)
 #' @param rename "compact" (default), "full", "no". "compact": @ replaced by _
-#'   and no frequency; "full": @ replaced by __ and . by _; "no": no renaming,
+#'   and no frequency; "full": @ replaced by _AT_ and . by _; "no": no renaming,
 #'   keep UDAMAN names
 #' @param descr if TRUE add to the udaman series name the series description in parentheses (default: FALSE)
 #' @param save_loc file path for saving data incl. extension ("html" or "csv") (default NULL)
@@ -171,7 +172,7 @@ get_series_exp <- function(exp_id, format = "wide", expand = "true", rename = "c
         if (descr) stringr::str_c(., " (", title, ")") else .
       }),
     rename == "full" ~ c("time", name %>%
-      stringr::str_replace_all(c("\\.([A-Z])" = "_\\1", "@" = "__", "OCUP%" = "OCUPP")) %>%
+      stringr::str_replace_all(c("\\.([A-Z])" = "_\\1", "@" = "_AT_", "OCUP%" = "OCUPP")) %>%
       {
         # if (descr) stringr::str_c(., " (", title, ", ", geo, ")") else .
         if (descr) stringr::str_c(., " (", title, ")") else .
@@ -214,7 +215,7 @@ get_series_exp <- function(exp_id, format = "wide", expand = "true", rename = "c
 #   content <- readBin(download$response$content, what = character())[1]
 #   data_tbl <- read_csv(file = content) %>%
 #     rename(time = date)
-#     # rename_with(~str_replace_all(., c("date" = "time", "\\.[A-Z]" = "", "@" = "__", "OCUP%" = "OCUPP")))
+#     # rename_with(~str_replace_all(., c("date" = "time", "\\.[A-Z]" = "", "@" = "_AT_", "OCUP%" = "OCUPP")))
 #   if (!is.null(save_loc)) write_csv(data_tbl, here(save_loc, basename(dn_url)))
 #   if (format == "wide") data_out <- data_tbl
 #   if (format == "long") data_out <- data_tbl %>% ts_long()
@@ -374,7 +375,7 @@ get_var <- function(ser_in, env = parent.frame()) {
 
 #' Format series names to udaman format (mnemonic@loc.freq)
 #'
-#' @param ser_in series names (character "mnemonic_loc", "mnemonic__loc_freq", mnemonic@loc.freq")
+#' @param ser_in series names (character "mnemonic_loc", "mnemonic_AT_loc_freq", "mnemonic__loc_freq", mnemonic@loc.freq")
 #' @param freq frequency of the series, required if not contained in the series
 #'   name (character "D", "W", "M", "Q", "S", "A")
 #'
@@ -384,6 +385,7 @@ get_var <- function(ser_in, env = parent.frame()) {
 #' @examples
 #' rename_udaman(c("E_NF_HI", "ECT_HI", "E_TU_HAW"), freq = "M")
 #' rename_udaman(c("E_NF__HI_M", "ECT__HI_M", "VAP__HAW_W"))
+#' rename_udaman(c("E_NF_AT_HI_M", "ECT_AT_HI_M", "VAP_AT_HAW_W"))
 #' rename_udaman(c("E_NF@HI.M", "ECT@HI.M", "VAP@HAW.W"))
 #' rename_udaman(c("SH_US@HI.M", "SH_JP__HON_M"))
 #' quarterly_data_example |> dplyr::rename_with(~ rename_udaman(., freq = "M"), .cols = -1)
@@ -396,6 +398,7 @@ rename_udaman <- function(ser_in, freq = NULL) {
   if (!is.character(ser_in)) {
     ser_in <- as.character(ser_in)
   }
+  ser_in <- stringr::str_replace(ser_in, "_AT_", "__")
   mnemonic <- ser_in %>%
     stringr::str_extract("[[:alnum:]_]+(?=_+HI|_+HON|_+HAW|_+MAU|_+KAU|_+NBI|_+US|_+JP|@)") %>%
     stringr::str_replace("_$", "")
@@ -2110,19 +2113,20 @@ model_equation <- function(model, ...) { #   model =  est_lm   {model_equation(e
 #' Parse gets output and extract underlying data (GETS model development)
 #'
 #' @param model_in a model estimated by arx, isat, or getsm
+#' @param y_name the actual name of the y variable
 #'
 #' @return an xts containing the model variables
 #' @export
 #'
 #' @examplesIf interactive()
 #' # save the data associated with a gets model
-extract_data <- function(model_in) {
+extract_data <- function(model_in, y_name) {
   data_out <- gets::eviews(model_in, print = FALSE, return = TRUE)$data %>%
     dplyr::select(-c) %>%
-    dplyr::rename(!!rlang::sym(.data$yvar_name) := "y") %>%
-    dplyr::rename_with(~ stringr::str_replace(., "ar", stringr::str_glue("{yvar_name}."))) %>%
+    dplyr::rename_with(~ y_name, .cols = 2) %>%
+    dplyr::rename_with(~ stringr::str_replace(., "ar", stringr::str_glue("{y_name}."))) %>%
     dplyr::rename_with(~ stringr::str_replace_all(., c("iis" = "IIS_", "sis" = "SIS_"))) %>%
-    dplyr::rename_with(~ stringr::str_replace_all(., "-", "_")) %>%
+    dplyr::rename_with(~ stringr::str_replace(., "-", "_")) %>%
     tsbox::ts_long() %>%
     tsbox::ts_xts()
 

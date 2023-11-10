@@ -4,10 +4,12 @@
 \alias{extract_data}
 \title{Parse gets output and extract underlying data (GETS model development)}
 \usage{
-extract_data(model_in)
+extract_data(model_in, y_name)
 }
 \arguments{
 \item{model_in}{a model estimated by arx, isat, or getsm}
+
+\item{y_name}{the actual name of the y variable}
 }
 \value{
 an xts containing the model variables

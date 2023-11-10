@@ -7,7 +7,7 @@
 rename_udaman(ser_in, freq = NULL)
 }
 \arguments{
-\item{ser_in}{series names (character "mnemonic_loc", "mnemonic__loc_freq", mnemonic@loc.freq")}
+\item{ser_in}{series names (character "mnemonic_loc", "mnemonic_AT_loc_freq", "mnemonic__loc_freq", mnemonic@loc.freq")}
 
 \item{freq}{frequency of the series, required if not contained in the series
 name (character "D", "W", "M", "Q", "S", "A")}
@@ -21,6 +21,7 @@ Format series names to udaman format (mnemonic@loc.freq)
 \examples{
 rename_udaman(c("E_NF_HI", "ECT_HI", "E_TU_HAW"), freq = "M")
 rename_udaman(c("E_NF__HI_M", "ECT__HI_M", "VAP__HAW_W"))
+rename_udaman(c("E_NF_AT_HI_M", "ECT_AT_HI_M", "VAP_AT_HAW_W"))
 rename_udaman(c("E_NF@HI.M", "ECT@HI.M", "VAP@HAW.W"))
 rename_udaman(c("SH_US@HI.M", "SH_JP__HON_M"))
 quarterly_data_example |> dplyr::rename_with(~ rename_udaman(., freq = "M"), .cols = -1)
