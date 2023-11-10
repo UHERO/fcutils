@@ -10,7 +10,7 @@
     
     <a class="navbar-brand me-2" href="../index.html">fcutils</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.0.9007</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.0.9008</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -48,7 +48,7 @@
     <div class="section level2">
     <h2 id="arguments">Arguments<a class="anchor" aria-label="anchor" href="#arguments"></a></h2>
     <dl><dt>ser_in</dt>
-<dd><p>series names (character "mnemonic_loc", "mnemonic__loc_freq", mnemonic@loc.freq")</p></dd>
+<dd><p>series names (character "mnemonic_loc", "mnemonic_AT_loc_freq", "mnemonic__loc_freq", mnemonic@loc.freq")</p></dd>
 
 
 <dt>freq</dt>
@@ -68,6 +68,8 @@ name (character "D", "W", "M", "Q", "S", "A")</p></dd>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="fu">rename_udaman</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"E_NF_HI"</span>, <span class="st">"ECT_HI"</span>, <span class="st">"E_TU_HAW"</span><span class="op">)</span>, freq <span class="op">=</span> <span class="st">"M"</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "E_NF@HI.M"  "ECT@HI.M"   "E_TU@HAW.M"</span>
 <span class="r-in"><span><span class="fu">rename_udaman</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"E_NF__HI_M"</span>, <span class="st">"ECT__HI_M"</span>, <span class="st">"VAP__HAW_W"</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "E_NF@HI.M" "ECT@HI.M"  "VAP@HAW.W"</span>
+<span class="r-in"><span><span class="fu">rename_udaman</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"E_NF_AT_HI_M"</span>, <span class="st">"ECT_AT_HI_M"</span>, <span class="st">"VAP_AT_HAW_W"</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "E_NF@HI.M" "ECT@HI.M"  "VAP@HAW.W"</span>
 <span class="r-in"><span><span class="fu">rename_udaman</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"E_NF@HI.M"</span>, <span class="st">"ECT@HI.M"</span>, <span class="st">"VAP@HAW.W"</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "E_NF@HI.M" "ECT@HI.M"  "VAP@HAW.W"</span>
