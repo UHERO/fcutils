@@ -21,7 +21,7 @@ get_series_exp(
 \item{expand}{"true" or "raw" ("true" downloads formatted data, "raw" downloads raw units)}
 
 \item{rename}{"compact" (default), "full", "no". "compact": @ replaced by _
-and no frequency; "full": @ replaced by __ and . by _; "no": no renaming,
+and no frequency; "full": @ replaced by \emph{AT} and . by _; "no": no renaming,
 keep UDAMAN names}
 
 \item{descr}{if TRUE add to the udaman series name the series description in parentheses (default: FALSE)}
