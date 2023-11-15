@@ -10,6 +10,7 @@ get_series_exp(
   expand = "true",
   rename = "compact",
   descr = FALSE,
+  public = FALSE,
   save_loc = NULL
 )
 }
@@ -25,6 +26,8 @@ and no frequency; "full": @ replaced by \emph{AT} and . by _; "no": no renaming,
 keep UDAMAN names}
 
 \item{descr}{if TRUE add to the udaman series name the series description in parentheses (default: FALSE)}
+
+\item{public}{if TRUE use the public API interface - does not require VPN (default: FALSE)}
 
 \item{save_loc}{file path for saving data incl. extension ("html" or "csv") (default NULL)}
 }

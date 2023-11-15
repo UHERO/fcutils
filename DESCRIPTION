@@ -1,10 +1,10 @@
 Package: fcutils
-Title: What the Package Does (One Line, Title Case)
+Title: Time Series and Forecast Utilities
 Version: 0.0.0.9008
 Authors@R: 
-    person("First", "Last", , "first.last@example.com", role = c("aut", "cre"),
+    person("Peter", "Fuleky", email = "fuleky@hawaii.edu", role = c("aut", "cre"),
            comment = c(ORCID = "YOUR-ORCID-ID"))
-Description: What the package does (one paragraph).
+Description: Utility functions to retrieve data from UDAMAN, wrangle, transform and plot time series data.
 License: MIT + file LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)

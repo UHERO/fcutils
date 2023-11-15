@@ -4,9 +4,9 @@
 \name{fcutils-package}
 \alias{fcutils}
 \alias{fcutils-package}
-\title{fcutils: What the Package Does (One Line, Title Case)}
+\title{fcutils: Time Series and Forecast Utilities}
 \description{
-What the package does (one paragraph).
+Utility functions to retrieve data from UDAMAN, wrangle, transform and plot time series data.
 }
 \seealso{
 Useful links:
@@ -16,7 +16,7 @@ Useful links:
 
 }
 \author{
-\strong{Maintainer}: First Last \email{first.last@example.com} (\href{https://orcid.org/YOUR-ORCID-ID}{ORCID})
+\strong{Maintainer}: Peter Fuleky \email{fuleky@hawaii.edu} (\href{https://orcid.org/YOUR-ORCID-ID}{ORCID})
 
 }
 \keyword{internal}

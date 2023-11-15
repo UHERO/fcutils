@@ -21,6 +21,7 @@
 #'   and no frequency; "full": @ replaced by _AT_ and . by _; "no": no renaming,
 #'   keep UDAMAN names
 #' @param descr if TRUE add to the udaman series name the series description in parentheses (default: FALSE)
+#' @param public if TRUE use the public API interface - does not require VPN (default: FALSE)
 #'
 #' @return time and data for a single series combined in a tibble
 #'
@@ -31,10 +32,14 @@
 #' @noRd
 #' @examplesIf interactive()
 #' get_series_1(ser_id = "VISNS@HI.M")
-get_series_1 <- function(ser_id, expand = "true", rename = "compact", descr = FALSE) {
+get_series_1 <- function(ser_id, expand = "true", rename = "compact", descr = FALSE, public = FALSE) {
   if (is.null(Sys.getenv("udaman_token"))) stop("UDAMAN token is not available in .Renviron")
   # API call
-  url <- stringr::str_c("https://api.uhero.hawaii.edu/v1.u/series?name=", ser_id, "&expand=", expand, "&u=uhero&nocache")
+  if(public){
+    url <- stringr::str_c("https://api.uhero.hawaii.edu/v1/series?name=", ser_id, "&expand=", expand, "&u=uhero&nocache")
+  } else {
+    url <- stringr::str_c("https://api.uhero.hawaii.edu/v1.u/series?name=", ser_id, "&expand=", expand, "&u=uhero&nocache")
+  }
   req <- httr::GET(url, httr::add_headers(Authorization = stringr::str_c("Bearer ", Sys.getenv("udaman_token"))))
   json <- httr::content(req, as = "text")
   uhero_data <- jsonlite::fromJSON(json)
@@ -82,6 +87,7 @@ get_series_1 <- function(ser_id, expand = "true", rename = "compact", descr = FA
 #' @param freq if frequency is missing from series names (or want to modify freq
 #'   in existing names) specify frequency (character), e.g. "M".
 #' @param descr if TRUE add to the udaman series name the series description in parentheses (default: FALSE)
+#' @param public if TRUE use the public API interface - does not require VPN (default: FALSE)
 #'
 #' @return time and data for all series combined in an object specified by the
 #'   format option
@@ -93,6 +99,7 @@ get_series_1 <- function(ser_id, expand = "true", rename = "compact", descr = FA
 #'
 #' @examplesIf interactive()
 #' get_series(c("VISNS@HI.M", "VAPNS@HI.M"))
+#' get_series(c("VISNS@HI.M", "VAPNS@HI.M"), public = TRUE)
 #' get_series(c("VISNS@HI.M", "VISUSNS@HI.M"), freq = "Q")
 #' get_series(c("VISNS@HI.M", "VAPNS@HI.M"), format = "xts")
 #' get_series(c("VISNS@HI.M"), format = "xts")
@@ -100,10 +107,10 @@ get_series_1 <- function(ser_id, expand = "true", rename = "compact", descr = FA
 #' get_series(c("E_NF_HI", "ECT_HI", "E_TU_HAW"), freq = "M")
 #' get_series(c("E_NF__HI_M", "ECT__HI_M", "VAP__HI_W"))
 #' get_series(c("E_NF_AT_HI_M", "ECT_AT_HI_M", "VAP_AT_HI_W"))
-get_series <- function(ser_id_vec, format = "wide", expand = "true", rename = "compact", freq = NULL, descr = FALSE) {
+get_series <- function(ser_id_vec, format = "wide", expand = "true", rename = "compact", freq = NULL, descr = FALSE, public = FALSE) {
   ser_tbl <- ser_id_vec %>%
     rename_udaman(., freq = freq) %>%
-    purrr::map(get_series_1, expand = expand, rename = rename, descr = descr) %>%
+    purrr::map(get_series_1, expand = expand, rename = rename, descr = descr, public = public) %>%
     purrr::reduce(dplyr::full_join, by = "time") %>%
     dplyr::arrange(.data$time)
   if (format == "wide") ser_out <- ser_tbl
@@ -126,6 +133,7 @@ get_series <- function(ser_id_vec, format = "wide", expand = "true", rename = "c
 #'   and no frequency; "full": @ replaced by _AT_ and . by _; "no": no renaming,
 #'   keep UDAMAN names
 #' @param descr if TRUE add to the udaman series name the series description in parentheses (default: FALSE)
+#' @param public if TRUE use the public API interface - does not require VPN (default: FALSE)
 #' @param save_loc file path for saving data incl. extension ("html" or "csv") (default NULL)
 #'
 #' @return time and data for all series combined in a tibble
@@ -138,10 +146,14 @@ get_series <- function(ser_id_vec, format = "wide", expand = "true", rename = "c
 #' @examplesIf interactive()
 #' get_series_exp(exp_id = 74)
 #' get_series_exp(74, format = "xts")
-get_series_exp <- function(exp_id, format = "wide", expand = "true", rename = "compact", descr = FALSE, save_loc = NULL) {
+get_series_exp <- function(exp_id, format = "wide", expand = "true", rename = "compact", descr = FALSE, public = FALSE, save_loc = NULL) {
   if (is.null(Sys.getenv("udaman_token"))) stop("UDAMAN token is not available in .Renviron")
   # API call
-  url <- stringr::str_c("https://api.uhero.hawaii.edu/v1.u/package/export?id=", exp_id, "&expand=", expand, "&u=uhero&nocache")
+  if(public){
+    url <- stringr::str_c("https://api.uhero.hawaii.edu/v1/package/export?id=", exp_id, "&expand=", expand, "&u=uhero&nocache")
+  } else {
+    url <- stringr::str_c("https://api.uhero.hawaii.edu/v1.u/package/export?id=", exp_id, "&expand=", expand, "&u=uhero&nocache")
+  }
   req <- httr::GET(url, httr::add_headers(Authorization = stringr::str_c("Bearer ", Sys.getenv("udaman_token"))))
   json <- httr::content(req, as = "text")
   uhero_data <- jsonlite::fromJSON(json)
