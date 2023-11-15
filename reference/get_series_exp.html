@@ -10,7 +10,7 @@
     
     <a class="navbar-brand me-2" href="../index.html">fcutils</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.0.9008</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.0.9009</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -48,6 +48,7 @@
 <span>  expand <span class="op">=</span> <span class="st">"true"</span>,</span>
 <span>  rename <span class="op">=</span> <span class="st">"compact"</span>,</span>
 <span>  descr <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  public <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  save_loc <span class="op">=</span> <span class="cn">NULL</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
@@ -74,6 +75,10 @@ keep UDAMAN names</p></dd>
 
 <dt>descr</dt>
 <dd><p>if TRUE add to the udaman series name the series description in parentheses (default: FALSE)</p></dd>
+
+
+<dt>public</dt>
+<dd><p>if TRUE use the public API interface - does not require VPN (default: FALSE)</p></dd>
 
 
 <dt>save_loc</dt>
@@ -106,7 +111,7 @@ udaman_token = "this is your UDAMAN token"</p>
 
 
     <footer><div class="pkgdown-footer-left">
-  <p></p><p>Developed by First Last.</p>
+  <p></p><p>Developed by Peter Fuleky.</p>
 </div>
 
 <div class="pkgdown-footer-right">
