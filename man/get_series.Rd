@@ -10,7 +10,8 @@ get_series(
   expand = "true",
   rename = "compact",
   freq = NULL,
-  descr = FALSE
+  descr = FALSE,
+  public = FALSE
 )
 }
 \arguments{
@@ -28,6 +29,8 @@ keep UDAMAN names}
 in existing names) specify frequency (character), e.g. "M".}
 
 \item{descr}{if TRUE add to the udaman series name the series description in parentheses (default: FALSE)}
+
+\item{public}{if TRUE use the public API interface - does not require VPN (default: FALSE)}
 }
 \value{
 time and data for all series combined in an object specified by the
@@ -44,6 +47,7 @@ udaman_token = "this is your UDAMAN token"
 \examples{
 \dontshow{if (interactive()) (if (getRversion() >= "3.4") withAutoprint else force)(\{ # examplesIf}
 get_series(c("VISNS@HI.M", "VAPNS@HI.M"))
+get_series(c("VISNS@HI.M", "VAPNS@HI.M"), public = TRUE)
 get_series(c("VISNS@HI.M", "VISUSNS@HI.M"), freq = "Q")
 get_series(c("VISNS@HI.M", "VAPNS@HI.M"), format = "xts")
 get_series(c("VISNS@HI.M"), format = "xts")
