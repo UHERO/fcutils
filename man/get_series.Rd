@@ -47,6 +47,7 @@ udaman_token = "this is your UDAMAN token"
 \examples{
 \dontshow{if (interactive()) (if (getRversion() >= "3.4") withAutoprint else force)(\{ # examplesIf}
 get_series(c("VISNS@HI.M", "VAPNS@HI.M"))
+get_series(c("VEXP_RB@HI.M"))
 get_series(c("VISNS@HI.M", "VAPNS@HI.M"), public = TRUE)
 get_series(c("VISNS@HI.M", "VISUSNS@HI.M"), freq = "Q")
 get_series(c("VISNS@HI.M", "VAPNS@HI.M"), format = "xts")

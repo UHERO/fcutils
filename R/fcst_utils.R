@@ -53,6 +53,7 @@ get_series_1 <- function(ser_id, expand = "true", rename = "compact", descr = FA
     name <- ser_id
   }
   cat(name, "\n")
+  series <- tsbox::ts_regular(series)
   title <- uhero_data$data$series$title
   geo <- uhero_data$data$series$geography$shortName
   colnames(series) <- dplyr::case_when(
@@ -99,6 +100,7 @@ get_series_1 <- function(ser_id, expand = "true", rename = "compact", descr = FA
 #'
 #' @examplesIf interactive()
 #' get_series(c("VISNS@HI.M", "VAPNS@HI.M"))
+#' get_series(c("VEXP_RB@HI.M"))
 #' get_series(c("VISNS@HI.M", "VAPNS@HI.M"), public = TRUE)
 #' get_series(c("VISNS@HI.M", "VISUSNS@HI.M"), freq = "Q")
 #' get_series(c("VISNS@HI.M", "VAPNS@HI.M"), format = "xts")
@@ -1262,7 +1264,8 @@ pc_to_pca <- function(x, freq = 4) {
 #' Calculate multi-period average growth
 #'
 #' @param x ts-boxable object for which growth is calculated (in levels)
-#' @param lag number of period over which growth is calculated
+#' @param lag number of periods over which growth is calculated
+#' @param comp_freq compounding frequency (1 if period by period, 4 if annualized for quarterly data, etc.)
 #'
 #' @return object of the same type as the input ontaining the average growth of x (in percent)
 #' @export
@@ -1271,13 +1274,16 @@ pc_to_pca <- function(x, freq = 4) {
 #' quarterly_data_example |>
 #'   pcmp(20) |>
 #'   tail()
-pcmp <- function(x, lag = 4) {
+#' quarterly_data_example |>
+#'   pcmp(20, 4) |>
+#'   tail()
+pcmp <- function(x, lag = 4, comp_freq = 1) {
   # convert to long format and return additional details
   x_mod <- conv_long(x, ser_info = TRUE)
 
   x_mod_pcmp <- x_mod %>%
     tsbox::ts_tslist() %>%
-    purrr::map(~ (((.x / tsbox::ts_lag(.x, lag))^(1 / lag)) - 1) * 100) %>%
+    purrr::map(~ (((.x / tsbox::ts_lag(.x, lag))^(comp_freq / lag)) - 1) * 100) %>%
     magrittr::set_attr("class", c("list", "tslist")) %>%
     tsbox::ts_tbl()
 
@@ -1487,10 +1493,10 @@ qtrs <- function(nr_quarters) {
 }
 
 
-#' Calculate number of quarters between two dates yyyyQq or yyyy.q
+#' Calculate number of quarters between two dates yyyyQq, yyyy.q or yyyy-mm-dd
 #'
-#' @param dat1 date of period start (string: yyyyQq or yyyy.q)
-#' @param dat2 date of period end (string: yyyyQq or yyyy.q)
+#' @param dat1 date of period start (string: yyyyQq, yyyy.q, or yyyy-mm-dd)
+#' @param dat2 date of period end (string: yyyyQq, yyyy.q, or yyyy-mm-dd)
 #'
 #' @return numeric length of date range in quarters
 #' @export
@@ -1498,8 +1504,15 @@ qtrs <- function(nr_quarters) {
 #' @examples
 #' nqtrs("2010Q1", "2020Q4")
 #' nqtrs(2010.1, 2020.4)
+#' nqtrs("2010-01-01", "2020-10-01")
 nqtrs <- function(dat1 = "", dat2 = "") {
-  xts::nquarters(make_xts(start = lubridate::yq(dat1), end = lubridate::yq(dat2), per = "quarters"))
+  dat1 <- dat1 %>%
+    lubridate::parse_date_time(orders = c("ymd", "yq")) %>%
+    lubridate::ymd()
+  dat2 <- dat2 %>%
+    lubridate::parse_date_time(orders = c("ymd", "yq")) %>%
+    lubridate::ymd()
+  xts::nquarters(make_xts(start = dat1, end = dat2, per = "quarters"))
 }
 
 

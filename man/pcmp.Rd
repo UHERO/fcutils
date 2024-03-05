@@ -4,12 +4,14 @@
 \alias{pcmp}
 \title{Calculate multi-period average growth}
 \usage{
-pcmp(x, lag = 4)
+pcmp(x, lag = 4, comp_freq = 1)
 }
 \arguments{
 \item{x}{ts-boxable object for which growth is calculated (in levels)}
 
-\item{lag}{number of period over which growth is calculated}
+\item{lag}{number of periods over which growth is calculated}
+
+\item{comp_freq}{compounding frequency (1 if period by period, 4 if annualized for quarterly data, etc.)}
 }
 \value{
 object of the same type as the input ontaining the average growth of x (in percent)
@@ -20,5 +22,8 @@ Calculate multi-period average growth
 \examples{
 quarterly_data_example |>
   pcmp(20) |>
+  tail()
+quarterly_data_example |>
+  pcmp(20, 4) |>
   tail()
 }
