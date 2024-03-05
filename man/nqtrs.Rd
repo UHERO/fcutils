@@ -2,22 +2,23 @@
 % Please edit documentation in R/fcst_utils.R
 \name{nqtrs}
 \alias{nqtrs}
-\title{Calculate number of quarters between two dates yyyyQq or yyyy.q}
+\title{Calculate number of quarters between two dates yyyyQq, yyyy.q or yyyy-mm-dd}
 \usage{
 nqtrs(dat1 = "", dat2 = "")
 }
 \arguments{
-\item{dat1}{date of period start (string: yyyyQq or yyyy.q)}
+\item{dat1}{date of period start (string: yyyyQq, yyyy.q, or yyyy-mm-dd)}
 
-\item{dat2}{date of period end (string: yyyyQq or yyyy.q)}
+\item{dat2}{date of period end (string: yyyyQq, yyyy.q, or yyyy-mm-dd)}
 }
 \value{
 numeric length of date range in quarters
 }
 \description{
-Calculate number of quarters between two dates yyyyQq or yyyy.q
+Calculate number of quarters between two dates yyyyQq, yyyy.q or yyyy-mm-dd
 }
 \examples{
 nqtrs("2010Q1", "2020Q4")
 nqtrs(2010.1, 2020.4)
+nqtrs("2010-01-01", "2020-10-01")
 }
