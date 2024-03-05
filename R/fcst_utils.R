@@ -53,6 +53,7 @@ get_series_1 <- function(ser_id, expand = "true", rename = "compact", descr = FA
     name <- ser_id
   }
   cat(name, "\n")
+  series <- tsbox::ts_regular(series)
   title <- uhero_data$data$series$title
   geo <- uhero_data$data$series$geography$shortName
   colnames(series) <- dplyr::case_when(
@@ -99,6 +100,7 @@ get_series_1 <- function(ser_id, expand = "true", rename = "compact", descr = FA
 #'
 #' @examplesIf interactive()
 #' get_series(c("VISNS@HI.M", "VAPNS@HI.M"))
+#' get_series(c("VEXP_RB@HI.M"))
 #' get_series(c("VISNS@HI.M", "VAPNS@HI.M"), public = TRUE)
 #' get_series(c("VISNS@HI.M", "VISUSNS@HI.M"), freq = "Q")
 #' get_series(c("VISNS@HI.M", "VAPNS@HI.M"), format = "xts")
