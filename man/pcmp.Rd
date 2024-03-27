@@ -24,6 +24,9 @@ quarterly_data_example |>
   pcmp(20) |>
   tail()
 quarterly_data_example |>
-  pcmp(20, 4) |>
+  pcmp(4, 4) |>
+  tail()
+quarterly_data_example |>
+  pcmp(1, 4) |>
   tail()
 }

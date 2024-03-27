@@ -4,10 +4,12 @@
 \alias{copy_tbl}
 \title{Copy a data frame to clipboard (only works on MacOS)}
 \usage{
-copy_tbl(x)
+copy_tbl(x, dec = 2)
 }
 \arguments{
 \item{x}{tibble (or data frame) to be copied}
+
+\item{dec}{number of decimals to round numeric columns to (default: 2)}
 }
 \value{
 copy_tbl() returns the input x invisibly
@@ -18,5 +20,6 @@ Copy a data frame to clipboard (only works on MacOS)
 \examples{
 \dontshow{if (interactive()) (if (getRversion() >= "3.4") withAutoprint else force)(\{ # examplesIf}
 monthly_data_example |> copy_tbl()
+monthly_data_example |> copy_tbl(1)
 \dontshow{\}) # examplesIf}
 }

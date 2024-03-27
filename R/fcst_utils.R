@@ -559,14 +559,40 @@ write_tsd <- function(x, file) {
 #' Copy a data frame to clipboard (only works on MacOS)
 #'
 #' @param x tibble (or data frame) to be copied
+#' @param dec number of decimals to round numeric columns to (default: 2)
 #'
 #' @return copy_tbl() returns the input x invisibly
 #' @export
 #'
 #' @examplesIf interactive()
 #' monthly_data_example |> copy_tbl()
-copy_tbl <- function(x) {
-  readr::write_delim(x, pipe("pbcopy"), delim = "\t")
+#' monthly_data_example |> copy_tbl(1)
+copy_tbl <- function(x, dec = 2) {
+  dplyr::mutate(x, dplyr::across(dplyr::where(is.numeric), ~ round(.x, digits = dec) %>% format(nsmall = dec))) %>%
+    readr::write_delim(pipe("pbcopy"), delim = "\t")
+}
+
+
+#' Set class attribute to tslist
+#'
+#' @param x list, typically a result of purrr::map() applied to a tslist
+#'
+#' @return list with class attributes set to list and tslist
+#' @export
+#'
+#' @details A purrr::map() function applied to a tslist (obtained by tsbox::ts_tslist())
+#' drops the tslist class attribute. This function resets that attribute.
+#'
+#' @examples
+#' monthly_data_example |>
+#'   tsbox::ts_long() |>
+#'   tsbox::ts_tslist() |>
+#'   purrr::map(~ .x / 1000) |>
+#'   set_attr_tslist() |>
+#'   tsbox::ts_tbl() |>
+#'   tsbox::ts_wide()
+set_attr_tslist <- function(x) {
+  magrittr::set_attr(x, "class", c("list", "tslist"))
 }
 
 
@@ -889,7 +915,7 @@ disagg <- function(x, conv_type = "mean", target_freq = "quarter", pattern = NUL
     # tidyr::drop_na() %>%
     tsbox::ts_tslist() %>%
     purrr::map(.f = ~ disagg_1(.x, conv_type = conv_type, target_freq = target_freq, pattern = pattern_mod)) %>%
-    magrittr::set_attr("class", c("list", "tslist")) %>%
+    set_attr_tslist() %>%
     # univariate data requires special treatment
     {
       if (length(attr(x_mod, "ser_names")) == 1) {
@@ -1275,7 +1301,10 @@ pc_to_pca <- function(x, freq = 4) {
 #'   pcmp(20) |>
 #'   tail()
 #' quarterly_data_example |>
-#'   pcmp(20, 4) |>
+#'   pcmp(4, 4) |>
+#'   tail()
+#' quarterly_data_example |>
+#'   pcmp(1, 4) |>
 #'   tail()
 pcmp <- function(x, lag = 4, comp_freq = 1) {
   # convert to long format and return additional details
@@ -1284,8 +1313,17 @@ pcmp <- function(x, lag = 4, comp_freq = 1) {
   x_mod_pcmp <- x_mod %>%
     tsbox::ts_tslist() %>%
     purrr::map(~ (((.x / tsbox::ts_lag(.x, lag))^(comp_freq / lag)) - 1) * 100) %>%
-    magrittr::set_attr("class", c("list", "tslist")) %>%
-    tsbox::ts_tbl()
+    set_attr_tslist() %>%
+    # univariate data requires special treatment
+    {
+      if (length(attr(x_mod, "ser_names")) == 1) {
+        tsbox::ts_tbl(.) %>%
+          tsbox::ts_long() %>%
+          dplyr::mutate(id = attr(x_mod, "ser_names"))
+      } else {
+        tsbox::ts_tbl(.)
+      }
+    }
 
   # reclass the output to match the input
   ans <- if (attr(x_mod, "was_wide")) tsbox::ts_wide(x_mod_pcmp) else tsbox::copy_class(x_mod_pcmp, x)
