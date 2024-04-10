@@ -1332,6 +1332,48 @@ pcmp <- function(x, lag = 4, comp_freq = 1) {
 }
 
 
+#' Calculate compund annual growth
+#'
+#' @param x ts-boxable object for which growth is calculated (in levels)
+#'
+#' @return a tibble with a single row containing the compound annual growth between
+#'   the first and last rows of x (in percent)
+#' @export
+#'
+#' @examples
+#' quarterly_data_example |>
+#'   cagr()
+#' quarterly_data_example |>
+#'   tsbox::ts_long() |>
+#'   tsbox::ts_xts() |>
+#'   cagr()
+#' quarterly_data_example |>
+#'   tsbox::ts_long() |>
+#'   tsbox::ts_xts() |>
+#'   tsbox::ts_pick("E_NF_HI") |>
+#'   tsbox::ts_span("2000-01-01", "2020-01-01") |>
+#'   cagr()
+cagr <- function(x) {
+  # convert to long format and return additional details
+  x_mod <- conv_long(x, ser_info = TRUE)
+
+  # convert to wide format, keep first and last row only
+  # calculate time difference in years and ratio of values
+  # apply the cagr formula to all data columns
+  x_mod_cagr <- x_mod %>%
+    tsbox::ts_wide() %>%
+    dplyr::slice(1, dplyr::n()) %>%
+    dplyr::summarize(
+      dplyr::across(.data$time, ~ difftime(get(dplyr::cur_column())[2], get(dplyr::cur_column())[1]) %>% lubridate::time_length(unit = "years")),
+      dplyr::across(!.data$time, ~ get(dplyr::cur_column())[2] / get(dplyr::cur_column())[1])
+    ) %>%
+    dplyr::mutate(dplyr::across(!.data$time, ~ (get(dplyr::cur_column())^(1 / .data$time) - 1) * 100)) %>%
+    dplyr::rename("years_elapsed" = "time")
+
+  return(x_mod_cagr)
+}
+
+
 #' Find the date of the first observation (NAs are dropped)
 #'
 #' @param x ts-boxable object
