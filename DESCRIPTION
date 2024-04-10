@@ -1,6 +1,6 @@
 Package: fcutils
 Title: Time Series and Forecast Utilities
-Version: 0.0.0.9011
+Version: 0.0.0.9012
 Authors@R: 
     person("Peter", "Fuleky", email = "fuleky@hawaii.edu", role = c("aut", "cre"),
            comment = c(ORCID = "YOUR-ORCID-ID"))
