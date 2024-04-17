@@ -17,8 +17,15 @@ numeric length of date range in quarters
 \description{
 Calculate number of quarters between two dates yyyyQq, yyyy.q or yyyy-mm-dd
 }
+\details{
+The endpoints are included in the result so subtract one for time difference.
+Also, the result is rounded down so partial quarters are not counted. See examples.
+}
 \examples{
 nqtrs("2010Q1", "2020Q4")
 nqtrs(2010.1, 2020.4)
 nqtrs("2010-01-01", "2020-10-01")
+nqtrs("2010-02-01", "2020-11-01")
+nqtrs("2010-02-01", "2020-10-01")
+nqtrs("2010-01-01", "2020-11-01")
 }

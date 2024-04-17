@@ -7,11 +7,11 @@
 cagr(x)
 }
 \arguments{
-\item{x}{ts-boxable object for which growth is calculated (in levels)}
+\item{x}{ts-boxable object for which growth is calculated between first and last period}
 }
 \value{
 a tibble with a single row containing the compound annual growth between
-the first and last rows of x (in percent)
+the first and last period of x (in percent)
 }
 \description{
 Calculate compund annual growth
@@ -26,7 +26,7 @@ quarterly_data_example |>
 quarterly_data_example |>
   tsbox::ts_long() |>
   tsbox::ts_xts() |>
-  tsbox::ts_pick("E_NF_HI") |>
   tsbox::ts_span("2000-01-01", "2020-01-01") |>
+  tsbox::ts_pick("E_NF_HI") |>
   cagr()
 }
