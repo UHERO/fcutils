@@ -334,7 +334,7 @@ addf <- function(start = bnk_start, end = bnk_end, from = 0, to = 0, ser_name = 
   } else {
     start <- to_ymd(start)
     end <- to_ymd(end) %>% lubridate::floor_date(unit = per)
-    make_xts(start, end, per = per, val = seq.int(from, to, length.out = lubridate::time_length(end - start, unit = per) + 1)) %>%
+    make_xts(start, end, per = per, val = seq.int(from, to, length.out = lubridate::time_length(end - start, unit = per) %>% round() + 1)) %>%
       tsbox::ts_bind(make_xts(val = 0, per = per)) %>%
       magrittr::set_names(ser_name)
   }
@@ -1334,10 +1334,10 @@ pcmp <- function(x, lag = 4, comp_freq = 1) {
 
 #' Calculate compund annual growth
 #'
-#' @param x ts-boxable object for which growth is calculated (in levels)
+#' @param x ts-boxable object for which growth is calculated between first and last period
 #'
 #' @return a tibble with a single row containing the compound annual growth between
-#'   the first and last rows of x (in percent)
+#'   the first and last period of x (in percent)
 #' @export
 #'
 #' @examples
@@ -1350,8 +1350,8 @@ pcmp <- function(x, lag = 4, comp_freq = 1) {
 #' quarterly_data_example |>
 #'   tsbox::ts_long() |>
 #'   tsbox::ts_xts() |>
-#'   tsbox::ts_pick("E_NF_HI") |>
 #'   tsbox::ts_span("2000-01-01", "2020-01-01") |>
+#'   tsbox::ts_pick("E_NF_HI") |>
 #'   cagr()
 cagr <- function(x) {
   # convert to long format and return additional details
@@ -1364,10 +1364,10 @@ cagr <- function(x) {
     tsbox::ts_wide() %>%
     dplyr::slice(1, dplyr::n()) %>%
     dplyr::summarize(
-      dplyr::across(.data$time, ~ difftime(get(dplyr::cur_column())[2], get(dplyr::cur_column())[1]) %>% lubridate::time_length(unit = "years")),
-      dplyr::across(!.data$time, ~ get(dplyr::cur_column())[2] / get(dplyr::cur_column())[1])
+      dplyr::across("time", ~ difftime(get(dplyr::cur_column())[2], get(dplyr::cur_column())[1]) %>% lubridate::time_length(unit = "years")),
+      dplyr::across(!"time", ~ get(dplyr::cur_column())[2] / get(dplyr::cur_column())[1])
     ) %>%
-    dplyr::mutate(dplyr::across(!.data$time, ~ (get(dplyr::cur_column())^(1 / .data$time) - 1) * 100)) %>%
+    dplyr::mutate(dplyr::across(!"time", ~ (get(dplyr::cur_column())^(1 / .data$time) - 1) * 100)) %>%
     dplyr::rename("years_elapsed" = "time")
 
   return(x_mod_cagr)
@@ -1573,6 +1573,34 @@ qtrs <- function(nr_quarters) {
 }
 
 
+#' Calculate number of months between two dates yyyyMm, yyyy.m or yyyy-mm-dd
+#'
+#' @param dat1 date of period start (string: yyyyMm, yyyy.m, or yyyy-mm-dd)
+#' @param dat2 date of period end (string: yyyyMm, yyyy.m, or yyyy-mm-dd)
+#'
+#' @return numeric length of date range in months
+#' @export
+#'
+#' @details The endpoints are included in the result so subtract one for time difference.
+#' Also, the result is rounded down so partial months are not counted. See examples.
+#'
+#' @examples
+#' nmons("2010M1", "2010M2")
+#' nmons(2010.1, 2010.4)
+#' nmons("2010-01-15", "2010-04-15")
+#' nmons("2010-01-15", "2010-04-18")
+#' nmons("2010-01-15", "2010-04-12")
+nmons <- function(dat1 = "", dat2 = "") {
+  dat1 <- dat1 %>%
+    lubridate::parse_date_time(orders = c("ymd", "ym")) %>%
+    lubridate::ymd()
+  dat2 <- dat2 %>%
+    lubridate::parse_date_time(orders = c("ymd", "ym")) %>%
+    lubridate::ymd()
+  xts::nmonths(make_xts(start = dat1, end = dat2, per = "months"))
+}
+
+
 #' Calculate number of quarters between two dates yyyyQq, yyyy.q or yyyy-mm-dd
 #'
 #' @param dat1 date of period start (string: yyyyQq, yyyy.q, or yyyy-mm-dd)
@@ -1581,10 +1609,16 @@ qtrs <- function(nr_quarters) {
 #' @return numeric length of date range in quarters
 #' @export
 #'
+#' @details The endpoints are included in the result so subtract one for time difference.
+#' Also, the result is rounded down so partial quarters are not counted. See examples.
+#'
 #' @examples
 #' nqtrs("2010Q1", "2020Q4")
 #' nqtrs(2010.1, 2020.4)
 #' nqtrs("2010-01-01", "2020-10-01")
+#' nqtrs("2010-02-01", "2020-11-01")
+#' nqtrs("2010-02-01", "2020-10-01")
+#' nqtrs("2010-01-01", "2020-11-01")
 nqtrs <- function(dat1 = "", dat2 = "") {
   dat1 <- dat1 %>%
     lubridate::parse_date_time(orders = c("ymd", "yq")) %>%
