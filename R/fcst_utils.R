@@ -2276,13 +2276,20 @@ extract_data <- function(model_in, y_name) {
 #' Update a bimets model with new/modified equations
 #'
 #' @param model_1 original estimated bimets model
-#' @param model_2 bimets model containing updates (only updated equations need
-#'   to be estimated)
+#' @param model_2 estimated bimets model containing updates (only updated
+#'   equations need to be estimated)
 #' @param eqList names of updated behavioral equations (vector of strings),
 #'   others taken from model_1 (equations missing from model_2 are removed)
 #'
 #' @return estimated bimets model containing updates
 #' @export
+#'
+#' @details Start by making a copy of the original model's equations (txt file).
+#' Re-specify some equations, add new equations, and remove not needed equations.
+#' Load the new model as model_2 and estimate the modified/new equations (ok to estimate all).
+#' Replace the equations in model_2 that should remain the same as in model_1
+#' by the estimated equations from model_1. Equations that are to remain unchanged
+#' have to be present in both model_1 and model_2, and not present in eqList.
 #'
 #' @examplesIf interactive()
 #' update_eqs(scen_model_1_est, scen_model_2_est, c("E_NF_AT_HI_Q", "Y_R_AT_HI_Q"))
@@ -2300,6 +2307,46 @@ update_eqs <- function(model_1, model_2, eqList) {
   scen_model_est$behaviorals[keep_eqList] <- model_1$behaviorals[keep_eqList]
 
   return(scen_model_est)
+}
+
+
+#' Set tsrange for behavioral equations to available data range
+#'
+#' @param model_w_dat bimets model (with data) to be estimated
+#' @param max_lag the largest lag (default = 4) in the model (to offset starting point for estimation)
+#' @param eqns names of behavioral equations to set tsrange for (default = NULL: all equations)
+#'
+#' @return bimets model with tsrange set for estimation
+#' @export
+#'
+#' @details Find periods where all variables in the equation are available.
+#' Shift beginning of the sample by max_lag periods.
+#' Set the tsrange for each equation (used in estimation).
+#'
+#' @examplesIf interactive()
+#' set_tsrange(scen_model_dat, 4)
+set_tsrange <- function(model_w_dat, max_lag = 4, eqns = NULL) {
+  # if no equations are specified, use all behavioral equations
+  if(is.null(eqns)) {
+    eqns <- model_w_dat$vendog
+  }
+
+  # for each behavioral equation, set the tsrange to the available data
+  # bimets::GETRANGE() accomplishes a similar task but does not offset the start by max_lag
+  for (eq_i in eqns) {
+    model_w_dat$behaviorals[[eq_i]][["tsrange"]] <- model_w_dat$modelData %>%
+      magrittr::extract(model_w_dat$behaviorals[[eq_i]][["eqComponentsNames"]]) %>%
+      magrittr::set_attr("class", c("tslist", "list")) %>%
+      tsbox::ts_tbl() %>%
+      tsbox::ts_wide() %>%
+      tidyr::drop_na() %>%
+      dplyr::slice(1 + max_lag, dplyr::n()) %>%
+      dplyr::pull(.data$time) %>%
+      purrr::map(~ c(year(.x), quarter(.x))) %>%
+      purrr::reduce(c)
+  }
+
+  return(model_w_dat)
 }
 
 
@@ -2323,3 +2370,25 @@ update_eqs <- function(model_1, model_2, eqList) {
 #'   c(0.01, -0.04, rep(-0.025, 4))
 #' add_QMOD.xts$VISUS_HI[pq(2022.3, 2023.4)] %+=% c(0.01, -0.04, rep(-0.025, 4)) # easier on the eye
 `%+=%` <- function(e1, e2) eval.parent(substitute(e1 <- e1 + e2))
+
+
+#' Set udaman token for API access
+#'
+#' @param key a string containing 44 characters
+#'
+#' @return true if setting the token in .Renviron succeeded
+#' @export
+#'
+#' @details Save the token in .Renviron as udaman_token = key.
+#'
+#' @examplesIf interactive()
+#' set_udaman_token("-=-=ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890-=-=")
+set_udaman_token <- function(key)
+{
+  if (!rlang::is_string(key))
+    rlang::abort("`key` must be a string.")
+  if (nchar(key) != 44)
+    rlang::warn("`key` does not have a length of 44 characters.")
+  Sys.setenv(udaman_token = key)
+}
+
