@@ -29,8 +29,15 @@ monthly_data_example |>
   dplyr::select(time, "VAPNS_HI") |>
   ptd_gr(per = "month", lag_length = "3 years") |>
   tail()
+# don't use lag_length = "1 year" with weekly data
 daily_data_example |>
   ptd_gr("week")
+# lag_length = "52 weeks" instead
+daily_data_example |>
+  ptd_gr("week", "52 weeks")
+# and use lag_length = "364 days" with daily data
+daily_data_example |>
+  ptd_gr("day", "364 days")
 daily_data_example |>
   tsbox::ts_long() |>
   tsbox::ts_pick("VAPNS_HI") |>
