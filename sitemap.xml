@@ -73,6 +73,9 @@
     <loc>https://uhero.github.io/fcutils/reference/grapes-plus-equals-grapes.html</loc>
   </url>
   <url>
+    <loc>https://uhero.github.io/fcutils/reference/index-topic.html</loc>
+  </url>
+  <url>
     <loc>https://uhero.github.io/fcutils/reference/index.html</loc>
   </url>
   <url>
@@ -163,7 +166,16 @@
     <loc>https://uhero.github.io/fcutils/reference/set_attr_tslist.html</loc>
   </url>
   <url>
+    <loc>https://uhero.github.io/fcutils/reference/set_tsrange.html</loc>
+  </url>
+  <url>
+    <loc>https://uhero.github.io/fcutils/reference/set_udaman_token.html</loc>
+  </url>
+  <url>
     <loc>https://uhero.github.io/fcutils/reference/to_ymd.html</loc>
+  </url>
+  <url>
+    <loc>https://uhero.github.io/fcutils/reference/uhcolors.html</loc>
   </url>
   <url>
     <loc>https://uhero.github.io/fcutils/reference/uhero_colors.html</loc>
