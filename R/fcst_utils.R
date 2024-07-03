@@ -16,7 +16,8 @@
 #' Download a single series from udaman using series name
 #'
 #' @param ser_id udaman series name (character)
-#' @param expand "true" or "raw" ("true" downloads formatted data, "raw" downloads raw units)
+#' @param expand DEPRECATED, USE raw INSTEAD "true" or "raw" ("true" downloads formatted data, "raw" downloads raw units)
+#' @param raw TRUE or FALSE (default) (TRUE downloads raw data, FALSE downloads scaled and rounded data)
 #' @param rename "compact" (default), "full", "no". "compact": @ replaced by _
 #'   and no frequency; "full": @ replaced by _AT_ and . by _; "no": no renaming,
 #'   keep UDAMAN names
@@ -25,22 +26,29 @@
 #'
 #' @return time and data for a single series combined in a tibble
 #'
-#' @details This function requires access permission to UDAMAN.
+#' @details This function requires permission to access UDAMAN.
 #' Store the udaman token in the .Renviron file using the following format:
-#' udaman_token = "this is your UDAMAN token"
+#' udaman_token = "-ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890="
+#' Or using fcutils::set_udaman_token("-ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890=")
+#' Or store the udaman token among your credentials (e.g. keychain) using keyring:
+#' keyring::key_set_with_value(service = "udaman_token", password = "-ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890=")
 #'
 #' @noRd
 #' @examplesIf interactive()
 #' get_series_1(ser_id = "VISNS@HI.M")
-get_series_1 <- function(ser_id, expand = "true", rename = "compact", descr = FALSE, public = FALSE) {
-  if (is.null(Sys.getenv("udaman_token"))) stop("UDAMAN token is not available in .Renviron")
+get_series_1 <- function(ser_id, expand = "true", raw = FALSE, rename = "compact", descr = FALSE, public = FALSE) {
+  if (stringr::str_length(Sys.getenv("udaman_token")) == 0 & length(keyring::key_list("udaman_token")$service) == 0) stop("UDAMAN token is not available in .Renviron or among credentials")
   # API call
   if(public){
     url <- stringr::str_c("https://api.uhero.hawaii.edu/v1/series?name=", ser_id, "&expand=", expand, "&u=uhero&nocache")
   } else {
     url <- stringr::str_c("https://api.uhero.hawaii.edu/v1.u/series?name=", ser_id, "&expand=", expand, "&u=uhero&nocache")
   }
-  req <- httr::GET(url, httr::add_headers(Authorization = stringr::str_c("Bearer ", Sys.getenv("udaman_token"))))
+  if (stringr::str_length(Sys.getenv("udaman_token")) > 0){
+    req <- httr::GET(url, httr::add_headers(Authorization = stringr::str_c("Bearer ", Sys.getenv("udaman_token"))))
+  } else {
+    req <- httr::GET(url, httr::add_headers(Authorization = stringr::str_c("Bearer ", keyring::key_get("udaman_token"))))
+  }
   json <- httr::content(req, as = "text")
   uhero_data <- jsonlite::fromJSON(json)
   # extract series info
@@ -81,7 +89,8 @@ get_series_1 <- function(ser_id, expand = "true", rename = "compact", descr = FA
 #'
 #' @param ser_id_vec vector of series names (character)
 #' @param format "wide" (default) or "long" or "xts"
-#' @param expand "true" (default) or "raw" ("true" downloads formatted data, "raw" downloads raw units)
+#' @param expand DEPRECATED, USE raw INSTEAD "true" (default) or "raw" ("true" downloads formatted data, "raw" downloads raw units)
+#' @param raw TRUE or FALSE (default) (TRUE downloads raw data, FALSE downloads scaled and rounded data)
 #' @param rename "compact" (default), "full", "no". "compact": @ replaced by _
 #'   and no frequency; "full": @ replaced by _AT_ and . by _; "no": no renaming,
 #'   keep UDAMAN names
@@ -94,12 +103,15 @@ get_series_1 <- function(ser_id, expand = "true", rename = "compact", descr = FA
 #'   format option
 #' @export
 #'
-#' @details This function requires access permission to UDAMAN.
+#' @details This function requires permission to access UDAMAN.
 #' Store the udaman token in the .Renviron file using the following format:
-#' udaman_token = "this is your UDAMAN token"
+#' udaman_token = "-ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890="
+#' Or using fcutils::set_udaman_token("-ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890=")
+#' Or store the udaman token among your credentials (e.g. keychain) using keyring:
+#' keyring::key_set_with_value(service = "udaman_token", password = "-ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890=")
 #'
 #' @examplesIf interactive()
-#' get_series(c("VISNS@HI.M", "VAPNS@HI.M"))
+#' get_series(c("VISNS@HI.M", "VAPNS@HI.M"), expand = "true")
 #' get_series(c("VEXP_RB@HI.M"))
 #' get_series(c("VISNS@HI.M", "VAPNS@HI.M"), public = TRUE)
 #' get_series(c("VISNS@HI.M", "VISUSNS@HI.M"), freq = "Q")
@@ -109,7 +121,12 @@ get_series_1 <- function(ser_id, expand = "true", rename = "compact", descr = FA
 #' get_series(c("E_NF_HI", "ECT_HI", "E_TU_HAW"), freq = "M")
 #' get_series(c("E_NF__HI_M", "ECT__HI_M", "VAP__HI_W"))
 #' get_series(c("E_NF_AT_HI_M", "ECT_AT_HI_M", "VAP_AT_HI_W"))
-get_series <- function(ser_id_vec, format = "wide", expand = "true", rename = "compact", freq = NULL, descr = FALSE, public = FALSE) {
+get_series <- function(ser_id_vec, format = "wide", expand = "true", raw = FALSE, rename = "compact", freq = NULL, descr = FALSE, public = FALSE) {
+  if (!missing(expand)) {
+    warning("In get_series() use 'raw' instead of 'expand'.")
+  } else {
+    expand <- if (raw) "raw" else "true"
+  }
   ser_tbl <- ser_id_vec %>%
     rename_udaman(., freq = freq) %>%
     purrr::map(get_series_1, expand = expand, rename = rename, descr = descr, public = public) %>%
@@ -130,7 +147,8 @@ get_series <- function(ser_id_vec, format = "wide", expand = "true", rename = "c
 #'
 #' @param exp_id export id (character or numeric)
 #' @param format "wide" (default) or "long" or "xts"
-#' @param expand "true" or "raw" ("true" downloads formatted data, "raw" downloads raw units)
+#' @param expand DEPRECATED, USE raw INSTEAD "true" or "raw" ("true" downloads formatted data, "raw" downloads raw units)
+#' @param raw TRUE or FALSE (default) (TRUE downloads raw data, FALSE downloads scaled and rounded data)
 #' @param rename "compact" (default), "full", "no". "compact": @ replaced by _
 #'   and no frequency; "full": @ replaced by _AT_ and . by _; "no": no renaming,
 #'   keep UDAMAN names
@@ -141,22 +159,34 @@ get_series <- function(ser_id_vec, format = "wide", expand = "true", rename = "c
 #' @return time and data for all series combined in a tibble
 #' @export
 #'
-#' @details This function requires access permission to UDAMAN.
+#' @details This function requires permission to access UDAMAN.
 #' Store the udaman token in the .Renviron file using the following format:
-#' udaman_token = "this is your UDAMAN token"
+#' udaman_token = "-ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890="
+#' Or using fcutils::set_udaman_token("-ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890=")
+#' Or store the udaman token among your credentials (e.g. keychain) using keyring:
+#' keyring::key_set_with_value(service = "udaman_token", password = "-ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890=")
 #'
 #' @examplesIf interactive()
 #' get_series_exp(exp_id = 74)
 #' get_series_exp(74, format = "xts")
-get_series_exp <- function(exp_id, format = "wide", expand = "true", rename = "compact", descr = FALSE, public = FALSE, save_loc = NULL) {
-  if (is.null(Sys.getenv("udaman_token"))) stop("UDAMAN token is not available in .Renviron")
+get_series_exp <- function(exp_id, format = "wide", expand = "true", raw = FALSE, rename = "compact", descr = FALSE, public = FALSE, save_loc = NULL) {
+  if (!missing(expand)) {
+    warning("In get_series_exp() use 'raw' instead of 'expand'.")
+  } else {
+    expand <- if (raw) "raw" else "true"
+  }
+  if (stringr::str_length(Sys.getenv("udaman_token")) == 0 & length(keyring::key_list("udaman_token")$service) == 0) stop("UDAMAN token is not available in .Renviron or among credentials")
   # API call
   if(public){
     url <- stringr::str_c("https://api.uhero.hawaii.edu/v1/package/export?id=", exp_id, "&expand=", expand, "&u=uhero&nocache")
   } else {
     url <- stringr::str_c("https://api.uhero.hawaii.edu/v1.u/package/export?id=", exp_id, "&expand=", expand, "&u=uhero&nocache")
   }
-  req <- httr::GET(url, httr::add_headers(Authorization = stringr::str_c("Bearer ", Sys.getenv("udaman_token"))))
+  if (stringr::str_length(Sys.getenv("udaman_token")) > 0){
+    req <- httr::GET(url, httr::add_headers(Authorization = stringr::str_c("Bearer ", Sys.getenv("udaman_token"))))
+  } else {
+    req <- httr::GET(url, httr::add_headers(Authorization = stringr::str_c("Bearer ", keyring::key_get("udaman_token"))))
+  }
   json <- httr::content(req, as = "text")
   uhero_data <- jsonlite::fromJSON(json)
   # extract series info
@@ -568,7 +598,10 @@ write_tsd <- function(x, file) {
 #' monthly_data_example |> copy_tbl()
 #' monthly_data_example |> copy_tbl(1)
 copy_tbl <- function(x, dec = 2) {
-  dplyr::mutate(x, dplyr::across(dplyr::where(is.numeric), ~ round(.x, digits = dec) %>% format(nsmall = dec))) %>%
+  x %>%
+    conv_long() %>%
+    tsbox::ts_wide() %>%
+    dplyr::mutate(dplyr::across(dplyr::where(is.numeric), ~ round(.x, digits = dec) %>% format(nsmall = dec))) %>%
     readr::write_delim(pipe("pbcopy"), delim = "\t")
 }
 
@@ -766,6 +799,10 @@ is_wide <- function(x) {
 #'
 #' @examples
 #' quarterly_data_example |>
+#'   conv_long()
+#' quarterly_data_example |>
+#'   conv_long() |>
+#'   tsbox::ts_tslist() |>
 #'   conv_long()
 #' quarterly_data_example |>
 #'   tsbox::ts_long() |>
@@ -971,8 +1008,8 @@ AtoQ <- function(ser_in, aggr = "mean") {
   ser_out <- ser_out - 1.5 * increment
   if (aggr != "mean") ser_out <- ser_out / 4
   colnames(ser_out) <- colnames(ser_in) %>%
-    gsub(".SOLA", ".SOLQ", .) %>%
-    gsub(".A", ".Q", .)
+    stringr::str_replace_all(".SOLA", ".SOLQ") %>%
+    stringr::str_replace_all(".A", ".Q")
   return(ser_out)
 }
 
@@ -998,8 +1035,8 @@ AtoQ <- function(ser_in, aggr = "mean") {
 QtoA <- function(ser_in, aggr = "mean") {
   ser_out <- tsbox::ts_frequency(ser_in, to = "year", aggregate = aggr)
   colnames(ser_out) <- colnames(ser_in) %>%
-    gsub(".SOLQ", ".SOLA", .) %>%
-    gsub(".Q", ".A", .)
+    stringr::str_replace_all(".SOLQ", ".SOLA") %>%
+    stringr::str_replace_all(".Q", ".A")
   return(ser_out)
 }
 
@@ -1185,8 +1222,15 @@ ptd_cum <- function(x, per = "year", avg = TRUE) {
 #'   dplyr::select(time, "VAPNS_HI") |>
 #'   ptd_gr(per = "month", lag_length = "3 years") |>
 #'   tail()
+#' # don't use lag_length = "1 year" with weekly data
 #' daily_data_example |>
 #'   ptd_gr("week")
+#' # lag_length = "52 weeks" instead
+#' daily_data_example |>
+#'   ptd_gr("week", "52 weeks")
+#' # and use lag_length = "364 days" with daily data
+#' daily_data_example |>
+#'   ptd_gr("day", "364 days")
 #' daily_data_example |>
 #'   tsbox::ts_long() |>
 #'   tsbox::ts_pick("VAPNS_HI") |>
@@ -1374,6 +1418,49 @@ cagr <- function(x) {
 }
 
 
+#' Get indexed series
+#'
+#' @param x ts-boxable object for which growth is calculated between first and last period
+#' @param base_per base date when the index is set to base_value (see examples).
+#'   If two dates are provided, the mean in the range is set equal to base_value.
+#' @param base_value numeric value of the index at base_per (e.g. 1 or 100)
+#'
+#' @return indexed object of the same type as the input
+#' @export
+#'
+#' @examples
+#' quarterly_data_example |>
+#'   index(2010.1)
+#' quarterly_data_example |>
+#'   index(c(2010.1, 2010.4))
+#' quarterly_data_example |>
+#'   index(c("2010-01-01", "2010-12-31"), 1)
+index <- function(x, base_per = as.character(Sys.Date()), base_value = 100) {
+  # convert to long format and return additional details
+  x_mod <- conv_long(x, ser_info = TRUE)
+
+  x_mod_index <- x_mod %>%
+    tsbox::ts_index(base = to_ymd(base_per)) %>%
+    dplyr::mutate(value = .data$value * base_value) %>%
+
+    # univariate data requires special treatment
+    {
+      if (length(attr(x_mod, "ser_names")) == 1) {
+        tsbox::ts_tbl(.) %>%
+          tsbox::ts_long() %>%
+          dplyr::mutate(id = attr(x_mod, "ser_names"))
+      } else {
+        tsbox::ts_tbl(.)
+      }
+    }
+
+  # reclass the output to match the input
+  ans <- if (attr(x_mod, "was_wide")) tsbox::ts_wide(x_mod_index) else tsbox::copy_class(x_mod_index, x)
+
+  return(ans)
+}
+
+
 #' Find the date of the first observation (NAs are dropped)
 #'
 #' @param x ts-boxable object
@@ -1435,8 +1522,8 @@ find_end <- function(x, last_day = FALSE) {
 
 #' Concatenate dates to obtain period
 #'
-#' @param dat1 date of period start (string: yyyy-mm-dd)
-#' @param dat2 date of period end (string: yyyy-mm-dd)
+#' @param dat1 date of period start (string: see examples)
+#' @param dat2 date of period end (string: see examples)
 #'
 #' @return string containing date range
 #' @export
@@ -1591,12 +1678,8 @@ qtrs <- function(nr_quarters) {
 #' nmons("2010-01-15", "2010-04-18")
 #' nmons("2010-01-15", "2010-04-12")
 nmons <- function(dat1 = "", dat2 = "") {
-  dat1 <- dat1 %>%
-    lubridate::parse_date_time(orders = c("ymd", "ym")) %>%
-    lubridate::ymd()
-  dat2 <- dat2 %>%
-    lubridate::parse_date_time(orders = c("ymd", "ym")) %>%
-    lubridate::ymd()
+  dat1 <- to_ymd(dat1)
+  dat2 <- to_ymd(dat2)
   xts::nmonths(make_xts(start = dat1, end = dat2, per = "months"))
 }
 
@@ -1620,12 +1703,8 @@ nmons <- function(dat1 = "", dat2 = "") {
 #' nqtrs("2010-02-01", "2020-10-01")
 #' nqtrs("2010-01-01", "2020-11-01")
 nqtrs <- function(dat1 = "", dat2 = "") {
-  dat1 <- dat1 %>%
-    lubridate::parse_date_time(orders = c("ymd", "yq")) %>%
-    lubridate::ymd()
-  dat2 <- dat2 %>%
-    lubridate::parse_date_time(orders = c("ymd", "yq")) %>%
-    lubridate::ymd()
+  dat1 <- to_ymd(dat1)
+  dat2 <- to_ymd(dat2)
   xts::nquarters(make_xts(start = dat1, end = dat2, per = "quarters"))
 }
 
@@ -1680,6 +1759,8 @@ ma <- function(x, order) {
 #'   tsbox::ts_pick("E_TU_HI", "ECT_HI", "EMN_HI") |>
 #'   plot_1()
 plot_1 <- function(x, rng_start = as.character(Sys.Date() - lubridate::years(10)), rng_end = as.character(Sys.Date() + lubridate::years(2)), height = 300, width = 900, yoy_gr = TRUE, gr_1 = TRUE) {
+  rng_start <- to_ymd(rng_start)
+  rng_end <- to_ymd(rng_end)
   # convert to long format and return additional details
   x_mod <- conv_long(x, ser_info = TRUE)
 
@@ -1736,6 +1817,8 @@ plot_1 <- function(x, rng_start = as.character(Sys.Date() - lubridate::years(10)
 #'   tsbox::ts_pick("E_TU_HI", "ECT_HI", "EMN_HI") |>
 #'   plot_2ax()
 plot_2ax <- function(x, rng_start = as.character(Sys.Date() - lubridate::years(10)), rng_end = as.character(Sys.Date() + lubridate::years(2)), height = 300, width = 900) {
+  rng_start <- to_ymd(rng_start)
+  rng_end <- to_ymd(rng_end)
   # convert to long format and return additional details
   x_mod <- conv_long(x, ser_info = TRUE)
 
@@ -1788,6 +1871,10 @@ plot_2ax <- function(x, rng_start = as.character(Sys.Date() - lubridate::years(1
 #'   tsbox::ts_pick("E_TU_HI", "ECT_HI", "EMN_HI") |>
 #'   plot_fc()
 plot_fc <- function(x, rng_start = as.character(Sys.Date() - lubridate::years(10)), rng_end = as.character(Sys.Date() + lubridate::years(2)), add_table = TRUE, table_start = rng_start, table_end = rng_end, height = 300, width = 900, yoy_gr = TRUE) {
+  rng_start <- to_ymd(rng_start)
+  rng_end <- to_ymd(rng_end)
+  table_start <- to_ymd(table_start)
+  table_end <- to_ymd(table_end)
   # convert to long format and return additional details
   x_mod <- conv_long(x, ser_info = TRUE)
 
@@ -1863,6 +1950,8 @@ plot_fc <- function(x, rng_start = as.character(Sys.Date() - lubridate::years(10
 #'   tsbox::ts_pick("E_TU_HI", "ECT_HI", "EMN_HI") |>
 #'   plot_comp_2()
 plot_comp_2 <- function(x, rng_start = as.character(Sys.Date() - lubridate::years(10)), rng_end = as.character(Sys.Date() + lubridate::years(2)), height = 300, width = 900, yoy_gr = TRUE, gr_bar = FALSE) {
+  rng_start <- to_ymd(rng_start)
+  rng_end <- to_ymd(rng_end)
   # convert to long format and return additional details
   x_mod <- conv_long(x, ser_info = TRUE)
 
@@ -1900,7 +1989,7 @@ plot_comp_2 <- function(x, rng_start = as.character(Sys.Date() - lubridate::year
 #' Three-panel plot of levels, index, and growth rates
 #'
 #' @param x ts-boxable object to plot
-#' @param indx_start base period for the indexed series ("YYYY-MM-DD")
+#' @param base_date base period for the indexed series ("YYYY-MM-DD")
 #' @param rng_start start of the zoom range ("YYYY-MM-DD")
 #' @param rng_end end of the zoom range ("YYYY-MM-DD")
 #' @param height height of a single panel (px)
@@ -1918,7 +2007,10 @@ plot_comp_2 <- function(x, rng_start = as.character(Sys.Date() - lubridate::year
 #'   tsbox::ts_long() |>
 #'   tsbox::ts_pick("E_TU_HI", "ECT_HI", "EMN_HI") |>
 #'   plot_comp_3()
-plot_comp_3 <- function(x, indx_start = as.character(Sys.Date() - lubridate::years(10)), rng_start = as.character(Sys.Date() - lubridate::years(10)), rng_end = as.character(Sys.Date() + lubridate::years(2)), height = 300, width = 900, yoy_gr = TRUE, gr_bar = FALSE) {
+plot_comp_3 <- function(x, base_date = as.character(Sys.Date() - lubridate::years(10)), rng_start = as.character(Sys.Date() - lubridate::years(10)), rng_end = as.character(Sys.Date() + lubridate::years(2)), height = 300, width = 900, yoy_gr = TRUE, gr_bar = FALSE) {
+  base_date <- to_ymd(base_date)
+  rng_start <- to_ymd(rng_start)
+  rng_end <- to_ymd(rng_end)
   # convert to long format and return additional details
   x_mod <- conv_long(x, ser_info = TRUE)
 
@@ -1935,7 +2027,7 @@ plot_comp_3 <- function(x, indx_start = as.character(Sys.Date() - lubridate::yea
   plot_index <-
     x_mod %>%
     tsbox::ts_xts() %>%
-    tsbox::ts_index(base = indx_start) %>%
+    tsbox::ts_index(base = base_date) %>%
     tsbox::ts_dygraphs(main = "Index", group = "comp", height = height, width = width) %>%
     # dygraphs::dyRebase(value = 100) %>%
     dygraphs::dyLegend(width = width * 0.90) %>%
@@ -2043,6 +2135,8 @@ save_plot_list <- function(plot_list, save_loc) {
 #'   save_loc = "~/Downloads/temp.html"
 #' )
 gen_table <- function(x, tbl_start = as.character(Sys.Date() - lubridate::years(10)), tbl_end = as.character(Sys.Date() + lubridate::years(2)), percent = "pc", time_across = TRUE, tbl_height = 800, save_loc = NULL) {
+  tbl_start <- to_ymd(tbl_start)
+  tbl_end <- to_ymd(tbl_end)
   # convert to long format and return additional details
   x_mod <- conv_long(x, ser_info = TRUE)
 
@@ -2223,27 +2317,27 @@ model_equation <- function(model, ...) { #   model =  est_lm   {model_equation(e
 
   # model_eqn_beh <- stringr::str_extract(model_eqn_bim, "\\w*") %>% # extract the target variable name
   model_eqn_beh <- stringr::str_extract(model_eqn_bim, "[_.\\(\\)[:alnum:]]+") %>% # extract the target variable name
-    gsub("DL_([_.[:alnum:]]+)", "TSDELTALOG(\\1)", .) %>% # replace DL_ with TSDELTALOG()
-    gsub("L_([_.[:alnum:]]+)", "LOG(\\1)", .) %>% # replace L_ with LOG()
-    gsub("D_([_.[:alnum:]]+)", "TSDELTA(\\1)", .) %>% # replace D_ with TSDELTA()
-    gsub("log\\(([_.[:alnum:]]+)\\)", "LOG(\\1)", .) %>% # replace log() with LOG()
-    gsub("d\\(([_., \\(\\)[:alnum:]]+)\\)", "TSDELTA(\\1)", .) %>% # dynlm::d() = diff()
-    gsub("[\\(]+", "_", .) %>% # drop parentheses from equation name
-    gsub("[., \\)[:digit:]]+", "", .) # drop parentheses and extra items from equation name
+    stringr::str_replace_all("DL_([_.[:alnum:]]+)", "TSDELTALOG(\\1)") %>% # replace DL_ with TSDELTALOG()
+    stringr::str_replace_all("L_([_.[:alnum:]]+)", "LOG(\\1)") %>% # replace L_ with LOG()
+    stringr::str_replace_all("D_([_.[:alnum:]]+)", "TSDELTA(\\1)") %>% # replace D_ with TSDELTA()
+    stringr::str_replace_all("log\\(([_.[:alnum:]]+)\\)", "LOG(\\1)") %>% # replace log() with LOG()
+    stringr::str_replace_all("d\\(([_., \\(\\)[:alnum:]]+)\\)", "TSDELTA(\\1)") %>% # dynlm::d() = diff()
+    stringr::str_replace_all("[\\(]+", "_") %>% # drop parentheses from equation name
+    stringr::str_replace_all("[., \\)[:digit:]]+", "") # drop parentheses and extra items from equation name
   model_eqn_bim <- model_eqn_bim %>%
-    gsub("DL_([_.[:alnum:]]+)", "TSDELTALOG(\\1)", .) %>% # replace DL_ with TSDELTALOG()
-    gsub("L_([_.[:alnum:]]+)", "LOG(\\1)", .) %>% # replace L_ with LOG()
-    gsub("D_([_.[:alnum:]]+)", "TSDELTA(\\1)", .) %>% # replace D_ with TSDELTA()
-    gsub("log\\(([_.[:alnum:]]+)\\)", "LOG(\\1)", .) %>% # replace log() with LOG()
-    gsub("d\\(([_., \\(\\)[:alnum:]]+)\\)", "TSDELTA(\\1)", .) %>% # dynlm::d() = diff()
-    gsub("lag\\(([_., \\(\\)[:alnum:]]+)\\)", "TSLAG(\\1)", .) # lag() with TSLAG()
-  model_eqn_bim <- gsub("([_[:alpha:]]+)(\\.)([[:digit:]]{1,2})", "TSLAG(\\1, \\3)", model_eqn_bim) # replace dot notation for lags with TSLAG()
-  model_eqn_bim <- gsub("L\\(([_\\(\\) [:alpha:]]+)([, ]+)([:c\\(, [:digit:]\\)]+)\\)([[:digit:]]{1,2})", "TSLAG(\\1, \\4)", model_eqn_bim) # dealing with dynlm::L(x, 1:4) or dynlm::L(x, c(2,4))
-  model_eqn_bim <- gsub("L\\(([_., \\(\\)[:alnum:]]+)\\)", "TSLAG(\\1)", model_eqn_bim) # dynlm::L(x, k) = lag(x, -k)
+    stringr::str_replace_all("DL_([_.[:alnum:]]+)", "TSDELTALOG(\\1)") %>% # replace DL_ with TSDELTALOG()
+    stringr::str_replace_all("L_([_.[:alnum:]]+)", "LOG(\\1)") %>% # replace L_ with LOG()
+    stringr::str_replace_all("D_([_.[:alnum:]]+)", "TSDELTA(\\1)") %>% # replace D_ with TSDELTA()
+    stringr::str_replace_all("log\\(([_.[:alnum:]]+)\\)", "LOG(\\1)") %>% # replace log() with LOG()
+    stringr::str_replace_all("d\\(([_., \\(\\)[:alnum:]]+)\\)", "TSDELTA(\\1)") %>% # dynlm::d() = diff()
+    stringr::str_replace_all("lag\\(([_., \\(\\)[:alnum:]]+)\\)", "TSLAG(\\1)") # lag() with TSLAG()
+  model_eqn_bim <- stringr::str_replace_all(model_eqn_bim, "([_[:alpha:]]+)(\\.)([[:digit:]]{1,2})", "TSLAG(\\1, \\3)") # replace dot notation for lags with TSLAG()
+  model_eqn_bim <- stringr::str_replace_all(model_eqn_bim, "L\\(([_\\(\\) [:alpha:]]+)([, ]+)([:c\\(, [:digit:]\\)]+)\\)([[:digit:]]{1,2})", "TSLAG(\\1, \\4)") # dealing with dynlm::L(x, 1:4) or dynlm::L(x, c(2,4))
+  model_eqn_bim <- stringr::str_replace_all(model_eqn_bim, "L\\(([_., \\(\\)[:alnum:]]+)\\)", "TSLAG(\\1)") # dynlm::L(x, k) = lag(x, -k)
   model_eqn_coe <- stringr::str_extract_all(model_eqn_bim, "(b[[:digit:]]+)", simplify = TRUE) %>% paste(collapse = " ") # # extract coefficients
-  model_eqn_beh <- gsub("^", "BEHAVIORAL> ", model_eqn_beh) # add a line for BEHAVIORAL>
-  model_eqn_bim <- gsub("^", "EQ> ", model_eqn_bim) # add EQ> to start of line
-  model_eqn_coe <- gsub("^", "COEFF> ", model_eqn_coe) # add COEFF> to start of line
+  model_eqn_beh <- stringr::str_replace_all(model_eqn_beh, "^", "BEHAVIORAL> ") # add a line for BEHAVIORAL>
+  model_eqn_bim <- stringr::str_replace_all(model_eqn_bim, "^", "EQ> ") # add EQ> to start of line
+  model_eqn_coe <- stringr::str_replace_all(model_eqn_coe, "^", "COEFF> ") # add COEFF> to start of line
 
   return(c(model_eqn, model_eqn_beh, model_eqn_bim, model_eqn_coe))
 }
@@ -2276,13 +2370,20 @@ extract_data <- function(model_in, y_name) {
 #' Update a bimets model with new/modified equations
 #'
 #' @param model_1 original estimated bimets model
-#' @param model_2 bimets model containing updates (only updated equations need
-#'   to be estimated)
+#' @param model_2 estimated bimets model containing updates (only updated
+#'   equations need to be estimated)
 #' @param eqList names of updated behavioral equations (vector of strings),
 #'   others taken from model_1 (equations missing from model_2 are removed)
 #'
 #' @return estimated bimets model containing updates
 #' @export
+#'
+#' @details Start by making a copy of the original model's equations (txt file).
+#' Re-specify some equations, add new equations, and remove not needed equations.
+#' Load the new model as model_2 and estimate the modified/new equations (ok to estimate all).
+#' Replace the equations in model_2 that should remain the same as in model_1
+#' by the estimated equations from model_1. Equations that are to remain unchanged
+#' have to be present in both model_1 and model_2, and not present in eqList.
 #'
 #' @examplesIf interactive()
 #' update_eqs(scen_model_1_est, scen_model_2_est, c("E_NF_AT_HI_Q", "Y_R_AT_HI_Q"))
@@ -2300,6 +2401,46 @@ update_eqs <- function(model_1, model_2, eqList) {
   scen_model_est$behaviorals[keep_eqList] <- model_1$behaviorals[keep_eqList]
 
   return(scen_model_est)
+}
+
+
+#' Set tsrange for behavioral equations to available data range
+#'
+#' @param model_w_dat bimets model (with data) to be estimated
+#' @param max_lag the largest lag (default = 4) in the model (to offset starting point for estimation)
+#' @param eqns names of behavioral equations to set tsrange for (default = NULL: all equations)
+#'
+#' @return bimets model with tsrange set for estimation
+#' @export
+#'
+#' @details Find periods where all variables in the equation are available.
+#' Shift beginning of the sample by max_lag periods.
+#' Set the tsrange for each equation (used in estimation).
+#'
+#' @examplesIf interactive()
+#' set_tsrange(scen_model_dat, 4)
+set_tsrange <- function(model_w_dat, max_lag = 4, eqns = NULL) {
+  # if no equations are specified, use all behavioral equations
+  if(is.null(eqns)) {
+    eqns <- model_w_dat$vendog
+  }
+
+  # for each behavioral equation, set the tsrange to the available data
+  # bimets::GETRANGE() accomplishes a similar task but does not offset the start by max_lag
+  for (eq_i in eqns) {
+    model_w_dat$behaviorals[[eq_i]][["tsrange"]] <- model_w_dat$modelData %>%
+      magrittr::extract(model_w_dat$behaviorals[[eq_i]][["eqComponentsNames"]]) %>%
+      set_attr_tslist() %>%
+      tsbox::ts_tbl() %>%
+      tsbox::ts_wide() %>%
+      tidyr::drop_na() %>%
+      dplyr::slice(1 + max_lag, dplyr::n()) %>%
+      dplyr::pull(.data$time) %>%
+      purrr::map(~ c(year(.x), quarter(.x))) %>%
+      purrr::reduce(c)
+  }
+
+  return(model_w_dat)
 }
 
 
@@ -2323,3 +2464,25 @@ update_eqs <- function(model_1, model_2, eqList) {
 #'   c(0.01, -0.04, rep(-0.025, 4))
 #' add_QMOD.xts$VISUS_HI[pq(2022.3, 2023.4)] %+=% c(0.01, -0.04, rep(-0.025, 4)) # easier on the eye
 `%+=%` <- function(e1, e2) eval.parent(substitute(e1 <- e1 + e2))
+
+
+#' Set udaman token for API access
+#'
+#' @param key a string containing 44 characters
+#'
+#' @return true if setting the token in .Renviron succeeded
+#' @export
+#'
+#' @details Save the token in .Renviron as udaman_token = key.
+#'
+#' @examplesIf interactive()
+#' set_udaman_token("-ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890=")
+set_udaman_token <- function(key)
+{
+  if (!rlang::is_string(key))
+    rlang::abort("`key` must be a string.")
+  if (nchar(key) != 44)
+    rlang::warn("`key` does not have a length of 44 characters.")
+  Sys.setenv(udaman_token = key)
+}
+

@@ -1,6 +1,6 @@
 Package: fcutils
 Title: Time Series and Forecast Utilities
-Version: 0.0.0.9013
+Version: 0.0.0.9015
 Authors@R: 
     person("Peter", "Fuleky", email = "fuleky@hawaii.edu", role = c("aut", "cre"),
            comment = c(ORCID = "YOUR-ORCID-ID"))
@@ -8,7 +8,7 @@ Description: Utility functions to retrieve data from UDAMAN, wrangle, transform 
 License: MIT + file LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.2.3
+RoxygenNote: 7.3.1
 Imports: 
     dplyr,
     dygraphs,
@@ -33,6 +33,7 @@ Imports:
 Suggests: 
     bimets,
     dynlm,
+    keyring,
     gets
 Depends: 
     R (>= 2.10)

@@ -30,6 +30,10 @@ ensures that objects containing a single time series have an id column.
 quarterly_data_example |>
   conv_long()
 quarterly_data_example |>
+  conv_long() |>
+  tsbox::ts_tslist() |>
+  conv_long()
+quarterly_data_example |>
   tsbox::ts_long() |>
   tsbox::ts_xts() |>
   conv_long(ser_info = TRUE)

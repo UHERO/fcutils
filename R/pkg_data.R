@@ -23,6 +23,23 @@ bnk_start <- lubridate::ymd("1970-01-01")
 bnk_end <- lubridate::ymd("2060-12-31")
 
 #' colors defined in the UHERO Style Guide
+#' @name uhcolors
+#' @format vector of hex color codes
+#' @docType data
+#' @author Peter Fuleky \email{fuleky@hawaii.edu}
+#' @source author
+#' @references \url{uhero.hawaii.edu}
+#' @keywords data
+# NULL
+# plot <- plot +
+#   geom_point(data = data, aes(x = Low, y = Category), color = uhcolors["uhcyan"], size = point_size) +
+#   geom_point(data = data, aes(x = Median, y = Category), color = uhcolors["uhblue"], size = point_size) +
+#   geom_point(data = data, aes(x = High, y = Category), color = uhcolors["uhorange"], size = point_size)
+"uhcolors"
+uhcolors <- c("#1D667F", "#F6A01B", "#9BBB59", "#8064A2", "#7EC4CA", "#505050", "red","#6DA2BC", "#FFC593", "#BADA7C", "#B69CD9", "#9CE0E6", "#929292", "#FF9191") |>
+  magrittr::set_names(c("uhblue", "uhorange", "uhgreen", "uhpurple", "uhcyan", "uhgray", "uhred", "uhlblue", "uhlorange", "uhlgreen", "uhlpurple", "uhlcyan", "uhlgray", "uhlred"))
+
+#' colors defined in the UHERO Style Guide
 #' @name uhero_colors
 #' @format vector of hex color codes
 #' @docType data
@@ -108,6 +125,6 @@ uhero_colors_50 <- c("#1D667F80", "#F6A01B80", "#9BBB5980", "#8064A280", "#7EC4C
 # daily_data_example |> save(file = "daily_data_example.rda")
 "daily_data_example"
 
-# usethis::use_data(bnk_start, bnk_end, uhero_colors, uhero_colors_light, uhero_colors_50, internal = FALSE, overwrite = TRUE)
+# usethis::use_data(bnk_start, bnk_end, uhcolors, uhero_colors, uhero_colors_light, uhero_colors_50, internal = FALSE, overwrite = TRUE)
 # usethis::use_data(quarterly_data_example, monthly_data_example, daily_data_example, internal = FALSE, overwrite = TRUE)
 
