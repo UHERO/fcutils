@@ -1926,7 +1926,7 @@ plot_fc <- function(x, rng_start = as.character(Sys.Date() - lubridate::years(10
   getQuarter <- 'function(d) {
       d = d || new Date();
       var n = [1,2,3,4];
-      var qr = "q" + n[Math.floor(d.getMonth() / 3)];
+      var qr = "Q" + n[Math.floor(d.getMonth() / 3)];
 //      var twoDigitsYear = parseInt(d.getFullYear().toString().substr(2,2), 10);
       var Year = parseInt(d.getFullYear().toString(), 10);
 //     return [twoDigits+qr];
