@@ -1418,9 +1418,9 @@ cagr <- function(x) {
 }
 
 
-#' Get indexed series
+#' Get indexed series (wrapper around tsbox::ts_index())
 #'
-#' @param x ts-boxable object for which growth is calculated between first and last period
+#' @param x ts-boxable object to be indexed
 #' @param base_per base date when the index is set to base_value (see examples).
 #'   If two dates are provided, the mean in the range is set equal to base_value.
 #' @param base_value numeric value of the index at base_per (e.g. 1 or 100)
@@ -1456,6 +1456,52 @@ index <- function(x, base_per = as.character(Sys.Date()), base_value = 100) {
 
   # reclass the output to match the input
   ans <- if (attr(x_mod, "was_wide")) tsbox::ts_wide(x_mod_index) else tsbox::copy_class(x_mod_index, x)
+
+  return(ans)
+}
+
+
+#' Specify span of time series (wrapper around tsbox::ts_span())
+#'
+#' @param x ts-boxable object to filter by span
+#' @param start start date (see examples)
+#' @param end end date (see examples)
+#' @param template ts-boxable time series (see tsbox::ts_span)
+#' @param extend logical. If true, the start and end values are allowed to extend the series (by adding NA values).
+#'
+#' @return filtered object of the same type as the input
+#' @export
+#'
+#' @examples
+#' quarterly_data_example |>
+#'   span(2010.1)
+#' quarterly_data_example |>
+#'   span(2010.1, 2010.4)
+#' quarterly_data_example |>
+#'   span("2010-01-01", "2010-12-31")
+span <- function(x, start = NULL, end = NULL, template = NULL, extend = FALSE) {
+  start <- if(!is.null(start)) to_ymd(start)
+  end <- if(!is.null(end)) to_ymd(end)
+
+  # convert to long format and return additional details
+  x_mod <- conv_long(x, ser_info = TRUE)
+
+  x_mod_span <- x_mod %>%
+    tsbox::ts_span(start = start, end = end, template = template, extend = extend) %>%
+
+    # univariate data requires special treatment
+    {
+      if (length(attr(x_mod, "ser_names")) == 1) {
+        tsbox::ts_tbl(.) %>%
+          tsbox::ts_long() %>%
+          dplyr::mutate(id = attr(x_mod, "ser_names"))
+      } else {
+        tsbox::ts_tbl(.)
+      }
+    }
+
+  # reclass the output to match the input
+  ans <- if (attr(x_mod, "was_wide")) tsbox::ts_wide(x_mod_span) else tsbox::copy_class(x_mod_span, x)
 
   return(ans)
 }
@@ -1875,6 +1921,18 @@ plot_fc <- function(x, rng_start = as.character(Sys.Date() - lubridate::years(10
   rng_end <- to_ymd(rng_end)
   table_start <- to_ymd(table_start)
   table_end <- to_ymd(table_end)
+
+  # formatting of the date axis
+  getQuarter <- 'function(d) {
+      d = d || new Date();
+      var n = [1,2,3,4];
+      var qr = "q" + n[Math.floor(d.getMonth() / 3)];
+//      var twoDigitsYear = parseInt(d.getFullYear().toString().substr(2,2), 10);
+      var Year = parseInt(d.getFullYear().toString(), 10);
+//     return [twoDigits+qr];
+      return [Year+qr];
+}'
+
   # convert to long format and return additional details
   x_mod <- conv_long(x, ser_info = TRUE)
 
@@ -1893,6 +1951,7 @@ plot_fc <- function(x, rng_start = as.character(Sys.Date() - lubridate::years(10
     tsbox::ts_dygraphs(main = ser_names[1], group = "comp", height = height, width = width) %>%
     dygraphs::dyAxis("y", label = "level") %>%
     dygraphs::dyAxis("y2", label = "% Chg", drawGrid = FALSE, independentTicks = TRUE) %>%
+    dygraphs::dyAxis("x", axisLabelFormatter = htmlwidgets::JS(getQuarter)) %>%
     dygraphs::dySeries(stringr::str_glue("{ser_names[1]}"), axis = "y", strokeWidth = 2, color = uhero_colors[1]) %>%
     {
       if (length(ser_names) > 1) dygraphs::dySeries(., stringr::str_glue("{ser_names[2]}"), axis = "y", strokePattern = "dashed", strokeWidth = 2, color = uhero_colors[2]) else .

@@ -2,12 +2,12 @@
 % Please edit documentation in R/fcst_utils.R
 \name{index}
 \alias{index}
-\title{Get indexed series}
+\title{Get indexed series (wrapper around tsbox::ts_index())}
 \usage{
 index(x, base_per = as.character(Sys.Date()), base_value = 100)
 }
 \arguments{
-\item{x}{ts-boxable object for which growth is calculated between first and last period}
+\item{x}{ts-boxable object to be indexed}
 
 \item{base_per}{base date when the index is set to base_value (see examples).
 If two dates are provided, the mean in the range is set equal to base_value.}
@@ -18,7 +18,7 @@ If two dates are provided, the mean in the range is set equal to base_value.}
 indexed object of the same type as the input
 }
 \description{
-Get indexed series
+Get indexed series (wrapper around tsbox::ts_index())
 }
 \examples{
 quarterly_data_example |>
