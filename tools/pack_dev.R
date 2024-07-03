@@ -45,6 +45,7 @@ usethis::use_package("reactable")
 usethis::use_package("rmarkdown")
 usethis::use_package("bimets", "Suggests")
 usethis::use_package("gets", "Suggests")
+usethis::use_package("keyring", "Suggests")
 usethis::use_package("dynlm", "Suggests")
 
 usethis::use_import_from("magrittr", "%$%")

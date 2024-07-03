@@ -20,6 +20,6 @@ Save the token in .Renviron as udaman_token = key.
 }
 \examples{
 \dontshow{if (interactive()) (if (getRversion() >= "3.4") withAutoprint else force)(\{ # examplesIf}
-set_udaman_token("-=-=ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890-=-=")
+set_udaman_token("-ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890=")
 \dontshow{\}) # examplesIf}
 }

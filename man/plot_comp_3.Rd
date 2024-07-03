@@ -6,7 +6,7 @@
 \usage{
 plot_comp_3(
   x,
-  indx_start = as.character(Sys.Date() - lubridate::years(10)),
+  base_date = as.character(Sys.Date() - lubridate::years(10)),
   rng_start = as.character(Sys.Date() - lubridate::years(10)),
   rng_end = as.character(Sys.Date() + lubridate::years(2)),
   height = 300,
@@ -18,7 +18,7 @@ plot_comp_3(
 \arguments{
 \item{x}{ts-boxable object to plot}
 
-\item{indx_start}{base period for the indexed series ("YYYY-MM-DD")}
+\item{base_date}{base period for the indexed series ("YYYY-MM-DD")}
 
 \item{rng_start}{start of the zoom range ("YYYY-MM-DD")}
 

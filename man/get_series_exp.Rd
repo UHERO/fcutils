@@ -8,6 +8,7 @@ get_series_exp(
   exp_id,
   format = "wide",
   expand = "true",
+  raw = FALSE,
   rename = "compact",
   descr = FALSE,
   public = FALSE,
@@ -19,7 +20,9 @@ get_series_exp(
 
 \item{format}{"wide" (default) or "long" or "xts"}
 
-\item{expand}{"true" or "raw" ("true" downloads formatted data, "raw" downloads raw units)}
+\item{expand}{DEPRECATED, USE raw INSTEAD "true" or "raw" ("true" downloads formatted data, "raw" downloads raw units)}
+
+\item{raw}{TRUE or FALSE (default) (TRUE downloads raw data, FALSE downloads scaled and rounded data)}
 
 \item{rename}{"compact" (default), "full", "no". "compact": @ replaced by _
 and no frequency; "full": @ replaced by \emph{AT} and . by _; "no": no renaming,
@@ -38,9 +41,12 @@ time and data for all series combined in a tibble
 Download series listed in an export table from udaman
 }
 \details{
-This function requires access permission to UDAMAN.
+This function requires permission to access UDAMAN.
 Store the udaman token in the .Renviron file using the following format:
-udaman_token = "this is your UDAMAN token"
+udaman_token = "-ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890="
+Or using fcutils::set_udaman_token("-ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890=")
+Or store the udaman token among your credentials (e.g. keychain) using keyring:
+keyring::key_set_with_value(service = "udaman_token", password = "-ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890=")
 }
 \examples{
 \dontshow{if (interactive()) (if (getRversion() >= "3.4") withAutoprint else force)(\{ # examplesIf}

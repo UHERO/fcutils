@@ -7,9 +7,9 @@
 p(dat1 = "", dat2 = "")
 }
 \arguments{
-\item{dat1}{date of period start (string: yyyy-mm-dd)}
+\item{dat1}{date of period start (string: see examples)}
 
-\item{dat2}{date of period end (string: yyyy-mm-dd)}
+\item{dat2}{date of period end (string: see examples)}
 }
 \value{
 string containing date range
