@@ -7,8 +7,8 @@
 get_series(
   ser_id_vec,
   format = "wide",
-  expand = "true",
-  raw = FALSE,
+  expand,
+  raw = TRUE,
   rename = "compact",
   freq = NULL,
   descr = FALSE,
@@ -22,7 +22,7 @@ get_series(
 
 \item{expand}{DEPRECATED, USE raw INSTEAD "true" (default) or "raw" ("true" downloads formatted data, "raw" downloads raw units)}
 
-\item{raw}{TRUE or FALSE (default) (TRUE downloads raw data, FALSE downloads scaled and rounded data)}
+\item{raw}{TRUE (default) or FALSE (TRUE downloads raw data, FALSE downloads scaled and rounded data)}
 
 \item{rename}{"compact" (default), "full", "no". "compact": @ replaced by _
 and no frequency; "full": @ replaced by \emph{AT} and . by _; "no": no renaming,
@@ -52,7 +52,7 @@ keyring::key_set_with_value(service = "udaman_token", password = "-ABCDEFGHIJKLM
 }
 \examples{
 \dontshow{if (interactive()) (if (getRversion() >= "3.4") withAutoprint else force)(\{ # examplesIf}
-get_series(c("VISNS@HI.M", "VAPNS@HI.M"), expand = "true")
+get_series(c("VISNS@HI.M", "VAPNS@HI.M"), raw = TRUE)
 get_series(c("VEXP_RB@HI.M"))
 get_series(c("VISNS@HI.M", "VAPNS@HI.M"), public = TRUE)
 get_series(c("VISNS@HI.M", "VISUSNS@HI.M"), freq = "Q")

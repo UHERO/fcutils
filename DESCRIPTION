@@ -1,14 +1,15 @@
 Package: fcutils
 Title: Time Series and Forecast Utilities
-Version: 0.0.0.9016
+Version: 0.0.0.9017
 Authors@R: 
-    person("Peter", "Fuleky", email = "fuleky@hawaii.edu", role = c("aut", "cre"),
+    person("Peter", "Fuleky", , "fuleky@hawaii.edu", role = c("aut", "cre"),
            comment = c(ORCID = "YOUR-ORCID-ID"))
-Description: Utility functions to retrieve data from UDAMAN, wrangle, transform and plot time series data.
+Description: Utility functions to retrieve data from UDAMAN, wrangle,
+    transform and plot time series data.
 License: MIT + file LICENSE
-Encoding: UTF-8
-Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.3.1
+URL: https://uhero.github.io/fcutils/
+Depends: 
+    R (>= 2.10)
 Imports: 
     dplyr,
     dygraphs,
@@ -16,6 +17,7 @@ Imports:
     htmlwidgets,
     httr,
     jsonlite,
+    keyring,
     lubridate,
     magrittr,
     purrr,
@@ -33,9 +35,8 @@ Imports:
 Suggests: 
     bimets,
     dynlm,
-    keyring,
     gets
-Depends: 
-    R (>= 2.10)
+Encoding: UTF-8
 LazyData: true
-URL: https://uhero.github.io/fcutils/
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.3.1
