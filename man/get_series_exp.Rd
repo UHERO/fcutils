@@ -7,8 +7,8 @@
 get_series_exp(
   exp_id,
   format = "wide",
-  expand = "true",
-  raw = FALSE,
+  expand,
+  raw = TRUE,
   rename = "compact",
   descr = FALSE,
   public = FALSE,
@@ -22,7 +22,7 @@ get_series_exp(
 
 \item{expand}{DEPRECATED, USE raw INSTEAD "true" or "raw" ("true" downloads formatted data, "raw" downloads raw units)}
 
-\item{raw}{TRUE or FALSE (default) (TRUE downloads raw data, FALSE downloads scaled and rounded data)}
+\item{raw}{TRUE (default) or FALSE (TRUE downloads raw data, FALSE downloads scaled and rounded data)}
 
 \item{rename}{"compact" (default), "full", "no". "compact": @ replaced by _
 and no frequency; "full": @ replaced by \emph{AT} and . by _; "no": no renaming,

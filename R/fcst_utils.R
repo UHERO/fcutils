@@ -17,7 +17,7 @@
 #'
 #' @param ser_id udaman series name (character)
 #' @param expand DEPRECATED, USE raw INSTEAD "true" or "raw" ("true" downloads formatted data, "raw" downloads raw units)
-#' @param raw TRUE or FALSE (default) (TRUE downloads raw data, FALSE downloads scaled and rounded data)
+#' @param raw TRUE (default) or FALSE (TRUE downloads raw data, FALSE downloads scaled and rounded data)
 #' @param rename "compact" (default), "full", "no". "compact": @ replaced by _
 #'   and no frequency; "full": @ replaced by _AT_ and . by _; "no": no renaming,
 #'   keep UDAMAN names
@@ -36,8 +36,8 @@
 #' @noRd
 #' @examplesIf interactive()
 #' get_series_1(ser_id = "VISNS@HI.M")
-get_series_1 <- function(ser_id, expand = "true", raw = FALSE, rename = "compact", descr = FALSE, public = FALSE) {
-  if (stringr::str_length(Sys.getenv("udaman_token")) == 0 & length(keyring::key_list("udaman_token")$service) == 0) stop("UDAMAN token is not available in .Renviron or among credentials")
+get_series_1 <- function(ser_id, expand, rename, descr, public) {
+  if (stringr::str_length(Sys.getenv("udaman_token")) == 0 & length(keyring::key_list("udaman_token")$service) == 0) rlang::abort("UDAMAN token is not available in .Renviron or among credentials")
   # API call
   if(public){
     url <- stringr::str_c("https://api.uhero.hawaii.edu/v1/series?name=", ser_id, "&expand=", expand, "&u=uhero&nocache")
@@ -90,7 +90,7 @@ get_series_1 <- function(ser_id, expand = "true", raw = FALSE, rename = "compact
 #' @param ser_id_vec vector of series names (character)
 #' @param format "wide" (default) or "long" or "xts"
 #' @param expand DEPRECATED, USE raw INSTEAD "true" (default) or "raw" ("true" downloads formatted data, "raw" downloads raw units)
-#' @param raw TRUE or FALSE (default) (TRUE downloads raw data, FALSE downloads scaled and rounded data)
+#' @param raw TRUE (default) or FALSE (TRUE downloads raw data, FALSE downloads scaled and rounded data)
 #' @param rename "compact" (default), "full", "no". "compact": @ replaced by _
 #'   and no frequency; "full": @ replaced by _AT_ and . by _; "no": no renaming,
 #'   keep UDAMAN names
@@ -111,7 +111,7 @@ get_series_1 <- function(ser_id, expand = "true", raw = FALSE, rename = "compact
 #' keyring::key_set_with_value(service = "udaman_token", password = "-ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890=")
 #'
 #' @examplesIf interactive()
-#' get_series(c("VISNS@HI.M", "VAPNS@HI.M"), expand = "true")
+#' get_series(c("VISNS@HI.M", "VAPNS@HI.M"), raw = TRUE)
 #' get_series(c("VEXP_RB@HI.M"))
 #' get_series(c("VISNS@HI.M", "VAPNS@HI.M"), public = TRUE)
 #' get_series(c("VISNS@HI.M", "VISUSNS@HI.M"), freq = "Q")
@@ -121,10 +121,13 @@ get_series_1 <- function(ser_id, expand = "true", raw = FALSE, rename = "compact
 #' get_series(c("E_NF_HI", "ECT_HI", "E_TU_HAW"), freq = "M")
 #' get_series(c("E_NF__HI_M", "ECT__HI_M", "VAP__HI_W"))
 #' get_series(c("E_NF_AT_HI_M", "ECT_AT_HI_M", "VAP_AT_HI_W"))
-get_series <- function(ser_id_vec, format = "wide", expand = "true", raw = FALSE, rename = "compact", freq = NULL, descr = FALSE, public = FALSE) {
-  if (!missing(expand)) {
-    warning("In get_series() use 'raw' instead of 'expand'.")
+get_series <- function(ser_id_vec, format = "wide", expand, raw = TRUE, rename = "compact", freq = NULL, descr = FALSE, public = FALSE) {
+  if (!missing(raw)) {
+    expand <- if (raw) "raw" else "true"
+  } else if (!missing(expand)) {
+    rlang::warn("get_series() now uses 'raw' instead of 'expand'. Fix the function call!")
   } else {
+    rlang::warn("By default the get_series() function returns raw values (raw = TRUE)!")
     expand <- if (raw) "raw" else "true"
   }
   ser_tbl <- ser_id_vec %>%
@@ -148,7 +151,7 @@ get_series <- function(ser_id_vec, format = "wide", expand = "true", raw = FALSE
 #' @param exp_id export id (character or numeric)
 #' @param format "wide" (default) or "long" or "xts"
 #' @param expand DEPRECATED, USE raw INSTEAD "true" or "raw" ("true" downloads formatted data, "raw" downloads raw units)
-#' @param raw TRUE or FALSE (default) (TRUE downloads raw data, FALSE downloads scaled and rounded data)
+#' @param raw TRUE (default) or FALSE (TRUE downloads raw data, FALSE downloads scaled and rounded data)
 #' @param rename "compact" (default), "full", "no". "compact": @ replaced by _
 #'   and no frequency; "full": @ replaced by _AT_ and . by _; "no": no renaming,
 #'   keep UDAMAN names
@@ -169,13 +172,16 @@ get_series <- function(ser_id_vec, format = "wide", expand = "true", raw = FALSE
 #' @examplesIf interactive()
 #' get_series_exp(exp_id = 74)
 #' get_series_exp(74, format = "xts")
-get_series_exp <- function(exp_id, format = "wide", expand = "true", raw = FALSE, rename = "compact", descr = FALSE, public = FALSE, save_loc = NULL) {
-  if (!missing(expand)) {
-    warning("In get_series_exp() use 'raw' instead of 'expand'.")
+get_series_exp <- function(exp_id, format = "wide", expand, raw = TRUE, rename = "compact", descr = FALSE, public = FALSE, save_loc = NULL) {
+  if (!missing(raw)) {
+    expand <- if (raw) "raw" else "true"
+  } else if (!missing(expand)) {
+    rlang::warn("get_series_exp() now uses 'raw' instead of 'expand'. Fix the function call!")
   } else {
+    rlang::warn("By default the get_series_exp() function returns raw values (raw = TRUE)!")
     expand <- if (raw) "raw" else "true"
   }
-  if (stringr::str_length(Sys.getenv("udaman_token")) == 0 & length(keyring::key_list("udaman_token")$service) == 0) stop("UDAMAN token is not available in .Renviron or among credentials")
+  if (stringr::str_length(Sys.getenv("udaman_token")) == 0 & length(keyring::key_list("udaman_token")$service) == 0) rlang::abort("UDAMAN token is not available in .Renviron or among credentials")
   # API call
   if(public){
     url <- stringr::str_c("https://api.uhero.hawaii.edu/v1/package/export?id=", exp_id, "&expand=", expand, "&u=uhero&nocache")
@@ -652,7 +658,7 @@ set_attr_tslist <- function(x) {
 #   if (any(c("time", "times", "date", "dates") %in% tolower(colnames(x)))) {
 #     time.name <- "time"
 #   } else {
-#     stop(
+#     rlang::abort(
 #       "No [time] column detected. ",
 #       "To be explicit, name time column 'time'."
 #     )
@@ -677,7 +683,7 @@ set_attr_tslist <- function(x) {
 #   }
 #
 #   if (length(value.names) == 0L) {
-#     stop(
+#     rlang::abort(
 #       "No [value] column detected. ",
 #       "[value] column(s) must be right of the [time] column."
 #     )
@@ -738,7 +744,7 @@ is_wide <- function(x) {
   if (any(c("time", "times", "date", "dates") %in% tolower(colnames(x)))) {
     time.name <- "time"
   } else {
-    stop(
+    rlang::abort(
       "No [time] column detected. ",
       "To be explicit, name time column 'time'."
     )
@@ -763,7 +769,7 @@ is_wide <- function(x) {
   }
 
   if (length(value.names) == 0L) {
-    stop(
+    rlang::abort(
       "No [value] column detected. ",
       "[value] column(s) must be right of the [time] column."
     )

@@ -43,9 +43,9 @@ usethis::use_package("htmlwidgets") # tagList, browsable
 usethis::use_package("tsbox")
 usethis::use_package("reactable")
 usethis::use_package("rmarkdown")
+usethis::use_package("keyring")
 usethis::use_package("bimets", "Suggests")
 usethis::use_package("gets", "Suggests")
-usethis::use_package("keyring", "Suggests")
 usethis::use_package("dynlm", "Suggests")
 
 usethis::use_import_from("magrittr", "%$%")
@@ -57,6 +57,8 @@ usethis::use_import_from("tsbox", "%ts+%")
 usethis::use_import_from("tsbox", "%ts-%")
 usethis::use_import_from("tsbox", "%ts*%")
 usethis::use_import_from("tsbox", "%ts/%")
+
+usethis::use_tidy_description()
 
 renv::status()
 renv::snapshot()
