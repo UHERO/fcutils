@@ -25,11 +25,11 @@ that the growth rates are available for at least the last year of history.
 \examples{
 quarterly_data_example |>
   tsbox::ts_long() |>
-  dplyr::filter(id == "E_NF_HI", time <= "2010-01-01") |>
+  dplyr::filter(id == "E_NF_HI") |>
+  tsbox::ts_pcy() |>
   yoy_to_lev(
     quarterly_data_example |>
       tsbox::ts_long() |>
-      dplyr::filter(id == "E_NF_HI") |>
-      tsbox::ts_pcy()
+      dplyr::filter(id == "ECT_HI", time <= "2010-01-01")
   )
 }

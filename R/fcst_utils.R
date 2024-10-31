@@ -1439,12 +1439,12 @@ cagr <- function(x) {
 #' @examples
 #' quarterly_data_example |>
 #'   tsbox::ts_long() |>
-#'   dplyr::filter(id == "E_NF_HI", time <= "2010-01-01") |>
+#'   dplyr::filter(id == "E_NF_HI") |>
+#'   tsbox::ts_pcy() |>
 #'   yoy_to_lev(
 #'     quarterly_data_example |>
 #'       tsbox::ts_long() |>
-#'       dplyr::filter(id == "E_NF_HI") |>
-#'       tsbox::ts_pcy()
+#'       dplyr::filter(id == "ECT_HI", time <= "2010-01-01")
 #'   )
 yoy_to_lev <- function(yoy_gr, hist_lev) {
   # convert to long format and return additional details
@@ -1494,7 +1494,9 @@ yoy_to_lev <- function(yoy_gr, hist_lev) {
       lev_val = .data$base_val * .data$cum_gr_adj
     ) %>%
     # select the relevant columns
-    dplyr::select("id", "time", "value" = "lev_val")
+    dplyr::select("id", "time", "value" = "lev_val") %>%
+    # name the growth series the same as the history
+    dplyr::mutate(id = attr(hist_lev_mod, "ser_names"))
 
   # extend history with period to period growth of the calculated levels
   ext_lev_mod <- hist_lev_mod %>%
