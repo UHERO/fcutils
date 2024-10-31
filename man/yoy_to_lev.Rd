@@ -4,12 +4,12 @@
 \alias{yoy_to_lev}
 \title{Extend a series using year over year growth}
 \usage{
-yoy_to_lev(hist_lev, yoy_gr)
+yoy_to_lev(yoy_gr, hist_lev)
 }
 \arguments{
-\item{hist_lev}{ts-boxable object containing the history in levels}
+\item{yoy_gr}{ts-boxable object containing year over year growth rates}
 
-\item{yoy_gr}{ts-boxable object containing year over year growth rates
+\item{hist_lev}{ts-boxable object containing the history in levels
 for forecast and at least one year of history (in percent)}
 }
 \value{

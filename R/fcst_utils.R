@@ -1426,8 +1426,8 @@ cagr <- function(x) {
 
 #' Extend a series using year over year growth
 #'
-#' @param hist_lev ts-boxable object containing the history in levels
 #' @param yoy_gr ts-boxable object containing year over year growth rates
+#' @param hist_lev ts-boxable object containing the history in levels
 #' for forecast and at least one year of history (in percent)
 #'
 #' @return object of the same type as hist_lev extended with year over year growth
@@ -1446,10 +1446,10 @@ cagr <- function(x) {
 #'       dplyr::filter(id == "E_NF_HI") |>
 #'       tsbox::ts_pcy()
 #'   )
-yoy_to_lev <- function(hist_lev, yoy_gr) {
+yoy_to_lev <- function(yoy_gr, hist_lev) {
   # convert to long format and return additional details
-  hist_lev_mod <- conv_long(hist_lev, ser_info = TRUE)
   yoy_gr_mod <- conv_long(yoy_gr, ser_info = TRUE)
+  hist_lev_mod <- conv_long(hist_lev, ser_info = TRUE)
 
   # find the start and end of the base period
   base_per_end <- find_end(hist_lev_mod)
