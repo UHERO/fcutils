@@ -1424,6 +1424,89 @@ cagr <- function(x) {
 }
 
 
+#' Extend a series using year over year growth
+#'
+#' @param yoy_gr ts-boxable object containing year over year growth rates
+#' @param hist_lev ts-boxable object containing the history in levels
+#' for forecast and at least one year of history (in percent)
+#'
+#' @return object of the same type as hist_lev extended with year over year growth
+#' @export
+#'
+#' @details This function only works for univariate time series and requires
+#' that the growth rates are available for at least the last year of history.
+#'
+#' @examples
+#' quarterly_data_example |>
+#'   tsbox::ts_long() |>
+#'   dplyr::filter(id == "E_NF_HI", time <= "2010-01-01") |>
+#'   yoy_to_lev(
+#'     quarterly_data_example |>
+#'       tsbox::ts_long() |>
+#'       dplyr::filter(id == "E_NF_HI") |>
+#'       tsbox::ts_pcy()
+#'   )
+yoy_to_lev <- function(yoy_gr, hist_lev) {
+  # convert to long format and return additional details
+  yoy_gr_mod <- conv_long(yoy_gr, ser_info = TRUE)
+  hist_lev_mod <- conv_long(hist_lev, ser_info = TRUE)
+
+  # find the start and end of the base period
+  base_per_end <- find_end(hist_lev_mod)
+  base_per_start <- base_per_end - lubridate::years(1)
+
+  # make sure the growth series starts at or before the start of the base period
+  if (find_start(yoy_gr_mod) > base_per_start) {
+    stop("The start of the growth series is after the start of the base period.
+         Extend the growth series backward with 0% growth in the base period.")
+  }
+
+  # extract the history in the base period
+  hist_lev_base <- hist_lev_mod %>%
+    dplyr::filter(.data$time > base_per_start, .data$time <= base_per_end) %>%
+    dplyr::mutate(month_id = lubridate::month(.data$time))
+
+  # calculate the cumulative growth and levels
+  calcs <- yoy_gr_mod %>%
+    dplyr::filter(.data$time > base_per_start) %>%
+    dplyr::mutate(month_id = lubridate::month(.data$time)) %>%
+    # cumulative growth for each period (works for monthly and quarterly data)
+    dplyr::mutate(
+      cum_gr = cumprod(1 + .data$value / 100),
+      .by = "month_id"
+    ) %>%
+    # store the cumulative growth in the base period
+    dplyr::left_join(
+      dplyr::filter(., .data$time > base_per_start, .data$time <= base_per_end) %>%
+        dplyr::select("month_id", "base_gr" = "cum_gr"),
+      by = "month_id"
+    ) %>%
+    # add the history in the base period
+    dplyr::left_join(
+      hist_lev_base %>%
+        dplyr::select("month_id", "base_val" = "value"),
+      by = "month_id"
+    ) %>%
+    dplyr::mutate(
+      # adjust the cumulative growth so it is 1 in the base period
+      cum_gr_adj = .data$cum_gr / .data$base_gr,
+      # calculate levels using the adjusted cumulative growth applied to the base period
+      lev_val = .data$base_val * .data$cum_gr_adj
+    ) %>%
+    # select the relevant columns
+    dplyr::select("id", "time", "value" = "lev_val")
+
+  # extend history with period to period growth of the calculated levels
+  ext_lev_mod <- hist_lev_mod %>%
+    tsbox::ts_chain(calcs)
+
+  # reclass the output to match the input
+  ans <- if (attr(hist_lev_mod, "was_wide")) tsbox::ts_wide(ext_lev_mod) else tsbox::copy_class(ext_lev_mod, hist_lev)
+
+  return(ans)
+}
+
+
 #' Get indexed series (wrapper around tsbox::ts_index())
 #'
 #' @param x ts-boxable object to be indexed
