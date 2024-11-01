@@ -1429,24 +1429,28 @@ cagr <- function(x) {
 #' @param yoy_gr ts-boxable object containing year over year growth rates
 #' @param hist_lev ts-boxable object containing the history in levels
 #' for forecast and at least one year of history (in percent)
+#' @param smooth_span extent of smoothing between 0-1 (default: 0, no smoothing)
 #'
 #' @return object of the same type as hist_lev extended with year over year growth
 #' @export
 #'
 #' @details This function only works for univariate time series and requires
 #' that the growth rates are available for at least the last year of history.
+#' Year-over-year growth rates propagate the fluctuations of the base period
+#' into the extension period. This can be mitigated by smoothing the extension.
 #'
 #' @examples
-#' quarterly_data_example |>
+#' gr <- quarterly_data_example |>
 #'   tsbox::ts_long() |>
 #'   dplyr::filter(id == "E_NF_HI") |>
-#'   tsbox::ts_pcy() |>
-#'   yoy_to_lev(
-#'     quarterly_data_example |>
-#'       tsbox::ts_long() |>
-#'       dplyr::filter(id == "ECT_HI", time <= "2010-01-01")
-#'   )
-yoy_to_lev <- function(yoy_gr, hist_lev) {
+#'   tsbox::ts_pcy()
+#' lev <- quarterly_data_example |>
+#'   tsbox::ts_long() |>
+#'   dplyr::filter(id == "ECT_HI")
+#' res1 <- yoy_to_lev(gr, lev |> dplyr::filter(time <= "2010-01-01"))
+#' res2 <- yoy_to_lev(gr, lev |> dplyr::filter(time <= "2010-01-01"), 1/8)
+#' tsbox::ts_plot(lev, res1, res2)
+yoy_to_lev <- function(yoy_gr, hist_lev, smooth_span = 0) {
   # convert to long format and return additional details
   yoy_gr_mod <- conv_long(yoy_gr, ser_info = TRUE)
   hist_lev_mod <- conv_long(hist_lev, ser_info = TRUE)
@@ -1499,8 +1503,23 @@ yoy_to_lev <- function(yoy_gr, hist_lev) {
     dplyr::mutate(id = attr(hist_lev_mod, "ser_names"))
 
   # extend history with period to period growth of the calculated levels
-  ext_lev_mod <- hist_lev_mod %>%
-    tsbox::ts_chain(calcs)
+  # and apply smoothing to extension if requested
+  if (smooth_span == 0) {
+    ext_lev_mod <- hist_lev_mod %>%
+      tsbox::ts_chain(calcs)
+  } else {
+    ext_lev_mod <- hist_lev_mod %>%
+      tsbox::ts_chain(calcs) %>%
+      dplyr::mutate(
+        value_smooth = stats::loess(value ~ time %>% as.numeric(),
+          data = .,
+          span = smooth_span
+        ) %>%
+          stats::predict(),
+        value = dplyr::if_else(.data$time > base_per_end, .data$value_smooth, .data$value)
+      ) %>%
+      dplyr::select(!"value_smooth")
+  }
 
   # reclass the output to match the input
   ans <- if (attr(hist_lev_mod, "was_wide")) tsbox::ts_wide(ext_lev_mod) else tsbox::copy_class(ext_lev_mod, hist_lev)
