@@ -95,6 +95,7 @@ usethis::proj_sitrep()
 
 usethis::use_version()
 
+usethis::use_github_action("check-standard")
 # install.packages("pak", repos = sprintf("https://r-lib.github.io/p/pak/stable/%s/%s/%s", .Platform$pkgType, R.Version()$os, R.Version()$arch))
 # pak::pkg_deps_tree("tsbox")
 # renv::remove("pak")
