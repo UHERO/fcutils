@@ -8,8 +8,8 @@
 <title>Time Series and Forecast Utilities • fcutils</title>
 <script src="deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <link href="deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet">
-<script src="deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="deps/font-awesome-6.4.2/css/all.min.css" rel="stylesheet">
-<link href="deps/font-awesome-6.4.2/css/v4-shims.min.css" rel="stylesheet">
+<script src="deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
+<link href="deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
 <script src="deps/headroom-0.11.0/headroom.min.js"></script><script src="deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="deps/search-1.0.0/fuse.min.js"></script><script src="deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="pkgdown.js"></script><meta property="og:title" content="Time Series and Forecast Utilities">
 <meta name="description" content="Utility functions to retrieve data from UDAMAN, wrangle, transform and plot time series data.">
 <meta property="og:description" content="Utility functions to retrieve data from UDAMAN, wrangle, transform and plot time series data.">
@@ -22,7 +22,7 @@
 
     <a class="navbar-brand me-2" href="index.html">fcutils</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.0.9018</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.0.9020</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -49,7 +49,8 @@
 </h1></div>
 <!-- badges: start -->
 
-<p>The goal of fcutils is to …</p>
+<!-- badges: end -->
+<p>The goal of fcutils is to facilitate time series data wrangling. The package contains utility functions for time series generation, frequency conversion, growth rate calculation, plotting, and more.</p>
 <div class="section level2">
 <h2 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>
 </h2>
@@ -61,10 +62,21 @@
 <div class="section level2">
 <h2 id="example">Example<a class="anchor" aria-label="anchor" href="#example"></a>
 </h2>
-<p>This is a basic example which shows you how to solve a common problem:</p>
+<p>Illustration of some package features.</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://uhero.github.io/fcutils/">fcutils</a></span><span class="op">)</span></span>
-<span><span class="co">## basic example code</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="co"># load the fcutils package</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://uhero.github.io/fcutils/">fcutils</a></span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># get public data from UDAMAN</span></span>
+<span><span class="fu"><a href="reference/get_series.html">get_series</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"VADCNS@HI.Q"</span>, <span class="st">"EAFNS@HI.Q"</span>, <span class="st">"YLAF@HI.Q"</span>, <span class="st">"PRM@HI.Q"</span><span class="op">)</span>, raw  <span class="op">=</span> <span class="cn">TRUE</span>, public <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>  <span class="co"># calculate year-to-date growth rate</span></span>
+<span>  <span class="fu"><a href="reference/ytd_gr.html">ytd_gr</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="co"># filter for the period 2017Q1 to 2023Q4</span></span>
+<span>  <span class="fu"><a href="reference/span.html">span</a></span><span class="op">(</span><span class="fl">2017.1</span>, <span class="fl">2023.4</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="co"># convert to monthly frequency</span></span>
+<span>  <span class="fu"><a href="reference/disagg.html">disagg</a></span><span class="op">(</span>conv_type <span class="op">=</span> <span class="st">"mean"</span>, target_freq <span class="op">=</span> <span class="st">"month"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="co"># plot the series, with the last one on the secondary axis</span></span>
+<span>  <span class="fu"><a href="reference/plot_2ax.html">plot_2ax</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
 </div>
 </div>
   </main><aside class="col-md-3"><div class="license">
