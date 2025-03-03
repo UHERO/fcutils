@@ -9,11 +9,12 @@ ptd_gr(x, per = "year", lag_length = "1 year")
 \arguments{
 \item{x}{a ts-boxable object}
 
-\item{per}{unit of time supplied to floor_date() (for ytd per = "year"
-(default), for mtd per = "month")}
+\item{per}{period over which the sum or average of a higher frequency series in x is calculated
+(this is the unit of time at which the aggregation is performed:
+for ytd per = "year" (default), for mtd per = "month")}
 
-\item{lag_length}{period over which growth is calculated (e.g. "1 year"
-(default), "3 years", etc. See ?ts_lag() for options)}
+\item{lag_length}{lag over which growth is calculated or time difference relative to base period
+(e.g. "1 year" (default), "3 years", etc. See ?ts_lag() for options)}
 }
 \value{
 object of the same type as the input containing period to date growth rate
