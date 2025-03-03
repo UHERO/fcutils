@@ -130,6 +130,14 @@ get_series <- function(ser_id_vec, format = "wide", expand, raw = TRUE, rename =
     rlang::warn("By default the get_series() function returns raw values (raw = TRUE)!")
     expand <- if (raw) "raw" else "true"
   }
+  # if (length(ser_id_vec) == 1) {#ser_id_vec = c("VISNS@HI5.M  ;  VISUSNS@CNTY.M   VISJPNS@NBI.M, VISCANNS@HI.M")
+  #   ser_id_vec = stringr::str_split_1(ser_id_vec, "[,;\\s]+")
+  # }
+  # ser <- c("E_TU", "EAF", "ECT", "EHC")
+  # cnt <- c("@HI", "@HON", "@NBI")
+  # frq <- c(".M", ".Q")
+  # ist <- purrr::map(ser, ~stringr::str_c(.x, cnt, ".M")) |> unlist()
+  # ist <- purrr::map(ser, ~stringr::str_c(.x, cnt)) |> unlist() |> purrr::map(~stringr::str_c(.x, frq)) |> unlist()
   ser_tbl <- ser_id_vec %>%
     rename_udaman(., freq = freq) %>%
     purrr::map(get_series_1, expand = expand, rename = rename, descr = descr, public = public) %>%
@@ -450,13 +458,13 @@ rename_udaman <- function(ser_in, freq = NULL) {
   }
   ser_in <- stringr::str_replace(ser_in, "_AT_", "__")
   mnemonic <- ser_in %>%
-    stringr::str_extract("[[:alnum:]_]+(?=_+HI|_+HON|_+HAW|_+MAU|_+KAU|_+NBI|_+US|_+JP|@)") %>%
+    stringr::str_extract("[[:alnum:]_]+(?=_+HI|_+HON|_+HAW|_+MAUI|_+MOL|_+LAN|_+MAU|_+KAU|_+NBI|_+US|_+JP|@)") %>%
     stringr::str_replace("_$", "")
   loc <- ser_in %>%
     {
       ifelse(stringr::str_detect(., "@"),
-        stringr::str_extract(., "@HI|@HON|@HAW|@MAU|@KAU|@NBI|@US|@JP"),
-        stringr::str_extract(., "_+HI|_+HON|_+HAW|_+MAU|_+KAU|_+NBI|_+US|_+JP")
+        stringr::str_extract(., "@HI|@HON|@HAW|@MAUI|@MOL|@LAN|@MAU|@KAU|@NBI|@US|@JP"),
+        stringr::str_extract(., "_+HI|_+HON|_+HAW|_+MAUI|_+MOL|_+LAN|_+MAU|_+KAU|_+NBI|_+US|_+JP")
       )
     } %>%
     stringr::str_replace("_+", "@")
@@ -787,9 +795,9 @@ is_wide <- function(x) {
 }
 
 
-#' Convert "ts-boxable" objects into long format
+#' Convert "ts-boxable" objects to long format (extension of `tsbox::ts_long()`)
 #'
-#' @param x a "tx-boxable" object to be converted
+#' @param x a "ts-boxable" object to be converted
 #' @param ser_info should additional details be returned (TRUE) or
 #' only the long format of x (default: FALSE)
 #'
@@ -799,9 +807,11 @@ is_wide <- function(x) {
 #' `ser_names` are the names of the series in x.
 #' @export
 #'
-#' @details This function converts wide data frames and other ts-boxable objects
-#' to the long format (wide data frames are not ts-boxable). In addition, it
-#' ensures that objects containing a single time series have an id column.
+#' @details This function performs a similar operation to `tsbox::ts_long()`. It
+#' converts wide data frames and other ts-boxable objects to the long format
+#' (wide data frames are not ts-boxable). An important difference compared with
+#' `tsbox::ts_long()` is that `conv_long()` ensures that objects containing a single
+#' time series get an id column.
 #'
 #' @examples
 #' quarterly_data_example |>
@@ -1173,8 +1183,9 @@ mtd_gr <- function(x) {
 #' Period to date sum or average
 #'
 #' @param x a ts-boxable object
-#' @param per unit of time supplied to floor_date() (for ytd per = "year"
-#'   (default), for mtd per = "month")
+#' @param per period over which the sum or average of a higher frequency series in x is calculated
+#'   (this is the unit of time at which the aggregation is performed:
+#'   for ytd per = "year" (default), for mtd per = "month")
 #' @param avg if TRUE (default), retorn period to date average, if FALSE, return period to date sum
 #'
 #' @return object of the same type as the input containing period to date sum or average
@@ -1212,10 +1223,11 @@ ptd_cum <- function(x, per = "year", avg = TRUE) {
 #' Period to date growth rate
 #'
 #' @param x a ts-boxable object
-#' @param per unit of time supplied to floor_date() (for ytd per = "year"
-#'   (default), for mtd per = "month")
-#' @param lag_length period over which growth is calculated (e.g. "1 year"
-#'   (default), "3 years", etc. See ?ts_lag() for options)
+#' @param per period over which the sum or average of a higher frequency series in x is calculated
+#'   (this is the unit of time at which the aggregation is performed:
+#'   for ytd per = "year" (default), for mtd per = "month")
+#' @param lag_length lag over which growth is calculated or time difference relative to base period
+#'   (e.g. "1 year" (default), "3 years", etc. See ?ts_lag() for options)
 #'
 #' @return object of the same type as the input containing period to date growth rate
 #' @export
@@ -1939,7 +1951,7 @@ plot_1 <- function(x, rng_start = as.character(Sys.Date() - lubridate::years(10)
       if (length(ser_names_pct) > 1) dygraphs::dyGroup(., ser_names_pct, axis = "y") %>% dygraphs::dyMultiColumnGroup(ser_names_pct) else dygraphs::dyBarSeries(., ser_names_pct, axis = "y")
     } %>%
     {
-      if (length(ser_names) > 1) dygraphs::dyGroup(., ser_names, strokeWidth = 2, axis = "y2") else dygraphs::dySeries(., ser_names, strokeWidth = 3, axis = "y2")
+      if (length(ser_names) > 1) dygraphs::dyGroup(., ser_names, strokeWidth = 2, axis = "y2") else dygraphs::dySeries(., ser_names, strokeWidth = 2, axis = "y2")
     } %>%
     # dygraphs::dyOptions(colors = RColorBrewer::brewer.pal(length(ser_names), "Set1")) %>%
     dygraphs::dyOptions(colors = uhero_colors_light[1:length(ser_names_pct)] %>% c(uhero_colors[1:length(ser_names)])) %>%
@@ -1986,10 +1998,10 @@ plot_2ax <- function(x, rng_start = as.character(Sys.Date() - lubridate::years(1
     dygraphs::dyAxis("y", label = "series 1") %>%
     dygraphs::dyAxis("y2", label = "series 2+", drawGrid = FALSE, independentTicks = TRUE) %>%
     {
-      if (length(ser_names[-1]) > 1) dygraphs::dyGroup(., ser_names[-1], strokeWidth = 2, axis = "y") else dygraphs::dySeries(., ser_names[-1], strokeWidth = 3, axis = "y")
+      dygraphs::dySeries(., ser_names[1], strokeWidth = 2, axis = "y")
     } %>%
     {
-      dygraphs::dySeries(., ser_names[1], strokeWidth = 3, axis = "y2")
+      if (length(ser_names[-1]) > 1) dygraphs::dyGroup(., ser_names[-1], strokeWidth = 2, axis = "y2") else dygraphs::dySeries(., ser_names[-1], strokeWidth = 2, axis = "y2")
     } %>%
     # dygraphs::dyOptions(colors = RColorBrewer::brewer.pal(length(ser_names), "Set1")) %>%
     dygraphs::dyOptions(colors = uhero_colors[1:length(ser_names)]) %>%

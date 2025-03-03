@@ -20,7 +20,8 @@ bnk_start <- lubridate::ymd("1970-01-01")
 #' @keywords data
 # NULL
 "bnk_end"
-bnk_end <- lubridate::ymd("2060-12-31")
+# bnk_end <- lubridate::ymd("2060-12-31")
+bnk_end <- lubridate::ymd("2100-12-31")
 
 #' colors defined in the UHERO Style Guide
 #' @name uhcolors

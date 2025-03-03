@@ -9,8 +9,9 @@ ptd_cum(x, per = "year", avg = TRUE)
 \arguments{
 \item{x}{a ts-boxable object}
 
-\item{per}{unit of time supplied to floor_date() (for ytd per = "year"
-(default), for mtd per = "month")}
+\item{per}{period over which the sum or average of a higher frequency series in x is calculated
+(this is the unit of time at which the aggregation is performed:
+for ytd per = "year" (default), for mtd per = "month")}
 
 \item{avg}{if TRUE (default), retorn period to date average, if FALSE, return period to date sum}
 }
