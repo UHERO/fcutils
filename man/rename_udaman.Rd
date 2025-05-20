@@ -24,6 +24,8 @@ rename_udaman(c("E_NF__HI_M", "ECT__HI_M", "VAP__HAW_W"))
 rename_udaman(c("E_NF_AT_HI_M", "ECT_AT_HI_M", "VAP_AT_HAW_W"))
 rename_udaman(c("E_NF@HI.M", "ECT@HI.M", "VAP@HAW.W"))
 rename_udaman(c("SH_US@HI.M", "SH_JP__HON_M"))
+rename_udaman(c("E_NF_HI5", "ECT__HIALL", "E_TU@CNTY"), freq = "M")
+rename_udaman(c("E_NF_HI5 , ECT__HIALL  E_TU@CNTY", "VAP_HAW ; ECT_HON"), freq = "M")
 quarterly_data_example |> dplyr::rename_with(~ rename_udaman(., freq = "M"), .cols = -1)
 quarterly_data_example |> dplyr::rename_with(rename_udaman, freq = "M", .cols = !time)
 quarterly_data_example |>

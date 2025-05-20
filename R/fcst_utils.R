@@ -7,17 +7,14 @@
 # Date: October 1, 2019
 # To do:
 
-
 # **************************
 # data retrieval and manipulation ----
 # **************************
 
-
 #' Download a single series from udaman using series name
 #'
 #' @param ser_id udaman series name (character)
-#' @param expand DEPRECATED, USE raw INSTEAD "true" or "raw" ("true" downloads formatted data, "raw" downloads raw units)
-#' @param raw TRUE (default) or FALSE (TRUE downloads raw data, FALSE downloads scaled and rounded data)
+#' @param expand "true" or "raw" ("true" downloads formatted data, "raw" downloads raw units)
 #' @param rename "compact" (default), "full", "no". "compact": @ replaced by _
 #'   and no frequency; "full": @ replaced by _AT_ and . by _; "no": no renaming,
 #'   keep UDAMAN names
@@ -37,27 +34,68 @@
 #' @examplesIf interactive()
 #' get_series_1(ser_id = "VISNS@HI.M")
 get_series_1 <- function(ser_id, expand, rename, descr, public) {
-  if (stringr::str_length(Sys.getenv("udaman_token")) == 0 & length(keyring::key_list("udaman_token")$service) == 0) rlang::abort("UDAMAN token is not available in .Renviron or among credentials")
+  if (
+    stringr::str_length(Sys.getenv("udaman_token")) == 0 &
+      length(keyring::key_list("udaman_token")$service) == 0
+  )
+    rlang::abort(
+      "UDAMAN token is not available in .Renviron or among credentials"
+    )
   # API call
-  if(public){
-    url <- stringr::str_c("https://api.uhero.hawaii.edu/v1/series?name=", ser_id, "&expand=", expand, "&u=uhero&nocache")
+  if (public) {
+    url <- stringr::str_c(
+      "https://api.uhero.hawaii.edu/v1/series?name=",
+      ser_id,
+      "&expand=",
+      expand,
+      "&u=uhero&nocache"
+    )
   } else {
-    url <- stringr::str_c("https://api.uhero.hawaii.edu/v1.u/series?name=", ser_id, "&expand=", expand, "&u=uhero&nocache")
+    url <- stringr::str_c(
+      "https://api.uhero.hawaii.edu/v1.u/series?name=",
+      ser_id,
+      "&expand=",
+      expand,
+      "&u=uhero&nocache"
+    )
   }
-  if (stringr::str_length(Sys.getenv("udaman_token")) > 0){
-    req <- httr::GET(url, httr::add_headers(Authorization = stringr::str_c("Bearer ", Sys.getenv("udaman_token"))))
+  if (stringr::str_length(Sys.getenv("udaman_token")) > 0) {
+    req <- httr::GET(
+      url,
+      httr::add_headers(
+        Authorization = stringr::str_c("Bearer ", Sys.getenv("udaman_token"))
+      )
+    )
   } else {
-    req <- httr::GET(url, httr::add_headers(Authorization = stringr::str_c("Bearer ", keyring::key_get("udaman_token"))))
+    req <- httr::GET(
+      url,
+      httr::add_headers(
+        Authorization = stringr::str_c(
+          "Bearer ",
+          keyring::key_get("udaman_token")
+        )
+      )
+    )
   }
   json <- httr::content(req, as = "text")
   uhero_data <- jsonlite::fromJSON(json)
   # extract series info
   dates <- uhero_data$data$observations$transformationResults$dates[[1]]
   values <- uhero_data$data$observations$transformationResults$values[[1]]
-  series <- dplyr::bind_cols(time = lubridate::ymd(dates), values = as.numeric(values))
+  series <- dplyr::bind_cols(
+    time = lubridate::ymd(dates),
+    values = as.numeric(values)
+  )
   name <- uhero_data$data$series$name
   if (name == "") {
-    series <- dplyr::bind_cols(time = seq(lubridate::ymd("2000-01-01"), lubridate::ymd("2010-01-01"), by = "year"), values = rep(NA_real_, 11))
+    series <- dplyr::bind_cols(
+      time = seq(
+        lubridate::ymd("2000-01-01"),
+        lubridate::ymd("2010-01-01"),
+        by = "year"
+      ),
+      values = rep(NA_real_, 11)
+    )
     name <- ser_id
   }
   cat(name, "\n")
@@ -65,20 +103,40 @@ get_series_1 <- function(ser_id, expand, rename, descr, public) {
   title <- uhero_data$data$series$title
   geo <- uhero_data$data$series$geography$shortName
   colnames(series) <- dplyr::case_when(
-    rename == "compact" ~ c("time", name %>%
-      stringr::str_replace_all(c("\\.[A-Z]" = "", "@" = "_", "OCUP%" = "OCUPP")) %>%
-      {
-        if (descr) stringr::str_c(., " (", title, ", ", geo, ")") else .
-      }),
-    rename == "full" ~ c("time", name %>%
-      stringr::str_replace_all(c("\\.([A-Z])" = "_\\1", "@" = "_AT_", "OCUP%" = "OCUPP")) %>%
-      {
-        if (descr) stringr::str_c(., " (", title, ", ", geo, ")") else .
-      }),
-    rename == "no" ~ c("time", name %>%
-      {
-        if (descr) stringr::str_c(., " (", title, ", ", geo, ")") else .
-      })
+    rename == "compact" ~
+      c(
+        "time",
+        name %>%
+          stringr::str_replace_all(c(
+            "\\.[A-Z]" = "",
+            "@" = "_",
+            "OCUP%" = "OCUPP"
+          )) %>%
+          {
+            if (descr) stringr::str_c(., " (", title, ", ", geo, ")") else .
+          }
+      ),
+    rename == "full" ~
+      c(
+        "time",
+        name %>%
+          stringr::str_replace_all(c(
+            "\\.([A-Z])" = "_\\1",
+            "@" = "_AT_",
+            "OCUP%" = "OCUPP"
+          )) %>%
+          {
+            if (descr) stringr::str_c(., " (", title, ", ", geo, ")") else .
+          }
+      ),
+    rename == "no" ~
+      c(
+        "time",
+        name %>%
+          {
+            if (descr) stringr::str_c(., " (", title, ", ", geo, ")") else .
+          }
+      )
   )
   # return series
   return(series)
@@ -89,7 +147,6 @@ get_series_1 <- function(ser_id, expand, rename, descr, public) {
 #'
 #' @param ser_id_vec vector of series names (character)
 #' @param format "wide" (default) or "long" or "xts"
-#' @param expand DEPRECATED, USE raw INSTEAD "true" (default) or "raw" ("true" downloads formatted data, "raw" downloads raw units)
 #' @param raw TRUE (default) or FALSE (TRUE downloads raw data, FALSE downloads scaled and rounded data)
 #' @param rename "compact" (default), "full", "no". "compact": @ replaced by _
 #'   and no frequency; "full": @ replaced by _AT_ and . by _; "no": no renaming,
@@ -121,26 +178,27 @@ get_series_1 <- function(ser_id, expand, rename, descr, public) {
 #' get_series(c("E_NF_HI", "ECT_HI", "E_TU_HAW"), freq = "M")
 #' get_series(c("E_NF__HI_M", "ECT__HI_M", "VAP__HI_W"))
 #' get_series(c("E_NF_AT_HI_M", "ECT_AT_HI_M", "VAP_AT_HI_W"))
-get_series <- function(ser_id_vec, format = "wide", expand, raw = TRUE, rename = "compact", freq = NULL, descr = FALSE, public = FALSE) {
-  if (!missing(raw)) {
-    expand <- if (raw) "raw" else "true"
-  } else if (!missing(expand)) {
-    rlang::warn("get_series() now uses 'raw' instead of 'expand'. Fix the function call!")
-  } else {
-    rlang::warn("By default the get_series() function returns raw values (raw = TRUE)!")
-    expand <- if (raw) "raw" else "true"
-  }
-  # if (length(ser_id_vec) == 1) {#ser_id_vec = c("VISNS@HI5.M  ;  VISUSNS@CNTY.M   VISJPNS@NBI.M, VISCANNS@HI.M")
-  #   ser_id_vec = stringr::str_split_1(ser_id_vec, "[,;\\s]+")
-  # }
-  # ser <- c("E_TU", "EAF", "ECT", "EHC")
-  # cnt <- c("@HI", "@HON", "@NBI")
-  # frq <- c(".M", ".Q")
-  # ist <- purrr::map(ser, ~stringr::str_c(.x, cnt, ".M")) |> unlist()
-  # ist <- purrr::map(ser, ~stringr::str_c(.x, cnt)) |> unlist() |> purrr::map(~stringr::str_c(.x, frq)) |> unlist()
+#' get_series(c("E_NF_HI5", "ECT__HIALL", "E_TU@CNTY"), freq = "M")
+#' get_series(c("E_NF_HI5 , ECT__HIALL  E_TU@CNTY", "VAP_HAW ; ECT_HON"), freq = "M")
+get_series <- function(
+  ser_id_vec,
+  format = "wide",
+  raw = TRUE,
+  rename = "compact",
+  freq = NULL,
+  descr = FALSE,
+  public = FALSE
+) {
+  expand <- if (raw) "raw" else "true"
   ser_tbl <- ser_id_vec %>%
     rename_udaman(., freq = freq) %>%
-    purrr::map(get_series_1, expand = expand, rename = rename, descr = descr, public = public) %>%
+    purrr::map(
+      get_series_1,
+      expand = expand,
+      rename = rename,
+      descr = descr,
+      public = public
+    ) %>%
     purrr::reduce(dplyr::full_join, by = "time") %>%
     dplyr::arrange(.data$time)
   if (format == "wide") ser_out <- ser_tbl
@@ -158,7 +216,6 @@ get_series <- function(ser_id_vec, format = "wide", expand, raw = TRUE, rename =
 #'
 #' @param exp_id export id (character or numeric)
 #' @param format "wide" (default) or "long" or "xts"
-#' @param expand DEPRECATED, USE raw INSTEAD "true" or "raw" ("true" downloads formatted data, "raw" downloads raw units)
 #' @param raw TRUE (default) or FALSE (TRUE downloads raw data, FALSE downloads scaled and rounded data)
 #' @param rename "compact" (default), "full", "no". "compact": @ replaced by _
 #'   and no frequency; "full": @ replaced by _AT_ and . by _; "no": no renaming,
@@ -180,26 +237,58 @@ get_series <- function(ser_id_vec, format = "wide", expand, raw = TRUE, rename =
 #' @examplesIf interactive()
 #' get_series_exp(exp_id = 74)
 #' get_series_exp(74, format = "xts")
-get_series_exp <- function(exp_id, format = "wide", expand, raw = TRUE, rename = "compact", descr = FALSE, public = FALSE, save_loc = NULL) {
-  if (!missing(raw)) {
-    expand <- if (raw) "raw" else "true"
-  } else if (!missing(expand)) {
-    rlang::warn("get_series_exp() now uses 'raw' instead of 'expand'. Fix the function call!")
-  } else {
-    rlang::warn("By default the get_series_exp() function returns raw values (raw = TRUE)!")
-    expand <- if (raw) "raw" else "true"
-  }
-  if (stringr::str_length(Sys.getenv("udaman_token")) == 0 & length(keyring::key_list("udaman_token")$service) == 0) rlang::abort("UDAMAN token is not available in .Renviron or among credentials")
+get_series_exp <- function(
+  exp_id,
+  format = "wide",
+  raw = TRUE,
+  rename = "compact",
+  descr = FALSE,
+  public = FALSE,
+  save_loc = NULL
+) {
+  expand <- if (raw) "raw" else "true"
+  if (
+    stringr::str_length(Sys.getenv("udaman_token")) == 0 &
+      length(keyring::key_list("udaman_token")$service) == 0
+  )
+    rlang::abort(
+      "UDAMAN token is not available in .Renviron or among credentials"
+    )
   # API call
-  if(public){
-    url <- stringr::str_c("https://api.uhero.hawaii.edu/v1/package/export?id=", exp_id, "&expand=", expand, "&u=uhero&nocache")
+  if (public) {
+    url <- stringr::str_c(
+      "https://api.uhero.hawaii.edu/v1/package/export?id=",
+      exp_id,
+      "&expand=",
+      expand,
+      "&u=uhero&nocache"
+    )
   } else {
-    url <- stringr::str_c("https://api.uhero.hawaii.edu/v1.u/package/export?id=", exp_id, "&expand=", expand, "&u=uhero&nocache")
+    url <- stringr::str_c(
+      "https://api.uhero.hawaii.edu/v1.u/package/export?id=",
+      exp_id,
+      "&expand=",
+      expand,
+      "&u=uhero&nocache"
+    )
   }
-  if (stringr::str_length(Sys.getenv("udaman_token")) > 0){
-    req <- httr::GET(url, httr::add_headers(Authorization = stringr::str_c("Bearer ", Sys.getenv("udaman_token"))))
+  if (stringr::str_length(Sys.getenv("udaman_token")) > 0) {
+    req <- httr::GET(
+      url,
+      httr::add_headers(
+        Authorization = stringr::str_c("Bearer ", Sys.getenv("udaman_token"))
+      )
+    )
   } else {
-    req <- httr::GET(url, httr::add_headers(Authorization = stringr::str_c("Bearer ", keyring::key_get("udaman_token"))))
+    req <- httr::GET(
+      url,
+      httr::add_headers(
+        Authorization = stringr::str_c(
+          "Bearer ",
+          keyring::key_get("udaman_token")
+        )
+      )
+    )
   }
   json <- httr::content(req, as = "text")
   uhero_data <- jsonlite::fromJSON(json)
@@ -210,11 +299,22 @@ get_series_exp <- function(exp_id, format = "wide", expand, raw = TRUE, rename =
   values <- uhero_data$data$seriesObservations$transformationResults %>%
     purrr::map("values") %>%
     purrr::flatten()
-  data_lst <- purrr::map2(dates, values, ~ tibble::tibble(time = .x %>% lubridate::ymd(), value = .y %>% as.numeric()))
+  data_lst <- purrr::map2(
+    dates,
+    values,
+    ~ tibble::tibble(
+      time = .x %>% lubridate::ymd(),
+      value = .y %>% as.numeric()
+    )
+  )
   empty_ser <- data_lst %>%
     purrr::map(~ nrow(.x) == 0) %>%
     purrr::reduce(c)
-  cat(stringr::str_c("The following series did not contain data: ", uhero_data$data$name[empty_ser], collapse = "\n"))
+  cat(stringr::str_c(
+    "The following series did not contain data: ",
+    uhero_data$data$name[empty_ser],
+    collapse = "\n"
+  ))
   data_tbl <- data_lst %>%
     purrr::discard(~ nrow(.x) == 0) %>%
     purrr::reduce(tsbox::ts_c) %>%
@@ -223,23 +323,43 @@ get_series_exp <- function(exp_id, format = "wide", expand, raw = TRUE, rename =
   title <- uhero_data$data$title[!empty_ser]
   # geo <- NULL
   colnames(data_tbl) <- dplyr::case_when(
-    rename == "compact" ~ c("time", name %>%
-      stringr::str_replace_all(c("\\.[A-Z]" = "", "@" = "_", "OCUP%" = "OCUPP")) %>%
-      {
-        # if (descr) stringr::str_c(., " (", title, ", ", geo, ")") else .
-        if (descr) stringr::str_c(., " (", title, ")") else .
-      }),
-    rename == "full" ~ c("time", name %>%
-      stringr::str_replace_all(c("\\.([A-Z])" = "_\\1", "@" = "_AT_", "OCUP%" = "OCUPP")) %>%
-      {
-        # if (descr) stringr::str_c(., " (", title, ", ", geo, ")") else .
-        if (descr) stringr::str_c(., " (", title, ")") else .
-      }),
-    rename == "no" ~ c("time", name %>%
-      {
-        # if (descr) stringr::str_c(., " (", title, ", ", geo, ")") else .
-        if (descr) stringr::str_c(., " (", title, ")") else .
-      })
+    rename == "compact" ~
+      c(
+        "time",
+        name %>%
+          stringr::str_replace_all(c(
+            "\\.[A-Z]" = "",
+            "@" = "_",
+            "OCUP%" = "OCUPP"
+          )) %>%
+          {
+            # if (descr) stringr::str_c(., " (", title, ", ", geo, ")") else .
+            if (descr) stringr::str_c(., " (", title, ")") else .
+          }
+      ),
+    rename == "full" ~
+      c(
+        "time",
+        name %>%
+          stringr::str_replace_all(c(
+            "\\.([A-Z])" = "_\\1",
+            "@" = "_AT_",
+            "OCUP%" = "OCUPP"
+          )) %>%
+          {
+            # if (descr) stringr::str_c(., " (", title, ", ", geo, ")") else .
+            if (descr) stringr::str_c(., " (", title, ")") else .
+          }
+      ),
+    rename == "no" ~
+      c(
+        "time",
+        name %>%
+          {
+            # if (descr) stringr::str_c(., " (", title, ", ", geo, ")") else .
+            if (descr) stringr::str_c(., " (", title, ")") else .
+          }
+      )
   )
 
   # is a file requested?
@@ -256,30 +376,6 @@ get_series_exp <- function(exp_id, format = "wide", expand, raw = TRUE, rename =
   }
   return(data_out)
 }
-
-
-# OLD VERSION USING USER NAME AND PASSWORD
-# get_series_exp <- function(exp_id, format = "wide", save_loc = "data/raw") {
-#   url <- "https://udaman.uhero.hawaii.edu/"
-#   dn_url <- stringr::str_c("https://udaman.uhero.hawaii.edu/exports/", exp_id, ".csv")
-#   session <- rvest::session(url)
-#   form <- rvest::html_form(session)[[1]]
-#   fl_fm <- rvest::html_form_set(form,
-#     `user[email]` = Sys.getenv("udaman_user"),
-#     `user[password]` = Sys.getenv("udaman_pwd")
-#   )
-#   main_page <- rvest::session_submit(session, fl_fm)
-#   download <- rvest::session_jump_to(main_page, dn_url)
-#   content <- readBin(download$response$content, what = character())[1]
-#   data_tbl <- read_csv(file = content) %>%
-#     rename(time = date)
-#     # rename_with(~str_replace_all(., c("date" = "time", "\\.[A-Z]" = "", "@" = "_AT_", "OCUP%" = "OCUPP")))
-#   if (!is.null(save_loc)) write_csv(data_tbl, here(save_loc, basename(dn_url)))
-#   if (format == "wide") data_out <- data_tbl
-#   if (format == "long") data_out <- data_tbl %>% ts_long()
-#   if (format == "xts") data_out <- data_tbl %>% ts_long() %>% ts_xts()
-#   return(data_out)
-# }
 
 
 #' Create xts and fill with values
@@ -308,13 +404,21 @@ get_series_exp <- function(exp_id, format = "wide", expand, raw = TRUE, rename =
 #' make_xts(start = "2010-01-01", per = "m", val = 0)
 #' make_xts(start = 201001, per = "q",
 #'          val = tibble::tibble(E_NF_HON = c(1:10), ECT_HI = c(11:20)))
-make_xts <- function(start = bnk_start, end = NULL, per = "year", val = NA_real_) {
-  if (nchar(as.character(start)) > 4 & nchar(as.character(start)) < 8) per <- "quarter"
+make_xts <- function(
+  start = bnk_start,
+  end = NULL,
+  per = "year",
+  val = NA_real_
+) {
+  if (nchar(as.character(start)) > 4 & nchar(as.character(start)) < 8)
+    per <- "quarter"
   start <- to_ymd(start)
-  end <- if(!is.null(end)) to_ymd(end) else NULL
+  end <- if (!is.null(end)) to_ymd(end) else NULL
   if ("tbl_df" %in% class(val)) {
     dplyr::bind_cols(
-      tibble::tibble(time = seq.Date(from = start, by = per, length.out = nrow(val))),
+      tibble::tibble(
+        time = seq.Date(from = start, by = per, length.out = nrow(val))
+      ),
       val
     ) %>%
       tsbox::ts_long() %>%
@@ -367,18 +471,45 @@ make_xts <- function(start = bnk_start, end = NULL, per = "year", val = NA_real_
 #' addf(20100101, 20601201, 1, 2, per = "month")
 #' addf(20100101, from = 1, to = 2, per = "quarter")
 #' addf(2010.2, 2015.4, 1, 2, "ECT_HI")
-addf <- function(start = bnk_start, end = bnk_end, from = 0, to = 0, ser_name = "value", per = "year") {
-  if (nchar(as.character(start)) > 4 & nchar(as.character(start)) < 8 | per == "quarter") {
+addf <- function(
+  start = bnk_start,
+  end = bnk_end,
+  from = 0,
+  to = 0,
+  ser_name = "value",
+  per = "year"
+) {
+  if (
+    nchar(as.character(start)) > 4 &
+      nchar(as.character(start)) < 8 |
+      per == "quarter"
+  ) {
     per <- "quarter"
     start <- to_ymd(start) %>% lubridate::quarter(type = "year.quarter")
     end <- to_ymd(end) %>% lubridate::quarter(type = "year.quarter")
-    make_xts(start, end, per = per, val = seq.int(from, to, length.out = nqtrs(start, end))) %>%
+    make_xts(
+      start,
+      end,
+      per = per,
+      val = seq.int(from, to, length.out = nqtrs(start, end))
+    ) %>%
       tsbox::ts_bind(make_xts(val = 0, per = per)) %>%
       magrittr::set_names(ser_name)
   } else {
     start <- to_ymd(start)
     end <- to_ymd(end) %>% lubridate::floor_date(unit = per)
-    make_xts(start, end, per = per, val = seq.int(from, to, length.out = lubridate::time_length(end - start, unit = per) %>% round() + 1)) %>%
+    make_xts(
+      start,
+      end,
+      per = per,
+      val = seq.int(
+        from,
+        to,
+        length.out = lubridate::time_length(end - start, unit = per) %>%
+          round() +
+          1
+      )
+    ) %>%
       tsbox::ts_bind(make_xts(val = 0, per = per)) %>%
       magrittr::set_names(ser_name)
   }
@@ -446,6 +577,8 @@ get_var <- function(ser_in, env = parent.frame()) {
 #' rename_udaman(c("E_NF_AT_HI_M", "ECT_AT_HI_M", "VAP_AT_HAW_W"))
 #' rename_udaman(c("E_NF@HI.M", "ECT@HI.M", "VAP@HAW.W"))
 #' rename_udaman(c("SH_US@HI.M", "SH_JP__HON_M"))
+#' rename_udaman(c("E_NF_HI5", "ECT__HIALL", "E_TU@CNTY"), freq = "M")
+#' rename_udaman(c("E_NF_HI5 , ECT__HIALL  E_TU@CNTY", "VAP_HAW ; ECT_HON"), freq = "M")
 #' quarterly_data_example |> dplyr::rename_with(~ rename_udaman(., freq = "M"), .cols = -1)
 #' quarterly_data_example |> dplyr::rename_with(rename_udaman, freq = "M", .cols = !time)
 #' quarterly_data_example |>
@@ -456,15 +589,28 @@ rename_udaman <- function(ser_in, freq = NULL) {
   if (!is.character(ser_in)) {
     ser_in <- as.character(ser_in)
   }
+  if (stringr::str_detect(ser_in, "[,;\\s]") %>% any()) {
+    ser_in <- stringr::str_split(ser_in, "[,;\\s]+") %>%
+      purrr::list_c()
+  }
   ser_in <- stringr::str_replace(ser_in, "_AT_", "__")
   mnemonic <- ser_in %>%
-    stringr::str_extract("[[:alnum:]_]+(?=_+HI|_+HON|_+HAW|_+MAUI|_+MOL|_+LAN|_+MAU|_+KAU|_+NBI|_+US|_+JP|@)") %>%
+    stringr::str_extract(
+      "[[:alnum:]_]+(?=_+HI5|_+HI3|_+HIALL|_+HI|_+CNTY|_+HON|_+HAW|_+MAUI|_+MOL|_+LAN|_+MAU|_+KAU|_+NBI|_+US|_+JP|@)"
+    ) %>%
     stringr::str_replace("_$", "")
   loc <- ser_in %>%
     {
-      ifelse(stringr::str_detect(., "@"),
-        stringr::str_extract(., "@HI|@HON|@HAW|@MAUI|@MOL|@LAN|@MAU|@KAU|@NBI|@US|@JP"),
-        stringr::str_extract(., "_+HI|_+HON|_+HAW|_+MAUI|_+MOL|_+LAN|_+MAU|_+KAU|_+NBI|_+US|_+JP")
+      ifelse(
+        stringr::str_detect(., "@"),
+        stringr::str_extract(
+          .,
+          "@HI5|@HI3|@HIALL|@HI|@CNTY|@HON|@HAW|@MAUI|@MOL|@LAN|@MAU|@KAU|@NBI|@US|@JP"
+        ),
+        stringr::str_extract(
+          .,
+          "_+HI5|_+HI3|_+HIALL|_+HI|_+CNTY|_+HON|_+HAW|_+MAUI|_+MOL|_+LAN|_+MAU|_+KAU|_+NBI|_+US|_+JP"
+        )
       )
     } %>%
     stringr::str_replace("_+", "@")
@@ -472,10 +618,34 @@ rename_udaman <- function(ser_in, freq = NULL) {
     stringr::str_replace(freq, "^", ".")
   } else {
     ser_in %>%
-      stringr::str_extract("_D$|_W$|_M$|_Q$|_S$|_A$|.D$|.W$|.M$|.Q$|.S$|.A$") %>%
+      stringr::str_extract(
+        "_D$|_W$|_M$|_Q$|_S$|_A$|.D$|.W$|.M$|.Q$|.S$|.A$"
+      ) %>%
       stringr::str_replace("_", ".")
   }
-  return(stringr::str_c(mnemonic, loc, freq))
+
+  # function to expand location abbreviations
+  expand_loc <- function(ser_id) {
+    mnemonic <- stringr::str_extract(ser_id, "[[:alnum:]_]+(?=@)")
+    loc <- stringr::str_extract(ser_id, "(?<=@)[[:alnum:]]+(?=\\.)")
+    freq <- stringr::str_extract(ser_id, "(?<=\\.)[[:alpha:]]")
+    if (loc == "HI5") {
+      loc <- c("HI", "HON", "HAW", "MAU", "KAU")
+    } else if (loc == "HI3") {
+      loc <- c("HI", "HON", "NBI")
+    } else if (loc == "HIALL") {
+      loc <- c("HI", "HON", "HAW", "MAU", "KAU", "MAUI", "MOL", "LAN")
+    } else if (loc == "CNTY") {
+      loc <- c("HON", "HAW", "MAU", "KAU")
+    }
+    return(stringr::str_c(mnemonic, "@", loc, ".", freq))
+  }
+
+  ser_ids <- stringr::str_c(mnemonic, loc, freq) %>%
+    purrr::map(expand_loc) %>%
+    purrr::list_c()
+
+  return(ser_ids)
 }
 
 
@@ -504,7 +674,11 @@ write_tsd <- function(x, file) {
   # get character strings with the contents of individual series
   get_ser_string <- function(ser_i) {
     # add padding to the name of the series
-    ser_name <- stringr::str_c(ser_i, stringr::str_c(rep(" ", 80 - nchar(ser_i)), collapse = ""), "\r\n")
+    ser_name <- stringr::str_c(
+      ser_i,
+      stringr::str_c(rep(" ", 80 - nchar(ser_i)), collapse = ""),
+      "\r\n"
+    )
 
     # combine additional time series information into a character string
     ser_time <- stringr::str_c(
@@ -524,8 +698,20 @@ write_tsd <- function(x, file) {
         dplyr::pull(.data$start) %>%
         lubridate::year(),
       dplyr::case_when(
-        in_summary %>% dplyr::filter(.data$id == ser_i) %>% dplyr::pull(freq) == 12 ~ in_summary %>% dplyr::filter(.data$id == ser_i) %>% dplyr::pull(start) %>% lubridate::month() %>% formatC(width = 2, flag = "0"),
-        in_summary %>% dplyr::filter(.data$id == ser_i) %>% dplyr::pull(freq) == 4 ~ in_summary %>% dplyr::filter(.data$id == ser_i) %>% dplyr::pull(start) %>% lubridate::quarter() %>% formatC(width = 2, flag = "0"),
+        in_summary %>% dplyr::filter(.data$id == ser_i) %>% dplyr::pull(freq) ==
+          12 ~
+          in_summary %>%
+            dplyr::filter(.data$id == ser_i) %>%
+            dplyr::pull(start) %>%
+            lubridate::month() %>%
+            formatC(width = 2, flag = "0"),
+        in_summary %>% dplyr::filter(.data$id == ser_i) %>% dplyr::pull(freq) ==
+          4 ~
+          in_summary %>%
+            dplyr::filter(.data$id == ser_i) %>%
+            dplyr::pull(start) %>%
+            lubridate::quarter() %>%
+            formatC(width = 2, flag = "0"),
         TRUE ~ "01"
       ),
       "00",
@@ -535,15 +721,31 @@ write_tsd <- function(x, file) {
         dplyr::pull(.data$end) %>%
         lubridate::year(),
       dplyr::case_when(
-        in_summary %>% dplyr::filter(.data$id == ser_i) %>% dplyr::pull(freq) == 12 ~ in_summary %>% dplyr::filter(.data$id == ser_i) %>% dplyr::pull(end) %>% lubridate::month() %>% formatC(width = 2, flag = "0"),
-        in_summary %>% dplyr::filter(.data$id == ser_i) %>% dplyr::pull(freq) == 4 ~ in_summary %>% dplyr::filter(.data$id == ser_i) %>% dplyr::pull(end) %>% lubridate::quarter() %>% formatC(width = 2, flag = "0"),
+        in_summary %>% dplyr::filter(.data$id == ser_i) %>% dplyr::pull(freq) ==
+          12 ~
+          in_summary %>%
+            dplyr::filter(.data$id == ser_i) %>%
+            dplyr::pull(end) %>%
+            lubridate::month() %>%
+            formatC(width = 2, flag = "0"),
+        in_summary %>% dplyr::filter(.data$id == ser_i) %>% dplyr::pull(freq) ==
+          4 ~
+          in_summary %>%
+            dplyr::filter(.data$id == ser_i) %>%
+            dplyr::pull(end) %>%
+            lubridate::quarter() %>%
+            formatC(width = 2, flag = "0"),
         TRUE ~ "01"
       ),
       "00",
       # frequency label
       dplyr::case_when(
-        in_summary %>% dplyr::filter(.data$id == ser_i) %>% dplyr::pull(freq) == 12 ~ "M",
-        in_summary %>% dplyr::filter(.data$id == ser_i) %>% dplyr::pull(freq) == 4 ~ "Q",
+        in_summary %>% dplyr::filter(.data$id == ser_i) %>% dplyr::pull(freq) ==
+          12 ~
+          "M",
+        in_summary %>% dplyr::filter(.data$id == ser_i) %>% dplyr::pull(freq) ==
+          4 ~
+          "Q",
         TRUE ~ "A"
       ),
       stringr::str_c(rep(" ", 2), collapse = ""),
@@ -557,7 +759,9 @@ write_tsd <- function(x, file) {
     ser_data <- in_list %>%
       purrr::pluck(ser_i) %>%
       tsbox::ts_tbl() %>%
-      dplyr::mutate(value = dplyr::if_else(is.na(.data$value), 1.000000E+0015, .data$value)) %>%
+      dplyr::mutate(
+        value = dplyr::if_else(is.na(.data$value), 1.000000E+0015, .data$value)
+      ) %>%
       dplyr::pull(.data$value) %>%
       formatC(digits = 6, width = 13, format = "E", flag = " ") %>%
       stringr::str_replace("E\\+", "E\\+00") %>%
@@ -582,7 +786,13 @@ write_tsd <- function(x, file) {
     # select data for each row and add padding
     ser_string <- ser_data %>%
       stringr::str_sub(string_starts, string_ends) %>%
-      purrr::map(~ stringr::str_c(.x, stringr::str_c(rep(" ", 80 - .x %>% nchar()), collapse = ""), "\r\n")) %>%
+      purrr::map(
+        ~ stringr::str_c(
+          .x,
+          stringr::str_c(rep(" ", 80 - .x %>% nchar()), collapse = ""),
+          "\r\n"
+        )
+      ) %>%
       purrr::reduce(stringr::str_c)
 
     # combine components into a single string
@@ -615,7 +825,10 @@ copy_tbl <- function(x, dec = 2) {
   x %>%
     conv_long() %>%
     tsbox::ts_wide() %>%
-    dplyr::mutate(dplyr::across(dplyr::where(is.numeric), ~ round(.x, digits = dec) %>% format(nsmall = dec))) %>%
+    dplyr::mutate(dplyr::across(
+      dplyr::where(is.numeric),
+      ~ round(.x, digits = dec) %>% format(nsmall = dec)
+    )) %>%
     readr::write_delim(pipe("pbcopy"), delim = "\t")
 }
 
@@ -764,7 +977,9 @@ is_wide <- function(x) {
 
   # character cols or factors should be considered ids, with message
   value.classes <- vapply(x[, value.names], class, "")
-  value.names.that.are.ids <- names(value.classes)[value.classes %in% c("character", "factor")]
+  value.names.that.are.ids <- names(value.classes)[
+    value.classes %in% c("character", "factor")
+  ]
 
   if (length(value.names.that.are.ids) > 0) {
     # message(
@@ -847,7 +1062,10 @@ conv_long <- function(x, ser_info = FALSE) {
   # need long tbl series names for differential treatment of univariate data
   ser_names_2 <- tsbox::ts_summary(x_mod) %>%
     dplyr::pull(.data$id)
-  ser_names <- if (length(ser_names_1) == 1) ser_names_1 else if (length(ser_names_2) == 1) ser_names_2 else ser_names_2
+  ser_names <- if (length(ser_names_1) == 1) ser_names_1 else if (
+    length(ser_names_2) == 1
+  )
+    ser_names_2 else ser_names_2
   # add an id column to univariate data
   x_mod <- x_mod %>%
     {
@@ -869,10 +1087,45 @@ conv_long <- function(x, ser_info = FALSE) {
 }
 
 
+#' Convert "ts-boxable" objects to wide format (extension of `tsbox::ts_wide()`)
+#'
+#' @param x a "ts-boxable" object to be converted
+#'
+#' @return returns a ts-boxable object in long format with `id`, `time` and
+#' `value` columns.
+#' @export
+#'
+#' @details This function performs a similar operation to `tsbox::ts_wide()`. It
+#' converts ts-boxable objects to the wide format. An important difference compared with
+#' `tsbox::ts_wide()` is that `conv_wide()` does not require x to be a long tbl.
+#'
+#' @examples
+#' quarterly_data_example |>
+#'   conv_long() |>
+#'   tsbox::ts_tslist() |>
+#'   conv_wide()
+#' quarterly_data_example |>
+#'   tsbox::ts_long() |>
+#'   tsbox::ts_xts() |>
+#'   conv_wide()
+#' quarterly_data_example |>
+#'   tsbox::ts_long() |>
+#'   tsbox::ts_pick("E_NF_HI") |>
+#'   tsbox::ts_xts() |>
+#'   conv_wide()
+conv_wide <- function(x) {
+  # first convert to long and then to wide
+  x_mod <- x %>%
+    conv_long() %>%
+    tsbox::ts_wide()
+
+  return(x_mod)
+}
+
+
 # **************************
 # time series utility functions ----
 # **************************
-
 
 #' Interpolate a single time series from low to high frequency
 #'
@@ -958,16 +1211,29 @@ disagg_1 <- function(x, conv_type, target_freq, pattern) {
 #'     tsbox::ts_tslist(),
 #'   ~ disagg(.x, conv_type = "mean", target_freq = "month", pattern = .y)
 #' )
-disagg <- function(x, conv_type = "mean", target_freq = "quarter", pattern = NULL) {
+disagg <- function(
+  x,
+  conv_type = "mean",
+  target_freq = "quarter",
+  pattern = NULL
+) {
   # convert to long format and return additional details
   x_mod <- conv_long(x, ser_info = TRUE)
-  pattern_mod <- if (is.null(pattern)) pattern else conv_long(pattern) %>% tsbox::ts_ts()
+  pattern_mod <- if (is.null(pattern)) pattern else
+    conv_long(pattern) %>% tsbox::ts_ts()
 
   # convert to tslist and interpolate
   x_mod_int <- x_mod %>%
     # tidyr::drop_na() %>%
     tsbox::ts_tslist() %>%
-    purrr::map(.f = ~ disagg_1(.x, conv_type = conv_type, target_freq = target_freq, pattern = pattern_mod)) %>%
+    purrr::map(
+      .f = ~ disagg_1(
+        .x,
+        conv_type = conv_type,
+        target_freq = target_freq,
+        pattern = pattern_mod
+      )
+    ) %>%
     set_attr_tslist() %>%
     # univariate data requires special treatment
     {
@@ -981,7 +1247,8 @@ disagg <- function(x, conv_type = "mean", target_freq = "quarter", pattern = NUL
     }
 
   # reclass the output to match the input
-  ans <- if (attr(x_mod, "was_wide")) tsbox::ts_wide(x_mod_int) else tsbox::copy_class(x_mod_int, x)
+  ans <- if (attr(x_mod, "was_wide")) tsbox::ts_wide(x_mod_int) else
+    tsbox::copy_class(x_mod_int, x)
 
   return(ans)
 }
@@ -1007,11 +1274,15 @@ disagg <- function(x, conv_type = "mean", target_freq = "quarter", pattern = NUL
 #'   tsbox::ts_plot()
 AtoQ <- function(ser_in, aggr = "mean") {
   ser_out_name <- names(ser_in)
-  ser_out_dates <- tibble::tibble(time = seq.Date(
-    from = tsbox::ts_summary(ser_in)$start,
-    to = tsbox::ts_summary(ser_in)$end %>% lubridate::ceiling_date(unit = "year") %>% lubridate::rollback(),
-    by = "quarter"
-  ))
+  ser_out_dates <- tibble::tibble(
+    time = seq.Date(
+      from = tsbox::ts_summary(ser_in)$start,
+      to = tsbox::ts_summary(ser_in)$end %>%
+        lubridate::ceiling_date(unit = "year") %>%
+        lubridate::rollback(),
+      by = "quarter"
+    )
+  )
   ser_out <- dplyr::left_join(ser_out_dates, ser_in %>% tsbox::ts_tbl()) %>%
     tidyr::fill(.data$value) %>%
     tsbox::ts_xts() %>%
@@ -1019,8 +1290,24 @@ AtoQ <- function(ser_in, aggr = "mean") {
   dat_start <- tsbox::ts_summary(ser_out)$start
   dat_end <- tsbox::ts_summary(ser_out)$end
   increment <- (tsbox::ts_lag(ser_out, -4) - ser_out) / 4
-  increment <- increment %>% tsbox::ts_bind(tsbox::ts_lag(increment, 4)[stringr::str_c(dat_end - months(9), "/", dat_end)])
-  ser_out[stringr::str_c(dat_start + months(3), "/", dat_end)] <- (as.numeric(ser_out[dat_start]) + tsbox::ts_lag(increment, 1)[stringr::str_c(dat_start + months(3), "/", dat_end)] %>% cumsum()) %>% as.numeric()
+  increment <- increment %>%
+    tsbox::ts_bind(tsbox::ts_lag(increment, 4)[stringr::str_c(
+      dat_end - months(9),
+      "/",
+      dat_end
+    )])
+  ser_out[stringr::str_c(
+    dat_start + months(3),
+    "/",
+    dat_end
+  )] <- (as.numeric(ser_out[dat_start]) +
+    tsbox::ts_lag(increment, 1)[stringr::str_c(
+      dat_start + months(3),
+      "/",
+      dat_end
+    )] %>%
+      cumsum()) %>%
+    as.numeric()
   ser_out <- ser_out - 1.5 * increment
   if (aggr != "mean") ser_out <- ser_out / 4
   colnames(ser_out) <- colnames(ser_in) %>%
@@ -1081,12 +1368,15 @@ ytd_cum <- function(x, avg = TRUE) {
   x_mod_ytd <- x_mod %>%
     dplyr::mutate(yr = lubridate::floor_date(.data$time, "year")) %>%
     dplyr::group_by(.data$id, .data$yr) %>%
-    dplyr::mutate(value = if (avg) dplyr::cummean(.data$value) else cumsum(.data$value)) %>%
+    dplyr::mutate(
+      value = if (avg) dplyr::cummean(.data$value) else cumsum(.data$value)
+    ) %>%
     dplyr::ungroup() %>%
     dplyr::select(!"yr")
 
   # reclass the output to match the input
-  ans <- if (attr(x_mod, "was_wide")) tsbox::ts_wide(x_mod_ytd) else tsbox::copy_class(x_mod_ytd, x)
+  ans <- if (attr(x_mod, "was_wide")) tsbox::ts_wide(x_mod_ytd) else
+    tsbox::copy_class(x_mod_ytd, x)
 
   return(ans)
 }
@@ -1114,7 +1404,8 @@ ytd_gr <- function(x) {
     tsbox::ts_pcy()
 
   # reclass the output to match the input
-  ans <- if (attr(x_mod, "was_wide")) tsbox::ts_wide(x_mod_ytd_gr) else tsbox::copy_class(x_mod_ytd_gr, x)
+  ans <- if (attr(x_mod, "was_wide")) tsbox::ts_wide(x_mod_ytd_gr) else
+    tsbox::copy_class(x_mod_ytd_gr, x)
 
   return(ans)
 }
@@ -1143,12 +1434,15 @@ mtd_cum <- function(x, avg = TRUE) {
   x_mod_mtd <- x_mod %>%
     dplyr::mutate(yrmo = lubridate::floor_date(.data$time, "month")) %>%
     dplyr::group_by(.data$id, .data$yrmo) %>%
-    dplyr::mutate(value = if (avg) dplyr::cummean(.data$value) else cumsum(.data$value)) %>%
+    dplyr::mutate(
+      value = if (avg) dplyr::cummean(.data$value) else cumsum(.data$value)
+    ) %>%
     dplyr::ungroup() %>%
     dplyr::select(!"yrmo")
 
   # reclass the output to match the input
-  ans <- if (attr(x_mod, "was_wide")) tsbox::ts_wide(x_mod_mtd) else tsbox::copy_class(x_mod_mtd, x)
+  ans <- if (attr(x_mod, "was_wide")) tsbox::ts_wide(x_mod_mtd) else
+    tsbox::copy_class(x_mod_mtd, x)
 
   return(ans)
 }
@@ -1174,7 +1468,8 @@ mtd_gr <- function(x) {
     tsbox::ts_pcy()
 
   # reclass the output to match the input
-  ans <- if (attr(x_mod, "was_wide")) tsbox::ts_wide(x_mod_mtd_gr) else tsbox::copy_class(x_mod_mtd_gr, x)
+  ans <- if (attr(x_mod, "was_wide")) tsbox::ts_wide(x_mod_mtd_gr) else
+    tsbox::copy_class(x_mod_mtd_gr, x)
 
   return(ans)
 }
@@ -1209,12 +1504,15 @@ ptd_cum <- function(x, per = "year", avg = TRUE) {
   x_mod_ptd <- x_mod %>%
     dplyr::mutate(time_per = lubridate::floor_date(.data$time, per)) %>%
     dplyr::group_by(.data$id, .data$time_per) %>%
-    dplyr::mutate(value = if (avg) dplyr::cummean(.data$value) else cumsum(.data$value)) %>%
+    dplyr::mutate(
+      value = if (avg) dplyr::cummean(.data$value) else cumsum(.data$value)
+    ) %>%
     dplyr::ungroup() %>%
     dplyr::select(!"time_per")
 
   # reclass the output to match the input
-  ans <- if (attr(x_mod, "was_wide")) tsbox::ts_wide(x_mod_ptd) else tsbox::copy_class(x_mod_ptd, x)
+  ans <- if (attr(x_mod, "was_wide")) tsbox::ts_wide(x_mod_ptd) else
+    tsbox::copy_class(x_mod_ptd, x)
 
   return(ans)
 }
@@ -1265,7 +1563,8 @@ ptd_gr <- function(x, per = "year", lag_length = "1 year") {
     }
 
   # reclass the output to match the input
-  ans <- if (attr(x_mod, "was_wide")) tsbox::ts_wide(x_mod_ptd_gr) else tsbox::copy_class(x_mod_ptd_gr, x)
+  ans <- if (attr(x_mod, "was_wide")) tsbox::ts_wide(x_mod_ptd_gr) else
+    tsbox::copy_class(x_mod_ptd_gr, x)
 
   return(ans)
 }
@@ -1304,7 +1603,8 @@ pca_to_pc <- function(x, freq = 4) {
     dplyr::mutate(value = ((1 + .data$value / 100)^(1 / freq) - 1) * 100)
 
   # reclass the output to match the input
-  ans <- if (attr(x_mod, "was_wide")) tsbox::ts_wide(x_mod_pc) else tsbox::copy_class(x_mod_pc, x)
+  ans <- if (attr(x_mod, "was_wide")) tsbox::ts_wide(x_mod_pc) else
+    tsbox::copy_class(x_mod_pc, x)
 
   return(ans)
 }
@@ -1343,7 +1643,8 @@ pc_to_pca <- function(x, freq = 4) {
     dplyr::mutate(value = ((1 + .data$value / 100)^freq - 1) * 100)
 
   # reclass the output to match the input
-  ans <- if (attr(x_mod, "was_wide")) tsbox::ts_wide(x_mod_pc) else tsbox::copy_class(x_mod_pc, x)
+  ans <- if (attr(x_mod, "was_wide")) tsbox::ts_wide(x_mod_pc) else
+    tsbox::copy_class(x_mod_pc, x)
 
   return(ans)
 }
@@ -1374,7 +1675,9 @@ pcmp <- function(x, lag = 4, comp_freq = 1) {
 
   x_mod_pcmp <- x_mod %>%
     tsbox::ts_tslist() %>%
-    purrr::map(~ (((.x / tsbox::ts_lag(.x, lag))^(comp_freq / lag)) - 1) * 100) %>%
+    purrr::map(
+      ~ (((.x / tsbox::ts_lag(.x, lag))^(comp_freq / lag)) - 1) * 100
+    ) %>%
     set_attr_tslist() %>%
     # univariate data requires special treatment
     {
@@ -1388,7 +1691,8 @@ pcmp <- function(x, lag = 4, comp_freq = 1) {
     }
 
   # reclass the output to match the input
-  ans <- if (attr(x_mod, "was_wide")) tsbox::ts_wide(x_mod_pcmp) else tsbox::copy_class(x_mod_pcmp, x)
+  ans <- if (attr(x_mod, "was_wide")) tsbox::ts_wide(x_mod_pcmp) else
+    tsbox::copy_class(x_mod_pcmp, x)
 
   return(ans)
 }
@@ -1426,10 +1730,20 @@ cagr <- function(x) {
     tsbox::ts_wide() %>%
     dplyr::slice(1, dplyr::n()) %>%
     dplyr::summarize(
-      dplyr::across("time", ~ difftime(get(dplyr::cur_column())[2], get(dplyr::cur_column())[1]) %>% lubridate::time_length(unit = "years")),
-      dplyr::across(!"time", ~ get(dplyr::cur_column())[2] / get(dplyr::cur_column())[1])
+      dplyr::across(
+        "time",
+        ~ difftime(get(dplyr::cur_column())[2], get(dplyr::cur_column())[1]) %>%
+          lubridate::time_length(unit = "years")
+      ),
+      dplyr::across(
+        !"time",
+        ~ get(dplyr::cur_column())[2] / get(dplyr::cur_column())[1]
+      )
     ) %>%
-    dplyr::mutate(dplyr::across(!"time", ~ (get(dplyr::cur_column())^(1 / .data$time) - 1) * 100)) %>%
+    dplyr::mutate(dplyr::across(
+      !"time",
+      ~ (get(dplyr::cur_column())^(1 / .data$time) - 1) * 100
+    )) %>%
     dplyr::rename("years_elapsed" = "time")
 
   return(x_mod_cagr)
@@ -1441,7 +1755,9 @@ cagr <- function(x) {
 #' @param yoy_gr ts-boxable object containing year over year growth rates
 #' @param hist_lev ts-boxable object containing the history in levels
 #' for forecast and at least one year of history (in percent)
-#' @param smooth_span extent of smoothing between 0-1 (default: 0, no smoothing)
+#' @param smooth_span extent of smoothing between 0-1 (default: 0, no smoothing).
+#' Effect depends on the length of the time series. Low smooth_span value may
+#' trigger warning, if time series too short.
 #'
 #' @return object of the same type as hist_lev extended with year over year growth
 #' @export
@@ -1450,6 +1766,7 @@ cagr <- function(x) {
 #' that the growth rates are available for at least the last year of history.
 #' Year-over-year growth rates propagate the fluctuations of the base period
 #' into the extension period. This can be mitigated by smoothing the extension.
+#' The inputs should not contain missing values.
 #'
 #' @examples
 #' gr <- quarterly_data_example |>
@@ -1473,8 +1790,10 @@ yoy_to_lev <- function(yoy_gr, hist_lev, smooth_span = 0) {
 
   # make sure the growth series starts at or before the start of the base period
   if (find_start(yoy_gr_mod) > base_per_start) {
-    stop("The start of the growth series is after the start of the base period.
-         Extend the growth series backward with 0% growth in the base period.")
+    stop(
+      "The start of the growth series is after the start of the base period.
+         Extend the growth series backward with 0% growth in the base period."
+    )
   }
 
   # extract the history in the base period
@@ -1493,7 +1812,11 @@ yoy_to_lev <- function(yoy_gr, hist_lev, smooth_span = 0) {
     ) %>%
     # store the cumulative growth in the base period
     dplyr::left_join(
-      dplyr::filter(., .data$time > base_per_start, .data$time <= base_per_end) %>%
+      dplyr::filter(
+        .,
+        .data$time > base_per_start,
+        .data$time <= base_per_end
+      ) %>%
         dplyr::select("month_id", "base_gr" = "cum_gr"),
       by = "month_id"
     ) %>%
@@ -1523,18 +1846,24 @@ yoy_to_lev <- function(yoy_gr, hist_lev, smooth_span = 0) {
     ext_lev_mod <- hist_lev_mod %>%
       tsbox::ts_chain(calcs) %>%
       dplyr::mutate(
-        value_smooth = stats::loess(value ~ time %>% as.numeric(),
+        value_smooth = stats::loess(
+          value ~ time %>% as.numeric(),
           data = .,
           span = smooth_span
         ) %>%
           stats::predict(),
-        value = dplyr::if_else(.data$time > base_per_end, .data$value_smooth, .data$value)
+        value = dplyr::if_else(
+          .data$time > base_per_end,
+          .data$value_smooth,
+          .data$value
+        )
       ) %>%
       dplyr::select(!"value_smooth")
   }
 
   # reclass the output to match the input
-  ans <- if (attr(hist_lev_mod, "was_wide")) tsbox::ts_wide(ext_lev_mod) else tsbox::copy_class(ext_lev_mod, hist_lev)
+  ans <- if (attr(hist_lev_mod, "was_wide")) tsbox::ts_wide(ext_lev_mod) else
+    tsbox::copy_class(ext_lev_mod, hist_lev)
 
   return(ans)
 }
@@ -1577,7 +1906,8 @@ index <- function(x, base_per = as.character(Sys.Date()), base_value = 100) {
     }
 
   # reclass the output to match the input
-  ans <- if (attr(x_mod, "was_wide")) tsbox::ts_wide(x_mod_index) else tsbox::copy_class(x_mod_index, x)
+  ans <- if (attr(x_mod, "was_wide")) tsbox::ts_wide(x_mod_index) else
+    tsbox::copy_class(x_mod_index, x)
 
   return(ans)
 }
@@ -1602,14 +1932,19 @@ index <- function(x, base_per = as.character(Sys.Date()), base_value = 100) {
 #' quarterly_data_example |>
 #'   span("2010-01-01", "2010-12-31")
 span <- function(x, start = NULL, end = NULL, template = NULL, extend = FALSE) {
-  start <- if(!is.null(start)) to_ymd(start)
-  end <- if(!is.null(end)) to_ymd(end)
+  start <- if (!is.null(start)) to_ymd(start)
+  end <- if (!is.null(end)) to_ymd(end)
 
   # convert to long format and return additional details
   x_mod <- conv_long(x, ser_info = TRUE)
 
   x_mod_span <- x_mod %>%
-    tsbox::ts_span(start = start, end = end, template = template, extend = extend) %>%
+    tsbox::ts_span(
+      start = start,
+      end = end,
+      template = template,
+      extend = extend
+    ) %>%
 
     # univariate data requires special treatment
     {
@@ -1623,7 +1958,8 @@ span <- function(x, start = NULL, end = NULL, template = NULL, extend = FALSE) {
     }
 
   # reclass the output to match the input
-  ans <- if (attr(x_mod, "was_wide")) tsbox::ts_wide(x_mod_span) else tsbox::copy_class(x_mod_span, x)
+  ans <- if (attr(x_mod, "was_wide")) tsbox::ts_wide(x_mod_span) else
+    tsbox::copy_class(x_mod_span, x)
 
   return(ans)
 }
@@ -1676,11 +2012,12 @@ find_end <- function(x, last_day = FALSE) {
     dplyr::pull(.data$end) %>%
     {
       if (last_day) {
-          purrr::map2_vec(.,
-            x_mod_summary %>% dplyr::pull(., .data$diff),
-            ~ lubridate::ceiling_date(.x, unit = .y) %>%
-              lubridate::rollback()
-          )
+        purrr::map2_vec(
+          .,
+          x_mod_summary %>% dplyr::pull(., .data$diff),
+          ~ lubridate::ceiling_date(.x, unit = .y) %>%
+            lubridate::rollback()
+        )
       } else {
         .
       }
@@ -1724,7 +2061,11 @@ p <- function(dat1 = "", dat2 = "") {
 #' pm(2010.1, )
 #' pm(, 2010.1)
 pm <- function(dat1 = "", dat2 = "") {
-  stringr::str_c(if (dat1 != "") dat1 %>% lubridate::ym(), "/", if (dat2 != "") dat2 %>% lubridate::ym())
+  stringr::str_c(
+    if (dat1 != "") dat1 %>% lubridate::ym(),
+    "/",
+    if (dat2 != "") dat2 %>% lubridate::ym()
+  )
 }
 
 
@@ -1742,7 +2083,11 @@ pm <- function(dat1 = "", dat2 = "") {
 #' pq(2010.1, )
 #' pq(, 2010.1)
 pq <- function(dat1 = "", dat2 = "") {
-  stringr::str_c(if (dat1 != "") dat1 %>% lubridate::yq(), "/", if (dat2 != "") dat2 %>% lubridate::yq())
+  stringr::str_c(
+    if (dat1 != "") dat1 %>% lubridate::yq(),
+    "/",
+    if (dat2 != "") dat2 %>% lubridate::yq()
+  )
 }
 
 
@@ -1761,7 +2106,6 @@ pq <- function(dat1 = "", dat2 = "") {
 #   if (dat1 != "") dat1 %>% lubridate::yq()
 # }
 
-
 #' Concatenate dates formatted as yyyy to obtain period
 #'
 #' @param dat1 year of period start (string or numeric: yyyy)
@@ -1776,7 +2120,11 @@ pq <- function(dat1 = "", dat2 = "") {
 #' py(2010, )
 #' py(, 2010)
 py <- function(dat1 = "", dat2 = "") {
-  stringr::str_c(if (dat1 != "") stringr::str_c(dat1, "-01-01"), "/", if (dat2 != "") stringr::str_c(dat2, "-01-01"))
+  stringr::str_c(
+    if (dat1 != "") stringr::str_c(dat1, "-01-01"),
+    "/",
+    if (dat2 != "") stringr::str_c(dat2, "-01-01")
+  )
 }
 
 
@@ -1894,10 +2242,19 @@ ma <- function(x, order) {
   x_mod <- conv_long(x, ser_info = TRUE)
 
   x_mod_ma <- x_mod %>%
-    dplyr::mutate(value = slider::slide_dbl(.data$value, mean, .before = order - 1, .complete = TRUE), .by = "id")
+    dplyr::mutate(
+      value = slider::slide_dbl(
+        .data$value,
+        mean,
+        .before = order - 1,
+        .complete = TRUE
+      ),
+      .by = "id"
+    )
 
   # reclass the output to match the input
-  ans <- if (attr(x_mod, "was_wide")) tsbox::ts_wide(x_mod_ma) else tsbox::copy_class(x_mod_ma, x)
+  ans <- if (attr(x_mod, "was_wide")) tsbox::ts_wide(x_mod_ma) else
+    tsbox::copy_class(x_mod_ma, x)
 
   return(ans)
 }
@@ -1926,7 +2283,15 @@ ma <- function(x, order) {
 #'   tsbox::ts_long() |>
 #'   tsbox::ts_pick("E_TU_HI", "ECT_HI", "EMN_HI") |>
 #'   plot_1()
-plot_1 <- function(x, rng_start = as.character(Sys.Date() - lubridate::years(10)), rng_end = as.character(Sys.Date() + lubridate::years(2)), height = 300, width = 900, yoy_gr = TRUE, gr_1 = TRUE) {
+plot_1 <- function(
+  x,
+  rng_start = as.character(Sys.Date() - lubridate::years(10)),
+  rng_end = as.character(Sys.Date() + lubridate::years(2)),
+  height = 300,
+  width = 900,
+  yoy_gr = TRUE,
+  gr_1 = TRUE
+) {
   rng_start <- to_ymd(rng_start)
   rng_end <- to_ymd(rng_end)
   # convert to long format and return additional details
@@ -1934,30 +2299,54 @@ plot_1 <- function(x, rng_start = as.character(Sys.Date() - lubridate::years(10)
 
   ser_names <- attr(x_mod, "ser_names")
 
-  ser_names_pct <- if (gr_1) stringr::str_glue("{ser_names}%")[1] else stringr::str_glue("{ser_names}%")
+  ser_names_pct <- if (gr_1) stringr::str_glue("{ser_names}%")[1] else
+    stringr::str_glue("{ser_names}%")
 
   ser_plot <- x_mod %>%
     tsbox::ts_xts() %>%
     {
-      if (yoy_gr) tsbox::ts_c(., tsbox::ts_pcy(.)) else tsbox::ts_c(., tsbox::ts_pc(.))
+      if (yoy_gr) tsbox::ts_c(., tsbox::ts_pcy(.)) else
+        tsbox::ts_c(., tsbox::ts_pc(.))
     } %>%
     # magrittr::extract(, 1:length(c(ser_names, ser_names_pct))) %>%
     tsbox::ts_pick(1:length(c(ser_names, ser_names_pct))) %>%
     magrittr::set_names(c(ser_names, ser_names_pct)) %>%
-    tsbox::ts_dygraphs(main = ser_names[1], group = "comp", height = height, width = width) %>%
+    tsbox::ts_dygraphs(
+      main = ser_names[1],
+      group = "comp",
+      height = height,
+      width = width
+    ) %>%
     dygraphs::dyAxis("y", label = "% change") %>%
-    dygraphs::dyAxis("y2", label = "level", drawGrid = FALSE, independentTicks = TRUE) %>%
+    dygraphs::dyAxis(
+      "y2",
+      label = "level",
+      drawGrid = FALSE,
+      independentTicks = TRUE
+    ) %>%
     {
-      if (length(ser_names_pct) > 1) dygraphs::dyGroup(., ser_names_pct, axis = "y") %>% dygraphs::dyMultiColumnGroup(ser_names_pct) else dygraphs::dyBarSeries(., ser_names_pct, axis = "y")
+      if (length(ser_names_pct) > 1)
+        dygraphs::dyGroup(., ser_names_pct, axis = "y") %>%
+          dygraphs::dyMultiColumnGroup(ser_names_pct) else
+        dygraphs::dyBarSeries(., ser_names_pct, axis = "y")
     } %>%
     {
-      if (length(ser_names) > 1) dygraphs::dyGroup(., ser_names, strokeWidth = 2, axis = "y2") else dygraphs::dySeries(., ser_names, strokeWidth = 2, axis = "y2")
+      if (length(ser_names) > 1)
+        dygraphs::dyGroup(., ser_names, strokeWidth = 2, axis = "y2") else
+        dygraphs::dySeries(., ser_names, strokeWidth = 2, axis = "y2")
     } %>%
     # dygraphs::dyOptions(colors = RColorBrewer::brewer.pal(length(ser_names), "Set1")) %>%
-    dygraphs::dyOptions(colors = uhero_colors_light[1:length(ser_names_pct)] %>% c(uhero_colors[1:length(ser_names)])) %>%
+    dygraphs::dyOptions(
+      colors = uhero_colors_light[1:length(ser_names_pct)] %>%
+        c(uhero_colors[1:length(ser_names)])
+    ) %>%
     dygraphs::dyLegend(show = "follow", labelsSeparateLines = TRUE) %>%
     # dygraphs::dyLegend(width = 0.9 * width, show = "auto", labelsSeparateLines = FALSE) %>%
-    dygraphs::dyRangeSelector(dateWindow = c(rng_start, rng_end), height = 30, strokeColor = "red")
+    dygraphs::dyRangeSelector(
+      dateWindow = c(rng_start, rng_end),
+      height = 30,
+      strokeColor = "red"
+    )
 
   # render the dygraphs objects using htmltools
   ser_plot %>%
@@ -1984,7 +2373,13 @@ plot_1 <- function(x, rng_start = as.character(Sys.Date() - lubridate::years(10)
 #'   tsbox::ts_long() |>
 #'   tsbox::ts_pick("E_TU_HI", "ECT_HI", "EMN_HI") |>
 #'   plot_2ax()
-plot_2ax <- function(x, rng_start = as.character(Sys.Date() - lubridate::years(10)), rng_end = as.character(Sys.Date() + lubridate::years(2)), height = 300, width = 900) {
+plot_2ax <- function(
+  x,
+  rng_start = as.character(Sys.Date() - lubridate::years(10)),
+  rng_end = as.character(Sys.Date() + lubridate::years(2)),
+  height = 300,
+  width = 900
+) {
   rng_start <- to_ymd(rng_start)
   rng_end <- to_ymd(rng_end)
   # convert to long format and return additional details
@@ -1994,20 +2389,36 @@ plot_2ax <- function(x, rng_start = as.character(Sys.Date() - lubridate::years(1
 
   ser_plot <- x_mod %>%
     tsbox::ts_xts() %>%
-    tsbox::ts_dygraphs(main = ser_names[1] %>% stringr::str_replace_all("@.*", ""), group = "comp", height = height, width = width) %>%
+    tsbox::ts_dygraphs(
+      main = ser_names[1] %>% stringr::str_replace_all("@.*", ""),
+      group = "comp",
+      height = height,
+      width = width
+    ) %>%
     dygraphs::dyAxis("y", label = "series 1") %>%
-    dygraphs::dyAxis("y2", label = "series 2+", drawGrid = FALSE, independentTicks = TRUE) %>%
+    dygraphs::dyAxis(
+      "y2",
+      label = "series 2+",
+      drawGrid = FALSE,
+      independentTicks = TRUE
+    ) %>%
     {
       dygraphs::dySeries(., ser_names[1], strokeWidth = 2, axis = "y")
     } %>%
     {
-      if (length(ser_names[-1]) > 1) dygraphs::dyGroup(., ser_names[-1], strokeWidth = 2, axis = "y2") else dygraphs::dySeries(., ser_names[-1], strokeWidth = 2, axis = "y2")
+      if (length(ser_names[-1]) > 1)
+        dygraphs::dyGroup(., ser_names[-1], strokeWidth = 2, axis = "y2") else
+        dygraphs::dySeries(., ser_names[-1], strokeWidth = 2, axis = "y2")
     } %>%
     # dygraphs::dyOptions(colors = RColorBrewer::brewer.pal(length(ser_names), "Set1")) %>%
     dygraphs::dyOptions(colors = uhero_colors[1:length(ser_names)]) %>%
     dygraphs::dyLegend(show = "follow", labelsSeparateLines = TRUE) %>%
     # dygraphs::dyLegend(width = 0.9 * width, show = "auto", labelsSeparateLines = FALSE) %>%
-    dygraphs::dyRangeSelector(dateWindow = c(rng_start, rng_end), height = 30, strokeColor = "red")
+    dygraphs::dyRangeSelector(
+      dateWindow = c(rng_start, rng_end),
+      height = 30,
+      strokeColor = "red"
+    )
 
   # render the dygraphs objects using htmltools
   ser_plot %>%
@@ -2038,7 +2449,17 @@ plot_2ax <- function(x, rng_start = as.character(Sys.Date() - lubridate::years(1
 #'   tsbox::ts_long() |>
 #'   tsbox::ts_pick("E_TU_HI", "ECT_HI", "EMN_HI") |>
 #'   plot_fc()
-plot_fc <- function(x, rng_start = as.character(Sys.Date() - lubridate::years(10)), rng_end = as.character(Sys.Date() + lubridate::years(2)), add_table = TRUE, table_start = rng_start, table_end = rng_end, height = 300, width = 900, yoy_gr = TRUE) {
+plot_fc <- function(
+  x,
+  rng_start = as.character(Sys.Date() - lubridate::years(10)),
+  rng_end = as.character(Sys.Date() + lubridate::years(2)),
+  add_table = TRUE,
+  table_start = rng_start,
+  table_end = rng_end,
+  height = 300,
+  width = 900,
+  yoy_gr = TRUE
+) {
   rng_start <- to_ymd(rng_start)
   rng_end <- to_ymd(rng_end)
   table_start <- to_ymd(table_start)
@@ -2064,25 +2485,67 @@ plot_fc <- function(x, rng_start = as.character(Sys.Date() - lubridate::years(10
   ser_to_plot <- x_mod %>%
     tsbox::ts_xts() %>%
     {
-      if (yoy_gr) tsbox::ts_c(., tsbox::ts_pcy(.[, 1])) else tsbox::ts_c(., tsbox::ts_pc(.[, 1]))
+      if (yoy_gr) tsbox::ts_c(., tsbox::ts_pcy(.[, 1])) else
+        tsbox::ts_c(., tsbox::ts_pc(.[, 1]))
     } %>%
     magrittr::set_names(c(ser_names, stringr::str_glue("{ser_names[1]}%")))
 
   # generate the plot
   ser_plot <- ser_to_plot %>%
-    tsbox::ts_dygraphs(main = ser_names[1], group = "comp", height = height, width = width) %>%
+    tsbox::ts_dygraphs(
+      main = ser_names[1],
+      group = "comp",
+      height = height,
+      width = width
+    ) %>%
     dygraphs::dyAxis("y", label = "level") %>%
-    dygraphs::dyAxis("y2", label = "% Chg", drawGrid = FALSE, independentTicks = TRUE) %>%
+    dygraphs::dyAxis(
+      "y2",
+      label = "% Chg",
+      drawGrid = FALSE,
+      independentTicks = TRUE
+    ) %>%
     dygraphs::dyAxis("x", axisLabelFormatter = htmlwidgets::JS(getQuarter)) %>%
-    dygraphs::dySeries(stringr::str_glue("{ser_names[1]}"), axis = "y", strokeWidth = 2, color = uhero_colors[1]) %>%
+    dygraphs::dySeries(
+      stringr::str_glue("{ser_names[1]}"),
+      axis = "y",
+      strokeWidth = 2,
+      color = uhero_colors[1]
+    ) %>%
     {
-      if (length(ser_names) > 1) dygraphs::dySeries(., stringr::str_glue("{ser_names[2]}"), axis = "y", strokePattern = "dashed", strokeWidth = 2, color = uhero_colors[2]) else .
+      if (length(ser_names) > 1)
+        dygraphs::dySeries(
+          .,
+          stringr::str_glue("{ser_names[2]}"),
+          axis = "y",
+          strokePattern = "dashed",
+          strokeWidth = 2,
+          color = uhero_colors[2]
+        ) else .
     } %>%
     {
-      if (length(ser_names) > 2) dygraphs::dySeries(., stringr::str_glue("{ser_names[3]}"), axis = "y", strokePattern = "dashed", strokeWidth = 2, color = uhero_colors[3]) else .
+      if (length(ser_names) > 2)
+        dygraphs::dySeries(
+          .,
+          stringr::str_glue("{ser_names[3]}"),
+          axis = "y",
+          strokePattern = "dashed",
+          strokeWidth = 2,
+          color = uhero_colors[3]
+        ) else .
     } %>%
-    dygraphs::dySeries(stringr::str_glue("{ser_names[1]}%"), axis = "y2", stepPlot = TRUE, fillGraph = TRUE, color = uhero_colors[1]) %>%
-    dygraphs::dyRangeSelector(dateWindow = c(rng_start, rng_end), height = 30, strokeColor = "red") %>%
+    dygraphs::dySeries(
+      stringr::str_glue("{ser_names[1]}%"),
+      axis = "y2",
+      stepPlot = TRUE,
+      fillGraph = TRUE,
+      color = uhero_colors[1]
+    ) %>%
+    dygraphs::dyRangeSelector(
+      dateWindow = c(rng_start, rng_end),
+      height = 30,
+      strokeColor = "red"
+    ) %>%
     dygraphs::dyLegend(show = "follow", labelsSeparateLines = TRUE)
 
   if (add_table) {
@@ -2130,7 +2593,15 @@ plot_fc <- function(x, rng_start = as.character(Sys.Date() - lubridate::years(10
 #'   tsbox::ts_long() |>
 #'   tsbox::ts_pick("E_TU_HI", "ECT_HI", "EMN_HI") |>
 #'   plot_comp_2()
-plot_comp_2 <- function(x, rng_start = as.character(Sys.Date() - lubridate::years(10)), rng_end = as.character(Sys.Date() + lubridate::years(2)), height = 300, width = 900, yoy_gr = TRUE, gr_bar = FALSE) {
+plot_comp_2 <- function(
+  x,
+  rng_start = as.character(Sys.Date() - lubridate::years(10)),
+  rng_end = as.character(Sys.Date() + lubridate::years(2)),
+  height = 300,
+  width = 900,
+  yoy_gr = TRUE,
+  gr_bar = FALSE
+) {
   rng_start <- to_ymd(rng_start)
   rng_end <- to_ymd(rng_end)
   # convert to long format and return additional details
@@ -2141,7 +2612,12 @@ plot_comp_2 <- function(x, rng_start = as.character(Sys.Date() - lubridate::year
   plot_level <-
     x_mod %>%
     tsbox::ts_xts() %>%
-    tsbox::ts_dygraphs(main = "Level", group = "comp", height = height, width = width) %>%
+    tsbox::ts_dygraphs(
+      main = "Level",
+      group = "comp",
+      height = height,
+      width = width
+    ) %>%
     dygraphs::dyLegend(width = width * 0.90) %>%
     dygraphs::dyOptions(colors = uhero_colors[1:length(ser_names)]) # %>%
   # dygraphs::dyOptions(colors = RColorBrewer::brewer.pal(length(ser_names), "Set2"))
@@ -2151,14 +2627,23 @@ plot_comp_2 <- function(x, rng_start = as.character(Sys.Date() - lubridate::year
     {
       if (yoy_gr) tsbox::ts_pcy(.) else tsbox::ts_pc(.)
     } %>%
-    tsbox::ts_dygraphs(main = "Growth", group = "comp", height = height, width = width) %>%
+    tsbox::ts_dygraphs(
+      main = "Growth",
+      group = "comp",
+      height = height,
+      width = width
+    ) %>%
     {
       if (gr_bar) dygraphs::dyBarChart(.) else .
     } %>%
     dygraphs::dyLegend(width = width * 0.90) %>%
     dygraphs::dyOptions(colors = uhero_colors[1:length(ser_names)]) %>%
     # dygraphs::dyOptions(colors = RColorBrewer::brewer.pal(length(ser_names), "Set2")) %>%
-    dygraphs::dyRangeSelector(dateWindow = c(rng_start, rng_end), height = 30, strokeColor = "red")
+    dygraphs::dyRangeSelector(
+      dateWindow = c(rng_start, rng_end),
+      height = 30,
+      strokeColor = "red"
+    )
 
   # render the dygraphs objects using htmltools
   list(plot_level, plot_growth) %>%
@@ -2188,7 +2673,16 @@ plot_comp_2 <- function(x, rng_start = as.character(Sys.Date() - lubridate::year
 #'   tsbox::ts_long() |>
 #'   tsbox::ts_pick("E_TU_HI", "ECT_HI", "EMN_HI") |>
 #'   plot_comp_3()
-plot_comp_3 <- function(x, base_date = as.character(Sys.Date() - lubridate::years(10)), rng_start = as.character(Sys.Date() - lubridate::years(10)), rng_end = as.character(Sys.Date() + lubridate::years(2)), height = 300, width = 900, yoy_gr = TRUE, gr_bar = FALSE) {
+plot_comp_3 <- function(
+  x,
+  base_date = as.character(Sys.Date() - lubridate::years(10)),
+  rng_start = as.character(Sys.Date() - lubridate::years(10)),
+  rng_end = as.character(Sys.Date() + lubridate::years(2)),
+  height = 300,
+  width = 900,
+  yoy_gr = TRUE,
+  gr_bar = FALSE
+) {
   base_date <- to_ymd(base_date)
   rng_start <- to_ymd(rng_start)
   rng_end <- to_ymd(rng_end)
@@ -2200,7 +2694,12 @@ plot_comp_3 <- function(x, base_date = as.character(Sys.Date() - lubridate::year
   plot_level <-
     x_mod %>%
     tsbox::ts_xts() %>%
-    tsbox::ts_dygraphs(main = "Level", group = "comp", height = height, width = width) %>%
+    tsbox::ts_dygraphs(
+      main = "Level",
+      group = "comp",
+      height = height,
+      width = width
+    ) %>%
     dygraphs::dyLegend(width = width * 0.90) %>%
     dygraphs::dyOptions(colors = uhero_colors[1:length(ser_names)]) # %>%
   # dygraphs::dyOptions(colors = RColorBrewer::brewer.pal(length(ser_names), "Set2"))
@@ -2209,7 +2708,12 @@ plot_comp_3 <- function(x, base_date = as.character(Sys.Date() - lubridate::year
     x_mod %>%
     tsbox::ts_xts() %>%
     tsbox::ts_index(base = base_date) %>%
-    tsbox::ts_dygraphs(main = "Index", group = "comp", height = height, width = width) %>%
+    tsbox::ts_dygraphs(
+      main = "Index",
+      group = "comp",
+      height = height,
+      width = width
+    ) %>%
     # dygraphs::dyRebase(value = 100) %>%
     dygraphs::dyLegend(width = width * 0.90) %>%
     dygraphs::dyOptions(colors = uhero_colors[1:length(ser_names)]) # %>%
@@ -2220,14 +2724,23 @@ plot_comp_3 <- function(x, base_date = as.character(Sys.Date() - lubridate::year
     {
       if (yoy_gr) tsbox::ts_pcy(.) else tsbox::ts_pc(.)
     } %>%
-    tsbox::ts_dygraphs(main = "Growth", group = "comp", height = height, width = width) %>%
+    tsbox::ts_dygraphs(
+      main = "Growth",
+      group = "comp",
+      height = height,
+      width = width
+    ) %>%
     {
       if (gr_bar) dygraphs::dyBarChart(.) else .
     } %>%
     dygraphs::dyLegend(width = width * 0.90) %>%
     dygraphs::dyOptions(colors = uhero_colors[1:length(ser_names)]) %>%
     # dygraphs::dyOptions(colors = RColorBrewer::brewer.pal(length(ser_names), "Set2")) %>%
-    dygraphs::dyRangeSelector(dateWindow = c(rng_start, rng_end), height = 30, strokeColor = "red")
+    dygraphs::dyRangeSelector(
+      dateWindow = c(rng_start, rng_end),
+      height = 30,
+      strokeColor = "red"
+    )
 
   # render the dygraphs objects using htmltools
   list(plot_level, plot_index, plot_growth) %>%
@@ -2269,7 +2782,10 @@ save_plot_list <- function(plot_list, save_loc) {
     htmltools::save_html(file = save_loc)
   # fix the html
   readr::read_lines(file = save_loc)[-1] %>%
-    stringr::str_replace_all(c("<style>" = "\\\n<title>Plots</title>\\\n<style>", "\\}</style>" = "font-family:Arial,Helvetica,sans-serif;font-size:medium;}</style>")) %>%
+    stringr::str_replace_all(c(
+      "<style>" = "\\\n<title>Plots</title>\\\n<style>",
+      "\\}</style>" = "font-family:Arial,Helvetica,sans-serif;font-size:medium;}</style>"
+    )) %>%
     readr::write_lines(file = save_loc)
   # incorporate dependecies into html
   rmarkdown::pandoc_self_contained_html(input = save_loc, output = save_loc)
@@ -2280,7 +2796,6 @@ save_plot_list <- function(plot_list, save_loc) {
 # **************************
 # utility functions for model development ----
 # **************************
-
 
 #' Generate a table with time series
 #'
@@ -2315,7 +2830,15 @@ save_plot_list <- function(plot_list, save_loc) {
 #'   percent = "pcy", time_across = TRUE,
 #'   save_loc = "~/Downloads/temp.html"
 #' )
-gen_table <- function(x, tbl_start = as.character(Sys.Date() - lubridate::years(10)), tbl_end = as.character(Sys.Date() + lubridate::years(2)), percent = "pc", time_across = TRUE, tbl_height = 800, save_loc = NULL) {
+gen_table <- function(
+  x,
+  tbl_start = as.character(Sys.Date() - lubridate::years(10)),
+  tbl_end = as.character(Sys.Date() + lubridate::years(2)),
+  percent = "pc",
+  time_across = TRUE,
+  tbl_height = 800,
+  save_loc = NULL
+) {
   tbl_start <- to_ymd(tbl_start)
   tbl_end <- to_ymd(tbl_end)
   # convert to long format and return additional details
@@ -2325,11 +2848,23 @@ gen_table <- function(x, tbl_start = as.character(Sys.Date() - lubridate::years(
   tbl_out <- x_mod %>%
     {
       if (percent == "pc") {
-        tsbox::ts_c(., tsbox::ts_pc(.) %>% dplyr::mutate(id = stringr::str_c(.data$id, " (%)")))
+        tsbox::ts_c(
+          .,
+          tsbox::ts_pc(.) %>%
+            dplyr::mutate(id = stringr::str_c(.data$id, " (%)"))
+        )
       } else if (percent == "pcy") {
-        tsbox::ts_c(., tsbox::ts_pcy(.) %>% dplyr::mutate(id = stringr::str_c(.data$id, " (YoY%)")))
+        tsbox::ts_c(
+          .,
+          tsbox::ts_pcy(.) %>%
+            dplyr::mutate(id = stringr::str_c(.data$id, " (YoY%)"))
+        )
       } else if (percent == "pca") {
-        tsbox::ts_c(., tsbox::ts_pca(.) %>% dplyr::mutate(id = stringr::str_c(.data$id, " (Ann%)")))
+        tsbox::ts_c(
+          .,
+          tsbox::ts_pca(.) %>%
+            dplyr::mutate(id = stringr::str_c(.data$id, " (Ann%)"))
+        )
       } else if (percent == "none") {
         .
       } else {
@@ -2363,14 +2898,16 @@ gen_table <- function(x, tbl_start = as.character(Sys.Date() - lubridate::years(
           searchable = TRUE,
           # Search by case-sensitive text match
 
-          searchMethod = htmlwidgets::JS("function(rows, columnIds, searchValue) {
+          searchMethod = htmlwidgets::JS(
+            "function(rows, columnIds, searchValue) {
         const pattern = new RegExp(searchValue, 'i')
         return rows.filter(function(row) {
         return columnIds.some(function(columnId) {
         return pattern.test(row.values[columnId])
         })
         })
-        }"),
+        }"
+          ),
           columns = list(
             id = reactable::colDef(
               sticky = "left"
@@ -2386,7 +2923,9 @@ gen_table <- function(x, tbl_start = as.character(Sys.Date() - lubridate::years(
           compact = TRUE,
           height = tbl_height,
           defaultPageSize = 1000,
-          defaultColDef = reactable::colDef(format = reactable::colFormat(separators = TRUE, digits = 2))
+          defaultColDef = reactable::colDef(
+            format = reactable::colFormat(separators = TRUE, digits = 2)
+          )
         ) %>%
         htmlwidgets::saveWidget(file = save_loc)
     } else {
@@ -2407,7 +2946,9 @@ gen_table <- function(x, tbl_start = as.character(Sys.Date() - lubridate::years(
           compact = TRUE,
           height = tbl_height,
           defaultPageSize = 1000,
-          defaultColDef = reactable::colDef(format = reactable::colFormat(separators = TRUE, digits = 2))
+          defaultColDef = reactable::colDef(
+            format = reactable::colFormat(separators = TRUE, digits = 2)
+          )
         ) %>%
         htmlwidgets::saveWidget(file = save_loc)
     }
@@ -2454,7 +2995,8 @@ gen_table <- function(x, tbl_start = as.character(Sys.Date() - lubridate::years(
 #' # (2) "BEHAVIORAL> TSDELTA_LOG_uk"
 #' # (3) "EQ> TSDELTA(LOG(uk)) = b0 + b1 * TSLAG(uk, 1) + b2 * TSLAG(uk, 11) + b3 * TSLAG(uk, 12)"
 #' # (4) "COEFF> b0 b1 b2 b3"
-model_equation <- function(model, ...) { #   model =  est_lm   {model_equation(est_lm)[2:4]}
+model_equation <- function(model, ...) {
+  #   model =  est_lm   {model_equation(est_lm)[2:4]}
   format_args <- list(...)
 
   model_coeff <- model$coefficients
@@ -2471,13 +3013,16 @@ model_equation <- function(model, ...) { #   model =  est_lm   {model_equation(e
   model_eqn <- paste(
     strsplit(as.character(model$terms), "~")[[2]], # 'y'
     "=",
-    paste(dplyr::if_else(model_coeff[1] < 0, "- ", ""),
+    paste(
+      dplyr::if_else(model_coeff[1] < 0, "- ", ""),
       do.call(format, format_args)[1],
-      paste(model_coeff_prefix[-1],
+      paste(
+        model_coeff_prefix[-1],
         do.call(format, format_args)[-1],
         " * ",
         names(model_coeff[-1]),
-        sep = "", collapse = ""
+        sep = "",
+        collapse = ""
       ),
       sep = ""
     )
@@ -2486,23 +3031,32 @@ model_equation <- function(model, ...) { #   model =  est_lm   {model_equation(e
   model_eqn_bim <- paste(
     strsplit(as.character(model$terms), "~")[[2]], # 'y'
     "=",
-    paste("b0",
-      paste(paste(" + b", 1:length(model_coeff_prefix[-1]), sep = ""),
+    paste(
+      "b0",
+      paste(
+        paste(" + b", 1:length(model_coeff_prefix[-1]), sep = ""),
         " * ",
         names(model_coeff[-1]),
-        sep = "", collapse = ""
+        sep = "",
+        collapse = ""
       ),
       sep = ""
     )
   )
 
   # model_eqn_beh <- stringr::str_extract(model_eqn_bim, "\\w*") %>% # extract the target variable name
-  model_eqn_beh <- stringr::str_extract(model_eqn_bim, "[_.\\(\\)[:alnum:]]+") %>% # extract the target variable name
+  model_eqn_beh <- stringr::str_extract(
+    model_eqn_bim,
+    "[_.\\(\\)[:alnum:]]+"
+  ) %>% # extract the target variable name
     stringr::str_replace_all("DL_([_.[:alnum:]]+)", "TSDELTALOG(\\1)") %>% # replace DL_ with TSDELTALOG()
     stringr::str_replace_all("L_([_.[:alnum:]]+)", "LOG(\\1)") %>% # replace L_ with LOG()
     stringr::str_replace_all("D_([_.[:alnum:]]+)", "TSDELTA(\\1)") %>% # replace D_ with TSDELTA()
     stringr::str_replace_all("log\\(([_.[:alnum:]]+)\\)", "LOG(\\1)") %>% # replace log() with LOG()
-    stringr::str_replace_all("d\\(([_., \\(\\)[:alnum:]]+)\\)", "TSDELTA(\\1)") %>% # dynlm::d() = diff()
+    stringr::str_replace_all(
+      "d\\(([_., \\(\\)[:alnum:]]+)\\)",
+      "TSDELTA(\\1)"
+    ) %>% # dynlm::d() = diff()
     stringr::str_replace_all("[\\(]+", "_") %>% # drop parentheses from equation name
     stringr::str_replace_all("[., \\)[:digit:]]+", "") # drop parentheses and extra items from equation name
   model_eqn_bim <- model_eqn_bim %>%
@@ -2510,12 +3064,32 @@ model_equation <- function(model, ...) { #   model =  est_lm   {model_equation(e
     stringr::str_replace_all("L_([_.[:alnum:]]+)", "LOG(\\1)") %>% # replace L_ with LOG()
     stringr::str_replace_all("D_([_.[:alnum:]]+)", "TSDELTA(\\1)") %>% # replace D_ with TSDELTA()
     stringr::str_replace_all("log\\(([_.[:alnum:]]+)\\)", "LOG(\\1)") %>% # replace log() with LOG()
-    stringr::str_replace_all("d\\(([_., \\(\\)[:alnum:]]+)\\)", "TSDELTA(\\1)") %>% # dynlm::d() = diff()
+    stringr::str_replace_all(
+      "d\\(([_., \\(\\)[:alnum:]]+)\\)",
+      "TSDELTA(\\1)"
+    ) %>% # dynlm::d() = diff()
     stringr::str_replace_all("lag\\(([_., \\(\\)[:alnum:]]+)\\)", "TSLAG(\\1)") # lag() with TSLAG()
-  model_eqn_bim <- stringr::str_replace_all(model_eqn_bim, "([_[:alpha:]]+)(\\.)([[:digit:]]{1,2})", "TSLAG(\\1, \\3)") # replace dot notation for lags with TSLAG()
-  model_eqn_bim <- stringr::str_replace_all(model_eqn_bim, "L\\(([_\\(\\) [:alpha:]]+)([, ]+)([:c\\(, [:digit:]\\)]+)\\)([[:digit:]]{1,2})", "TSLAG(\\1, \\4)") # dealing with dynlm::L(x, 1:4) or dynlm::L(x, c(2,4))
-  model_eqn_bim <- stringr::str_replace_all(model_eqn_bim, "L\\(([_., \\(\\)[:alnum:]]+)\\)", "TSLAG(\\1)") # dynlm::L(x, k) = lag(x, -k)
-  model_eqn_coe <- stringr::str_extract_all(model_eqn_bim, "(b[[:digit:]]+)", simplify = TRUE) %>% paste(collapse = " ") # # extract coefficients
+  model_eqn_bim <- stringr::str_replace_all(
+    model_eqn_bim,
+    "([_[:alpha:]]+)(\\.)([[:digit:]]{1,2})",
+    "TSLAG(\\1, \\3)"
+  ) # replace dot notation for lags with TSLAG()
+  model_eqn_bim <- stringr::str_replace_all(
+    model_eqn_bim,
+    "L\\(([_\\(\\) [:alpha:]]+)([, ]+)([:c\\(, [:digit:]\\)]+)\\)([[:digit:]]{1,2})",
+    "TSLAG(\\1, \\4)"
+  ) # dealing with dynlm::L(x, 1:4) or dynlm::L(x, c(2,4))
+  model_eqn_bim <- stringr::str_replace_all(
+    model_eqn_bim,
+    "L\\(([_., \\(\\)[:alnum:]]+)\\)",
+    "TSLAG(\\1)"
+  ) # dynlm::L(x, k) = lag(x, -k)
+  model_eqn_coe <- stringr::str_extract_all(
+    model_eqn_bim,
+    "(b[[:digit:]]+)",
+    simplify = TRUE
+  ) %>%
+    paste(collapse = " ") # # extract coefficients
   model_eqn_beh <- stringr::str_replace_all(model_eqn_beh, "^", "BEHAVIORAL> ") # add a line for BEHAVIORAL>
   model_eqn_bim <- stringr::str_replace_all(model_eqn_bim, "^", "EQ> ") # add EQ> to start of line
   model_eqn_coe <- stringr::str_replace_all(model_eqn_coe, "^", "COEFF> ") # add COEFF> to start of line
@@ -2537,9 +3111,13 @@ model_equation <- function(model, ...) { #   model =  est_lm   {model_equation(e
 extract_data <- function(model_in, y_name) {
   data_out <- gets::eviews(model_in, print = FALSE, return = TRUE)$data %>%
     dplyr::select(-c) %>%
-    dplyr::rename_with(~ y_name, .cols = 2) %>%
-    dplyr::rename_with(~ stringr::str_replace(., "ar", stringr::str_glue("{y_name}."))) %>%
-    dplyr::rename_with(~ stringr::str_replace_all(., c("iis" = "IIS_", "sis" = "SIS_"))) %>%
+    dplyr::rename_with(~y_name, .cols = 2) %>%
+    dplyr::rename_with(
+      ~ stringr::str_replace(., "ar", stringr::str_glue("{y_name}."))
+    ) %>%
+    dplyr::rename_with(
+      ~ stringr::str_replace_all(., c("iis" = "IIS_", "sis" = "SIS_"))
+    ) %>%
     dplyr::rename_with(~ stringr::str_replace(., "-", "_")) %>%
     tsbox::ts_long() %>%
     tsbox::ts_xts()
@@ -2602,7 +3180,7 @@ update_eqs <- function(model_1, model_2, eqList) {
 #' set_tsrange(scen_model_dat, 4)
 set_tsrange <- function(model_w_dat, max_lag = 4, eqns = NULL) {
   # if no equations are specified, use all behavioral equations
-  if(is.null(eqns)) {
+  if (is.null(eqns)) {
     eqns <- model_w_dat$vendog
   }
 
@@ -2610,7 +3188,9 @@ set_tsrange <- function(model_w_dat, max_lag = 4, eqns = NULL) {
   # bimets::GETRANGE() accomplishes a similar task but does not offset the start by max_lag
   for (eq_i in eqns) {
     model_w_dat$behaviorals[[eq_i]][["tsrange"]] <- model_w_dat$modelData %>%
-      magrittr::extract(model_w_dat$behaviorals[[eq_i]][["eqComponentsNames"]]) %>%
+      magrittr::extract(model_w_dat$behaviorals[[eq_i]][[
+        "eqComponentsNames"
+      ]]) %>%
       set_attr_tslist() %>%
       tsbox::ts_tbl() %>%
       tsbox::ts_wide() %>%
@@ -2658,12 +3238,9 @@ set_tsrange <- function(model_w_dat, max_lag = 4, eqns = NULL) {
 #'
 #' @examplesIf interactive()
 #' set_udaman_token("-ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890=")
-set_udaman_token <- function(key)
-{
-  if (!rlang::is_string(key))
-    rlang::abort("`key` must be a string.")
+set_udaman_token <- function(key) {
+  if (!rlang::is_string(key)) rlang::abort("`key` must be a string.")
   if (nchar(key) != 44)
     rlang::warn("`key` does not have a length of 44 characters.")
   Sys.setenv(udaman_token = key)
 }
-
