@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">fcutils</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.0.9021</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.0.9022</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -54,7 +54,9 @@ for forecast and at least one year of history (in percent)</p></dd>
 
 
 <dt id="arg-smooth-span">smooth_span<a class="anchor" aria-label="anchor" href="#arg-smooth-span"></a></dt>
-<dd><p>extent of smoothing between 0-1 (default: 0, no smoothing)</p></dd>
+<dd><p>extent of smoothing between 0-1 (default: 0, no smoothing).
+Effect depends on the length of the time series. Low smooth_span value may
+trigger warning, if time series too short.</p></dd>
 
 </dl></div>
     <div class="section level2">
@@ -66,7 +68,8 @@ for forecast and at least one year of history (in percent)</p></dd>
     <p>This function only works for univariate time series and requires
 that the growth rates are available for at least the last year of history.
 Year-over-year growth rates propagate the fluctuations of the base period
-into the extension period. This can be mitigated by smoothing the extension.</p>
+into the extension period. This can be mitigated by smoothing the extension.
+The inputs should not contain missing values.</p>
     </div>
 
     <div class="section level2">
@@ -93,7 +96,7 @@ into the extension period. This can be mitigated by smoothing the extension.</p>
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.1.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.2.</p>
 </div>
 
     </footer></div>

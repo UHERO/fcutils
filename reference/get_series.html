@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">fcutils</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.0.9021</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.0.9022</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -40,7 +40,6 @@
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">get_series</span><span class="op">(</span></span>
 <span>  <span class="va">ser_id_vec</span>,</span>
 <span>  format <span class="op">=</span> <span class="st">"wide"</span>,</span>
-<span>  <span class="va">expand</span>,</span>
 <span>  raw <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  rename <span class="op">=</span> <span class="st">"compact"</span>,</span>
 <span>  freq <span class="op">=</span> <span class="cn">NULL</span>,</span>
@@ -59,10 +58,6 @@
 
 <dt id="arg-format">format<a class="anchor" aria-label="anchor" href="#arg-format"></a></dt>
 <dd><p>"wide" (default) or "long" or "xts"</p></dd>
-
-
-<dt id="arg-expand">expand<a class="anchor" aria-label="anchor" href="#arg-expand"></a></dt>
-<dd><p>DEPRECATED, USE raw INSTEAD "true" (default) or "raw" ("true" downloads formatted data, "raw" downloads raw units)</p></dd>
 
 
 <dt id="arg-raw">raw<a class="anchor" aria-label="anchor" href="#arg-raw"></a></dt>
@@ -116,6 +111,8 @@ keyring::key_set_with_value(service = "udaman_token", password = "-ABCDEFGHIJKLM
 <span class="r-in"><span><span class="fu">get_series</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"E_NF_HI"</span>, <span class="st">"ECT_HI"</span>, <span class="st">"E_TU_HAW"</span><span class="op">)</span>, freq <span class="op">=</span> <span class="st">"M"</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu">get_series</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"E_NF__HI_M"</span>, <span class="st">"ECT__HI_M"</span>, <span class="st">"VAP__HI_W"</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu">get_series</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"E_NF_AT_HI_M"</span>, <span class="st">"ECT_AT_HI_M"</span>, <span class="st">"VAP_AT_HI_W"</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu">get_series</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"E_NF_HI5"</span>, <span class="st">"ECT__HIALL"</span>, <span class="st">"E_TU@CNTY"</span><span class="op">)</span>, freq <span class="op">=</span> <span class="st">"M"</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu">get_series</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"E_NF_HI5 , ECT__HIALL  E_TU@CNTY"</span>, <span class="st">"VAP_HAW ; ECT_HON"</span><span class="op">)</span>, freq <span class="op">=</span> <span class="st">"M"</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">}</span></span></span>
 </code></pre></div>
     </div>
@@ -128,7 +125,7 @@ keyring::key_set_with_value(service = "udaman_token", password = "-ABCDEFGHIJKLM
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.1.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.2.</p>
 </div>
 
     </footer></div>
