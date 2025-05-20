@@ -10,25 +10,24 @@ conv_wide(x)
 \item{x}{a "ts-boxable" object to be converted}
 }
 \value{
-returns a ts-boxable object in long format with \code{id}, \code{time} and
-\code{value} columns.
+returns an object in wide format with a \code{time} column and series
+values in subsequent columns with \code{id} in column heading.
 }
 \description{
 Convert "ts-boxable" objects to wide format (extension of \code{tsbox::ts_wide()})
 }
 \details{
 This function performs a similar operation to \code{tsbox::ts_wide()}. It
-converts ts-boxable objects to the wide format. An important difference compared with
-\code{tsbox::ts_wide()} is that \code{conv_wide()} does not require x to be a long tbl.
+converts ts-boxable objects to the wide format. An important difference
+compared with \code{tsbox::ts_wide()} is that \code{conv_wide()} does not require x
+to be a long tbl.
 }
 \examples{
 quarterly_data_example |>
-  conv_long() |>
-  tsbox::ts_tslist() |>
+  conv_tslist() |>
   conv_wide()
 quarterly_data_example |>
-  tsbox::ts_long() |>
-  tsbox::ts_xts() |>
+  conv_xts() |>
   conv_wide()
 quarterly_data_example |>
   tsbox::ts_long() |>
