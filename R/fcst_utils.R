@@ -178,7 +178,7 @@ get_series_1 <- function(ser_id, expand, rename, descr, public) {
 #' get_series(c("E_NF_HI", "ECT_HI", "E_TU_HAW"), freq = "M")
 #' get_series(c("E_NF__HI_M", "ECT__HI_M", "VAP__HI_W"))
 #' get_series(c("E_NF_AT_HI_M", "ECT_AT_HI_M", "VAP_AT_HI_W"))
-#' get_series(c("E_NF_HI5", "ECT__HIALL", "E_TU@CNTY"), freq = "M")
+#' get_series("E_NF_HI5_M , ECT__HIALL_Q  E_TU@CNTY.A", rename = "no")
 #' get_series(c("E_NF_HI5 , ECT__HIALL  E_TU@CNTY", "VAP_HAW ; ECT_HON"), freq = "M")
 get_series <- function(
   ser_id_vec,
@@ -1091,22 +1091,21 @@ conv_long <- function(x, ser_info = FALSE) {
 #'
 #' @param x a "ts-boxable" object to be converted
 #'
-#' @return returns a ts-boxable object in long format with `id`, `time` and
-#' `value` columns.
+#' @return returns an object in wide format with a `time` column and series 
+#' values in subsequent columns with `id` in column heading.
 #' @export
 #'
 #' @details This function performs a similar operation to `tsbox::ts_wide()`. It
-#' converts ts-boxable objects to the wide format. An important difference compared with
-#' `tsbox::ts_wide()` is that `conv_wide()` does not require x to be a long tbl.
+#' converts ts-boxable objects to the wide format. An important difference 
+#' compared with `tsbox::ts_wide()` is that `conv_wide()` does not require x 
+#' to be a long tbl.
 #'
 #' @examples
 #' quarterly_data_example |>
-#'   conv_long() |>
-#'   tsbox::ts_tslist() |>
+#'   conv_tslist() |>
 #'   conv_wide()
 #' quarterly_data_example |>
-#'   tsbox::ts_long() |>
-#'   tsbox::ts_xts() |>
+#'   conv_xts() |>
 #'   conv_wide()
 #' quarterly_data_example |>
 #'   tsbox::ts_long() |>
@@ -1118,6 +1117,74 @@ conv_wide <- function(x) {
   x_mod <- x %>%
     conv_long() %>%
     tsbox::ts_wide()
+
+  return(x_mod)
+}
+
+
+#' Convert "ts-boxable" objects to xts format (extension of `tsbox::ts_xts()`)
+#'
+#' @param x a "ts-boxable" object to be converted
+#'
+#' @return returns an object in xts format.
+#' @export
+#'
+#' @details This function performs a similar operation to `tsbox::ts_xts()`. It
+#' converts ts-boxable objects to the xts format. An important difference 
+#' compared with `tsbox::ts_xts()` is that the x argument of `conv_xts()`
+#' can be a wide tbl.
+#'
+#' @examples
+#' quarterly_data_example |>
+#'   conv_tslist() |>
+#'   conv_xts()
+#' quarterly_data_example |>
+#'   conv_wide() |>
+#'   conv_xts()
+#' quarterly_data_example |>
+#'   tsbox::ts_long() |>
+#'   tsbox::ts_pick("E_NF_HI") |>
+#'   conv_wide() |>
+#'   conv_xts()
+conv_xts <- function(x) {
+  # first convert to long and then to xts
+  x_mod <- x %>%
+    conv_long() %>%
+    tsbox::ts_xts()
+
+  return(x_mod)
+}
+
+
+#' Convert "ts-boxable" objects to tslist (extension of `tsbox::ts_tslist()`)
+#'
+#' @param x a "ts-boxable" object to be converted
+#'
+#' @return returns an object as a tslist.
+#' @export
+#'
+#' @details This function performs a similar operation to `tsbox::ts_tslist()`. 
+#' It converts ts-boxable objects to the tslist format. An important difference 
+#' compared with `tsbox::ts_tslist()` is that the x argument of `conv_tslist()`
+#' can be a wide tbl.
+#'
+#' @examples
+#' quarterly_data_example |>
+#'   conv_xts() |>
+#'   conv_tslist()
+#' quarterly_data_example |>
+#'   conv_wide() |>
+#'   conv_tslist()
+#' quarterly_data_example |>
+#'   tsbox::ts_long() |>
+#'   tsbox::ts_pick("E_NF_HI") |>
+#'   conv_wide() |>
+#'   conv_tslist()
+conv_tslist <- function(x) {
+  # first convert to long and then to tslist
+  x_mod <- x %>%
+    conv_long() %>%
+    tsbox::ts_tslist()
 
   return(x_mod)
 }
