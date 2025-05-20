@@ -7,7 +7,6 @@
 get_series(
   ser_id_vec,
   format = "wide",
-  expand,
   raw = TRUE,
   rename = "compact",
   freq = NULL,
@@ -19,8 +18,6 @@ get_series(
 \item{ser_id_vec}{vector of series names (character)}
 
 \item{format}{"wide" (default) or "long" or "xts"}
-
-\item{expand}{DEPRECATED, USE raw INSTEAD "true" (default) or "raw" ("true" downloads formatted data, "raw" downloads raw units)}
 
 \item{raw}{TRUE (default) or FALSE (TRUE downloads raw data, FALSE downloads scaled and rounded data)}
 
@@ -62,5 +59,7 @@ get_series(c("VISNS@HI.M"), format = "xts", descr = TRUE)
 get_series(c("E_NF_HI", "ECT_HI", "E_TU_HAW"), freq = "M")
 get_series(c("E_NF__HI_M", "ECT__HI_M", "VAP__HI_W"))
 get_series(c("E_NF_AT_HI_M", "ECT_AT_HI_M", "VAP_AT_HI_W"))
+get_series(c("E_NF_HI5", "ECT__HIALL", "E_TU@CNTY"), freq = "M")
+get_series(c("E_NF_HI5 , ECT__HIALL  E_TU@CNTY", "VAP_HAW ; ECT_HON"), freq = "M")
 \dontshow{\}) # examplesIf}
 }

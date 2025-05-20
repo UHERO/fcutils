@@ -7,7 +7,6 @@
 get_series_exp(
   exp_id,
   format = "wide",
-  expand,
   raw = TRUE,
   rename = "compact",
   descr = FALSE,
@@ -19,8 +18,6 @@ get_series_exp(
 \item{exp_id}{export id (character or numeric)}
 
 \item{format}{"wide" (default) or "long" or "xts"}
-
-\item{expand}{DEPRECATED, USE raw INSTEAD "true" or "raw" ("true" downloads formatted data, "raw" downloads raw units)}
 
 \item{raw}{TRUE (default) or FALSE (TRUE downloads raw data, FALSE downloads scaled and rounded data)}
 

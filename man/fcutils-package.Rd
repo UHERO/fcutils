@@ -16,7 +16,7 @@ Useful links:
 
 }
 \author{
-\strong{Maintainer}: Peter Fuleky \email{fuleky@hawaii.edu} (\href{https://orcid.org/YOUR-ORCID-ID}{ORCID})
+\strong{Maintainer}: Peter Fuleky \email{fuleky@hawaii.edu} (\href{https://orcid.org/0000-0002-4094-2823}{ORCID})
 
 }
 \keyword{internal}
