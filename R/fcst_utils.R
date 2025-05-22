@@ -1448,6 +1448,7 @@ ytd_cum <- function(x, avg = TRUE) {
   return(ans)
 }
 
+
 #' Year to date growth rate
 #'
 #' @param x a ts-boxable object
@@ -1473,6 +1474,86 @@ ytd_gr <- function(x) {
   # reclass the output to match the input
   ans <- if (attr(x_mod, "was_wide")) tsbox::ts_wide(x_mod_ytd_gr) else
     tsbox::copy_class(x_mod_ytd_gr, x)
+
+  return(ans)
+}
+
+
+#' Fiscal year to date sum or average
+#'
+#' @param x a ts-boxable object
+#' @param avg if TRUE (default), return year to date average, if FALSE, return year to date sum
+#'
+#' @return object of the same type as the input containing year to date sum or average
+#' @export
+#' 
+#' @details this function operates similarly to ytd_cum() but assumes that the 
+#' fiscal year starts in July and accumulates the values from that month onward.
+#'
+#' @examples
+#' monthly_data_example |>
+#'   fytd_cum()
+#' quarterly_data_example |>
+#'   fytd_cum()
+#' monthly_data_example |>
+#'   tsbox::ts_long() |>
+#'   tsbox::ts_pick("VISNS_HI") |>
+#'   tsbox::ts_xts() |>
+#'   fytd_cum(avg = FALSE) |>
+#'   tsbox::ts_plot()
+fytd_cum <- function(x, avg = TRUE) {
+  # convert to long format and return additional details
+  x_mod <- conv_long(x, ser_info = TRUE)
+
+  x_mod_fytd <- x_mod %>%
+    tsbox::ts_lag("6 months") %>% 
+    dplyr::mutate(yr = lubridate::floor_date(.data$time, "year")) %>%
+    dplyr::group_by(.data$id, .data$yr) %>%
+    dplyr::mutate(
+      value = if (avg) dplyr::cummean(.data$value) else cumsum(.data$value)
+    ) %>%
+    dplyr::ungroup() %>%
+    dplyr::select(!"yr") %>% 
+    tsbox::ts_lag("-6 months")
+
+  # reclass the output to match the input
+  ans <- if (attr(x_mod, "was_wide")) tsbox::ts_wide(x_mod_fytd) else
+    tsbox::copy_class(x_mod_fytd, x)
+
+  return(ans)
+}
+
+
+#' Fiscal year to date growth rate
+#'
+#' @param x a ts-boxable object
+#'
+#' @return object of the same type as the input containing year to date growth rate
+#' @export
+#'
+#' @details this function operates similarly to ytd_gr() but assumes that the 
+#' fiscal year starts in July and accumulates the values from that month onward.
+#'
+#' @examples
+#' quarterly_data_example |>
+#'   fytd_gr()
+#' monthly_data_example |>
+#'   tsbox::ts_long() |>
+#'   tsbox::ts_pick("VISNS_HI") |>
+#'   tsbox::ts_xts() |>
+#'   fytd_gr() |>
+#'   tail()
+fytd_gr <- function(x) {
+  # convert to long format and return additional details
+  x_mod <- conv_long(x, ser_info = TRUE)
+
+  x_mod_fytd_gr <- x_mod %>%
+    fytd_cum() %>%
+    tsbox::ts_pcy()
+
+  # reclass the output to match the input
+  ans <- if (attr(x_mod, "was_wide")) tsbox::ts_wide(x_mod_fytd_gr) else
+    tsbox::copy_class(x_mod_fytd_gr, x)
 
   return(ans)
 }
