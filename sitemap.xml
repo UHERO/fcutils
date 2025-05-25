@@ -7,6 +7,7 @@
 <url><loc>https://uhero.github.io/fcutils/reference/AtoQ.html</loc></url>
 <url><loc>https://uhero.github.io/fcutils/reference/QtoA.html</loc></url>
 <url><loc>https://uhero.github.io/fcutils/reference/addf.html</loc></url>
+<url><loc>https://uhero.github.io/fcutils/reference/aggr.html</loc></url>
 <url><loc>https://uhero.github.io/fcutils/reference/bnk_end.html</loc></url>
 <url><loc>https://uhero.github.io/fcutils/reference/bnk_start.html</loc></url>
 <url><loc>https://uhero.github.io/fcutils/reference/cagr.html</loc></url>
@@ -62,11 +63,11 @@
 <url><loc>https://uhero.github.io/fcutils/reference/set_tsrange.html</loc></url>
 <url><loc>https://uhero.github.io/fcutils/reference/set_udaman_token.html</loc></url>
 <url><loc>https://uhero.github.io/fcutils/reference/span.html</loc></url>
+<url><loc>https://uhero.github.io/fcutils/reference/sum_pattern.html</loc></url>
 <url><loc>https://uhero.github.io/fcutils/reference/to_ymd.html</loc></url>
-<url><loc>https://uhero.github.io/fcutils/reference/uhcolors.html</loc></url>
-<url><loc>https://uhero.github.io/fcutils/reference/uhero_colors.html</loc></url>
-<url><loc>https://uhero.github.io/fcutils/reference/uhero_colors_50.html</loc></url>
-<url><loc>https://uhero.github.io/fcutils/reference/uhero_colors_light.html</loc></url>
+<url><loc>https://uhero.github.io/fcutils/reference/uh_colors.html</loc></url>
+<url><loc>https://uhero.github.io/fcutils/reference/uh_colors_50.html</loc></url>
+<url><loc>https://uhero.github.io/fcutils/reference/uh_colors_light.html</loc></url>
 <url><loc>https://uhero.github.io/fcutils/reference/update_eqs.html</loc></url>
 <url><loc>https://uhero.github.io/fcutils/reference/write_tsd.html</loc></url>
 <url><loc>https://uhero.github.io/fcutils/reference/ymd_to_yQq.html</loc></url>

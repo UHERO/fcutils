@@ -66,20 +66,20 @@ to be a long tbl.</p>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="va">quarterly_data_example</span> <span class="op">|&gt;</span></span></span>
 <span class="r-in"><span>  <span class="fu"><a href="conv_tslist.html">conv_tslist</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span></span></span>
 <span class="r-in"><span>  <span class="fu">conv_wide</span><span class="op">(</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 102 × 31</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 109 × 31</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    time       E_NF_HI ECT_HI EMN_HI EWT_HI ERT_HI E_TRADE_HI E_TU_HI ETWTANS_HI</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;date&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 1</span> 1998-01-01    531.   23.3   15.9   15.9   65.2       81.0    27.9       10  </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 2</span> 1998-04-01    531.   23.0   15.8   15.9   64.6       80.6    27.9       10  </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 3</span> 1998-07-01    533.   23     15.8   15.9   64.2       80.1    27.6       10.1</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 4</span> 1998-10-01    531.   23.0   15.8   16     64.2       80.2    27.3       10  </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 5</span> 1999-01-01    530.   22.8   15.8   15.8   64.1       79.8    27.0        9.7</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 6</span> 1999-04-01    533.   22.9   15.9   15.8   64.8       80.6    27.4       10  </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 7</span> 1999-07-01    537.   22.9   16.1   15.8   65.1       81.0    27.6       10.2</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 8</span> 1999-10-01    541.   23.3   16.3   16.0   65.9       82.0    27.9       10.3</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 9</span> 2000-01-01    544.   24.3   16.3   16.2   66.0       82.3    28.0       10.4</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">10</span> 2000-04-01    551.   25     16.4   16.2   66.0       82.3    28.1       10.6</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># ℹ 92 more rows</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 1</span> 1998-01-01    531.   23.3   15.9   15.9   65.2       81.0    27.9       9.97</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 2</span> 1998-04-01    531.   23.0   15.8   15.9   64.6       80.6    27.9      10.0 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 3</span> 1998-07-01    533.   23.0   15.8   15.9   64.2       80.1    27.6      10.1 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 4</span> 1998-10-01    531.   23.1   15.8   16     64.2       80.2    27.3      10   </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 5</span> 1999-01-01    530.   22.8   15.8   15.8   64.1       79.8    27.0       9.73</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 6</span> 1999-04-01    533.   22.9   15.9   15.8   64.8       80.6    27.4       9.97</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 7</span> 1999-07-01    537.   22.9   16.1   15.8   65.1       81.0    27.6      10.2 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 8</span> 1999-10-01    541.   23.3   16.3   16.0   65.9       82.0    27.9      10.3 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 9</span> 2000-01-01    544.   24.3   16.3   16.2   66.0       82.3    28.0      10.4 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">10</span> 2000-04-01    551.   25.0   16.4   16.2   66.0       82.3    28.1      10.6 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># ℹ 99 more rows</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># ℹ 22 more variables: ETWNS_HI &lt;dbl&gt;, EUT_HI &lt;dbl&gt;, EIF_HI &lt;dbl&gt;,</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;">#   EFI_HI &lt;dbl&gt;, E_FIR_HI &lt;dbl&gt;, ERE_HI &lt;dbl&gt;, EPS_HI &lt;dbl&gt;, E_PBS_HI &lt;dbl&gt;,</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;">#   E_ELSE_HI &lt;dbl&gt;, EMA_HI &lt;dbl&gt;, EAD_HI &lt;dbl&gt;, EED_HI &lt;dbl&gt;, EHC_HI &lt;dbl&gt;,</span></span>
@@ -88,20 +88,20 @@ to be a long tbl.</p>
 <span class="r-in"><span><span class="va">quarterly_data_example</span> <span class="op">|&gt;</span></span></span>
 <span class="r-in"><span>  <span class="fu"><a href="conv_xts.html">conv_xts</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span></span></span>
 <span class="r-in"><span>  <span class="fu">conv_wide</span><span class="op">(</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 102 × 31</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 109 × 31</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    time       E_NF_HI ECT_HI EMN_HI EWT_HI ERT_HI E_TRADE_HI E_TU_HI ETWTANS_HI</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;date&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 1</span> 1998-01-01    531.   23.3   15.9   15.9   65.2       81.0    27.9       10  </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 2</span> 1998-04-01    531.   23.0   15.8   15.9   64.6       80.6    27.9       10  </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 3</span> 1998-07-01    533.   23     15.8   15.9   64.2       80.1    27.6       10.1</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 4</span> 1998-10-01    531.   23.0   15.8   16     64.2       80.2    27.3       10  </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 5</span> 1999-01-01    530.   22.8   15.8   15.8   64.1       79.8    27.0        9.7</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 6</span> 1999-04-01    533.   22.9   15.9   15.8   64.8       80.6    27.4       10  </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 7</span> 1999-07-01    537.   22.9   16.1   15.8   65.1       81.0    27.6       10.2</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 8</span> 1999-10-01    541.   23.3   16.3   16.0   65.9       82.0    27.9       10.3</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 9</span> 2000-01-01    544.   24.3   16.3   16.2   66.0       82.3    28.0       10.4</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">10</span> 2000-04-01    551.   25     16.4   16.2   66.0       82.3    28.1       10.6</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># ℹ 92 more rows</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 1</span> 1998-01-01    531.   23.3   15.9   15.9   65.2       81.0    27.9       9.97</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 2</span> 1998-04-01    531.   23.0   15.8   15.9   64.6       80.6    27.9      10.0 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 3</span> 1998-07-01    533.   23.0   15.8   15.9   64.2       80.1    27.6      10.1 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 4</span> 1998-10-01    531.   23.1   15.8   16     64.2       80.2    27.3      10   </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 5</span> 1999-01-01    530.   22.8   15.8   15.8   64.1       79.8    27.0       9.73</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 6</span> 1999-04-01    533.   22.9   15.9   15.8   64.8       80.6    27.4       9.97</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 7</span> 1999-07-01    537.   22.9   16.1   15.8   65.1       81.0    27.6      10.2 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 8</span> 1999-10-01    541.   23.3   16.3   16.0   65.9       82.0    27.9      10.3 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 9</span> 2000-01-01    544.   24.3   16.3   16.2   66.0       82.3    28.0      10.4 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">10</span> 2000-04-01    551.   25.0   16.4   16.2   66.0       82.3    28.1      10.6 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># ℹ 99 more rows</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># ℹ 22 more variables: ETWNS_HI &lt;dbl&gt;, EUT_HI &lt;dbl&gt;, EIF_HI &lt;dbl&gt;,</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;">#   EFI_HI &lt;dbl&gt;, E_FIR_HI &lt;dbl&gt;, ERE_HI &lt;dbl&gt;, EPS_HI &lt;dbl&gt;, E_PBS_HI &lt;dbl&gt;,</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;">#   E_ELSE_HI &lt;dbl&gt;, EMA_HI &lt;dbl&gt;, EAD_HI &lt;dbl&gt;, EED_HI &lt;dbl&gt;, EHC_HI &lt;dbl&gt;,</span></span>
@@ -112,7 +112,7 @@ to be a long tbl.</p>
 <span class="r-in"><span>  <span class="fu">tsbox</span><span class="fu">::</span><span class="fu"><a href="https://docs.ropensci.org/tsbox/reference/ts_pick.html" class="external-link">ts_pick</a></span><span class="op">(</span><span class="st">"E_NF_HI"</span><span class="op">)</span> <span class="op">|&gt;</span></span></span>
 <span class="r-in"><span>  <span class="fu">tsbox</span><span class="fu">::</span><span class="fu"><a href="https://docs.ropensci.org/tsbox/reference/ts_ts.html" class="external-link">ts_xts</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span></span></span>
 <span class="r-in"><span>  <span class="fu">conv_wide</span><span class="op">(</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 102 × 2</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 109 × 2</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    time       E_NF_HI</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;date&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 1</span> 1998-01-01    531.</span>
@@ -125,7 +125,7 @@ to be a long tbl.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 8</span> 1999-10-01    541.</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 9</span> 2000-01-01    544.</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">10</span> 2000-04-01    551.</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># ℹ 92 more rows</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># ℹ 99 more rows</span></span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

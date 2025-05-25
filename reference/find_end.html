@@ -62,21 +62,21 @@
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="va">quarterly_data_example</span> <span class="op">|&gt;</span></span></span>
 <span class="r-in"><span>  <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>E_NF_HI <span class="op">=</span> <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/if_else.html" class="external-link">if_else</a></span><span class="op">(</span><span class="va">time</span> <span class="op">&gt;</span> <span class="st">"2022-01-01"</span>, <span class="cn">NA_real_</span>, <span class="va">E_NF_HI</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span></span>
 <span class="r-in"><span>  <span class="fu">find_end</span><span class="op">(</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [1] "2022-01-01" "2023-04-01" "2023-04-01" "2023-04-01" "2023-04-01"</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [6] "2023-04-01" "2023-04-01" "2023-04-01" "2023-04-01" "2023-04-01"</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [11] "2023-04-01" "2023-04-01" "2023-04-01" "2023-04-01" "2023-04-01"</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [16] "2023-04-01" "2023-04-01" "2023-04-01" "2023-04-01" "2023-04-01"</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [21] "2023-04-01" "2023-04-01" "2023-04-01" "2023-04-01" "2023-04-01"</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [26] "2023-04-01" "2023-04-01" "2023-04-01" "2023-04-01" "2023-04-01"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [1] "2022-01-01" "2025-01-01" "2025-01-01" "2025-01-01" "2025-01-01"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [6] "2025-01-01" "2025-01-01" "2025-01-01" "2025-01-01" "2025-01-01"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [11] "2025-01-01" "2025-01-01" "2025-01-01" "2025-01-01" "2025-01-01"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [16] "2025-01-01" "2025-01-01" "2025-01-01" "2025-01-01" "2025-01-01"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [21] "2025-01-01" "2025-01-01" "2025-01-01" "2025-01-01" "2025-01-01"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [26] "2025-01-01" "2025-01-01" "2025-01-01" "2025-01-01" "2025-01-01"</span>
 <span class="r-in"><span><span class="va">quarterly_data_example</span> <span class="op">|&gt;</span></span></span>
 <span class="r-in"><span>  <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>E_NF_HI <span class="op">=</span> <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/if_else.html" class="external-link">if_else</a></span><span class="op">(</span><span class="va">time</span> <span class="op">&gt;</span> <span class="st">"2022-01-01"</span>, <span class="cn">NA_real_</span>, <span class="va">E_NF_HI</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span></span>
 <span class="r-in"><span>  <span class="fu">find_end</span><span class="op">(</span><span class="cn">TRUE</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [1] "2022-03-31" "2023-06-30" "2023-06-30" "2023-06-30" "2023-06-30"</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [6] "2023-06-30" "2023-06-30" "2023-06-30" "2023-06-30" "2023-06-30"</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [11] "2023-06-30" "2023-06-30" "2023-06-30" "2023-06-30" "2023-06-30"</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [16] "2023-06-30" "2023-06-30" "2023-06-30" "2023-06-30" "2023-06-30"</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [21] "2023-06-30" "2023-06-30" "2023-06-30" "2023-06-30" "2023-06-30"</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [26] "2023-06-30" "2023-06-30" "2023-06-30" "2023-06-30" "2023-06-30"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [1] "2022-03-31" "2025-03-31" "2025-03-31" "2025-03-31" "2025-03-31"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [6] "2025-03-31" "2025-03-31" "2025-03-31" "2025-03-31" "2025-03-31"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [11] "2025-03-31" "2025-03-31" "2025-03-31" "2025-03-31" "2025-03-31"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [16] "2025-03-31" "2025-03-31" "2025-03-31" "2025-03-31" "2025-03-31"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [21] "2025-03-31" "2025-03-31" "2025-03-31" "2025-03-31" "2025-03-31"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [26] "2025-03-31" "2025-03-31" "2025-03-31" "2025-03-31" "2025-03-31"</span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

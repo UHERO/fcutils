@@ -49,7 +49,10 @@
 
 
 <dt id="arg-conv-type">conv_type<a class="anchor" aria-label="anchor" href="#arg-conv-type"></a></dt>
-<dd><p>match the quarterly value via "first", "last", "sum", "mean"</p></dd>
+<dd><p>match the interpolated value via "first", "last", "sum",
+"mean". If conv_type == "uhero" then the name of the time series x is
+compared to the internal variable <code>sum_pattern</code>. For matching series names
+the interpolation is based on "sum"; for all others it is based on "mean."</p></dd>
 
 
 <dt id="arg-target-freq">target_freq<a class="anchor" aria-label="anchor" href="#arg-target-freq"></a></dt>
@@ -74,20 +77,20 @@ than the time-span of the low frequency series. NA values are not allowed.</p>
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="va">quarterly_data_example</span> <span class="op">|&gt;</span></span></span>
 <span class="r-in"><span>  <span class="fu">disagg</span><span class="op">(</span>conv_type <span class="op">=</span> <span class="st">"mean"</span>, target_freq <span class="op">=</span> <span class="st">"month"</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 306 × 31</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 327 × 31</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    time       E_NF_HI ECT_HI EMN_HI EWT_HI ERT_HI E_TRADE_HI E_TU_HI ETWTANS_HI</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;date&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 1</span> 1998-01-01    530.   23.3   15.9   15.9   65.3       81.1    27.9      10.0 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 2</span> 1998-02-01    530.   23.3   15.9   15.9   65.2       81.1    27.9      10.0 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 3</span> 1998-03-01    531.   23.2   15.9   15.9   65.0       80.9    27.9       9.99</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 4</span> 1998-04-01    531.   23.1   15.8   15.9   64.8       80.7    27.9       9.98</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 5</span> 1998-05-01    531.   23.0   15.7   15.9   64.6       80.6    27.9       9.99</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 6</span> 1998-06-01    532.   22.9   15.7   15.9   64.4       80.4    27.8      10.0 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 1</span> 1998-01-01    530.   23.3   15.9   15.8   65.3       81.1    27.9       9.96</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 2</span> 1998-02-01    530.   23.3   15.9   15.9   65.2       81.0    27.9       9.96</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 3</span> 1998-03-01    531.   23.2   15.9   15.9   65.0       80.9    27.9       9.98</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 4</span> 1998-04-01    531.   23.1   15.8   15.9   64.8       80.7    27.9      10.0 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 5</span> 1998-05-01    531.   23.0   15.7   15.9   64.6       80.6    27.9      10.0 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 6</span> 1998-06-01    532.   22.9   15.7   15.9   64.5       80.4    27.8      10.1 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 7</span> 1998-07-01    532.   23.0   15.8   15.9   64.3       80.2    27.7      10.1 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 8</span> 1998-08-01    533.   23.0   15.8   15.9   64.2       80.1    27.6      10.1 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 9</span> 1998-09-01    533.   23.0   15.8   15.9   64.2       80.1    27.5      10.1 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">10</span> 1998-10-01    532.   23.1   15.8   16.0   64.2       80.3    27.4      10.1 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># ℹ 296 more rows</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># ℹ 317 more rows</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># ℹ 22 more variables: ETWNS_HI &lt;dbl&gt;, EUT_HI &lt;dbl&gt;, EIF_HI &lt;dbl&gt;,</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;">#   EFI_HI &lt;dbl&gt;, E_FIR_HI &lt;dbl&gt;, ERE_HI &lt;dbl&gt;, EPS_HI &lt;dbl&gt;, E_PBS_HI &lt;dbl&gt;,</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;">#   E_ELSE_HI &lt;dbl&gt;, EMA_HI &lt;dbl&gt;, EAD_HI &lt;dbl&gt;, EED_HI &lt;dbl&gt;, EHC_HI &lt;dbl&gt;,</span></span>
@@ -98,20 +101,20 @@ than the time-span of the low frequency series. NA values are not allowed.</p>
 <span class="r-in"><span>  <span class="fu">tsbox</span><span class="fu">::</span><span class="fu"><a href="https://docs.ropensci.org/tsbox/reference/ts_long.html" class="external-link">ts_long</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span></span></span>
 <span class="r-in"><span>  <span class="fu">tsbox</span><span class="fu">::</span><span class="fu"><a href="https://docs.ropensci.org/tsbox/reference/ts_frequency.html" class="external-link">ts_frequency</a></span><span class="op">(</span>to <span class="op">=</span> <span class="st">"quarter"</span>, aggregate <span class="op">=</span> <span class="st">"mean"</span><span class="op">)</span> <span class="op">|&gt;</span></span></span>
 <span class="r-in"><span>  <span class="fu">tsbox</span><span class="fu">::</span><span class="fu"><a href="https://docs.ropensci.org/tsbox/reference/ts_long.html" class="external-link">ts_wide</a></span><span class="op">(</span><span class="op">)</span> <span class="co"># this matches original data</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 102 × 31</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 109 × 31</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    time       E_NF_HI ECT_HI EMN_HI EWT_HI ERT_HI E_TRADE_HI E_TU_HI ETWTANS_HI</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;date&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 1</span> 1998-01-01    531.   23.3   15.9   15.9   65.2       81.0    27.9      10.0 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 1</span> 1998-01-01    531.   23.3   15.9   15.9   65.2       81.0    27.9       9.97</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 2</span> 1998-04-01    531.   23.0   15.8   15.9   64.6       80.6    27.9      10.0 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 3</span> 1998-07-01    533.   23.0   15.8   15.9   64.2       80.1    27.6      10.1 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 4</span> 1998-10-01    531.   23.1   15.8   16.0   64.2       80.2    27.3      10.0 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 5</span> 1999-01-01    530.   22.8   15.8   15.8   64.1       79.8    27.0       9.70</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 6</span> 1999-04-01    533.   22.9   15.9   15.8   64.8       80.6    27.4      10.0 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 5</span> 1999-01-01    530.   22.8   15.8   15.8   64.1       79.8    27.0       9.73</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 6</span> 1999-04-01    533.   22.9   15.9   15.8   64.8       80.6    27.4       9.97</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 7</span> 1999-07-01    537.   22.9   16.1   15.8   65.1       81.0    27.6      10.2 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 8</span> 1999-10-01    541.   23.3   16.3   16.0   65.9       82.0    27.9      10.3 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 9</span> 2000-01-01    544.   24.3   16.3   16.2   66.0       82.3    28.0      10.4 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">10</span> 2000-04-01    551.   25.0   16.4   16.2   66.0       82.3    28.1      10.6 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># ℹ 92 more rows</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># ℹ 99 more rows</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># ℹ 22 more variables: ETWNS_HI &lt;dbl&gt;, EUT_HI &lt;dbl&gt;, EIF_HI &lt;dbl&gt;,</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;">#   EFI_HI &lt;dbl&gt;, E_FIR_HI &lt;dbl&gt;, ERE_HI &lt;dbl&gt;, EPS_HI &lt;dbl&gt;, E_PBS_HI &lt;dbl&gt;,</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;">#   E_ELSE_HI &lt;dbl&gt;, EMA_HI &lt;dbl&gt;, EAD_HI &lt;dbl&gt;, EED_HI &lt;dbl&gt;, EHC_HI &lt;dbl&gt;,</span></span>
@@ -156,79 +159,82 @@ than the time-span of the low frequency series. NA values are not allowed.</p>
 <span class="r-in"><span>    <span class="fu">tsbox</span><span class="fu">::</span><span class="fu"><a href="https://docs.ropensci.org/tsbox/reference/ts_ts.html" class="external-link">ts_tslist</a></span><span class="op">(</span><span class="op">)</span>,</span></span>
 <span class="r-in"><span>  <span class="va">monthly_data_example</span> <span class="op">|&gt;</span></span></span>
 <span class="r-in"><span>    <span class="fu">tsbox</span><span class="fu">::</span><span class="fu"><a href="https://docs.ropensci.org/tsbox/reference/ts_long.html" class="external-link">ts_long</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span></span></span>
+<span class="r-in"><span>    <span class="fu">tsbox</span><span class="fu">::</span><span class="fu"><a href="https://docs.ropensci.org/tsbox/reference/ts_pick.html" class="external-link">ts_pick</a></span><span class="op">(</span><span class="st">"VISNS_HI"</span>, <span class="st">"VAPNS_HI"</span><span class="op">)</span> <span class="op">|&gt;</span></span></span>
+<span class="r-in"><span>    <span class="fu">tsbox</span><span class="fu">::</span><span class="fu"><a href="https://docs.ropensci.org/tsbox/reference/ts_long.html" class="external-link">ts_long</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span></span></span>
 <span class="r-in"><span>    <span class="fu">tsbox</span><span class="fu">::</span><span class="fu"><a href="https://docs.ropensci.org/tsbox/reference/ts_ts.html" class="external-link">ts_tslist</a></span><span class="op">(</span><span class="op">)</span>,</span></span>
 <span class="r-in"><span>  <span class="op">~</span> <span class="fu">disagg</span><span class="op">(</span><span class="va">.x</span>, conv_type <span class="op">=</span> <span class="st">"mean"</span>, target_freq <span class="op">=</span> <span class="st">"month"</span>, pattern <span class="op">=</span> <span class="va">.y</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Additional [id] column(s): 'id'</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $E_NF_HI</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>           Jan      Feb      Mar      Apr      May      Jun      Jul      Aug</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2005 593.5738 594.4013 596.6349 598.5087 600.9826 603.5687 605.9319 606.9707</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2006 610.2488 611.7480 613.7932 615.2925 616.7793 618.8683 620.6741 621.4428</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2007 623.4465 624.2581 625.3154 624.9927 625.1417 625.8556 626.4415 626.8794</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2008 627.7850 627.9027 627.9523 626.5658 625.4017 623.8725 621.9083 619.5028</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2009 603.9465 600.9747 598.5889 596.4144 594.2369 592.4587 590.9630 589.1515</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2010 585.5052 585.9942 586.8906 587.0583 587.2063 587.4554 587.5331 587.7397</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2011 592.3448 592.2925 592.3527 591.7669 591.8813 593.0118 594.7446 596.0781</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2012 597.3096 597.4648 599.9756 603.4705 606.3016 608.7080 610.1740 611.4964</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2013 613.4293 613.5943 615.4564 617.4352 619.1189 620.6259 621.2486 621.9748</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2014 625.0215 624.7376 625.6009 626.1336 626.9342 628.2322 629.3842 629.9857</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2015 633.5051 634.1827 635.5722 635.6964 636.8377 638.4359 640.1714 641.2438</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2016 643.1674 642.6942 643.4384 643.7354 645.1859 647.6087 650.3633 651.4802</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2017 652.4007 653.1938 654.6655 655.1586 655.3890 655.5624 655.1007 654.4935</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2018 656.9356 656.8948 657.6496 657.2117 657.2849 657.8234 658.0329 657.9307</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2019 658.6742 657.4281 657.4177 656.3622 656.3630 657.5548 659.0891 659.6671</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2020 661.5288 661.6504 659.6409                                             </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2005 593.5753 594.4022 596.6407 598.5051 600.9794 603.5696 605.9370 606.9738</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2006 610.2481 611.7445 613.7957 615.2965 616.7820 618.8737 620.6766 621.4406</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2007 623.4409 624.2504 625.3155 624.9905 625.1412 625.8599 626.4472 626.8867</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2008 627.7795 627.8961 627.9520 626.5636 625.4027 623.8746 621.9084 619.5016</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2009 603.9452 600.9723 598.5895 596.4164 594.2373 592.4586 590.9630 589.1497</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2010 585.5025 585.9885 586.8910 587.0610 587.2102 587.4611 587.5378 587.7391</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2011 592.3479 592.2961 592.3595 591.7721 591.8837 593.0158 594.7481 596.0777</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2012 597.3045 597.4582 599.9745 603.4662 606.2969 608.7082 610.1792 611.5022</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2013 613.4237 613.5908 615.4623 617.4404 619.1242 620.6341 621.2539 621.9768</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2014 625.0227 624.7347 625.6039 626.1358 626.9365 628.2387 629.3912 629.9887</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2015 633.5067 634.1812 635.5755 635.6895 636.8314 638.4349 640.1771 641.2485</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2016 643.1670 642.6904 643.4401 643.7322 645.1837 647.6114 650.3680 651.4812</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2017 652.4014 653.1906 654.6685 655.1579 655.3883 655.5678 655.1127 654.5016</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2018 656.9303 656.8859 657.6496 657.2103 657.2868 657.8324 658.0446 657.9347</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2019 658.7017 657.5767 657.8038 657.0752 657.0702 657.9244 658.7797 658.9804</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2020 661.2452 661.3586 659.3207                                             </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>           Sep      Oct      Nov      Dec</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2005 606.8674 607.0725 607.3688 608.9287</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2006 621.1831 621.1600 621.4646 622.7753</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2007 626.2391 626.5553 626.8539 627.7109</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2008 616.0989 613.5885 610.4772 607.6144</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2009 586.9755 585.6734 584.8428 585.2338</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2010 588.2172 590.2064 591.3167 592.4368</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2011 596.9973 598.6100 598.9476 599.0824</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2012 612.1396 613.8338 614.5191 614.7871</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2013 622.3866 624.2312 625.0314 625.7374</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2014 630.1201 631.0176 631.6236 633.1188</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2015 641.9447 643.3814 643.7983 644.4003</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2016 651.1566 650.5726 650.2999 651.5574</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2017 654.2659 655.5130 656.2840 657.3730</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2018 658.0664 659.6086 660.1244 660.3870</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2019 659.2638 659.9357 660.3863 661.5980</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2005 606.8640 607.0749 607.3696 608.9341</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2006 621.1745 621.1578 621.4643 622.7804</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2007 626.2374 626.5574 626.8558 627.7154</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2008 616.0902 613.5874 610.4775 607.6185</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2009 586.9696 585.6750 584.8459 585.2405</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2010 588.2096 590.2043 591.3154 592.4418</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2011 596.9899 598.6042 598.9402 599.0816</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2012 612.1357 613.8294 614.5130 614.7855</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2013 622.3811 624.2333 625.0341 625.7447</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2014 630.1162 631.0175 631.6227 633.1265</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2015 641.9430 643.3818 643.7960 644.4056</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2016 651.1506 650.5703 650.2965 651.5625</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2017 654.2668 655.5160 656.2851 657.3788</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2018 658.0589 659.5995 660.1195 660.4008</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2019 658.5008 659.4221 660.0339 661.3305</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 2020                                    </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $ECT_HI</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>           Jan      Feb      Mar      Apr      May      Jun      Jul      Aug</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2005 32.07848 32.25652 32.74500 33.27132 33.80708 34.26160 34.55856 34.77317</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2006 35.76257 35.90999 36.14744 36.27870 36.50599 36.86532 37.25461 37.60711</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2007 38.98010 39.02962 39.29028 39.47952 39.69333 39.92715 40.10530 40.21079</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2008 40.46946 40.29747 40.10307 39.60855 39.27580 38.98565 38.72726 38.35418</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2009 35.34360 34.58832 33.95808 33.30886 32.73609 32.23505 31.81491 31.35012</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2010 30.40565 30.37988 30.32447 30.00358 29.77615 29.59027 29.36000 29.25239</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2011 29.42938 29.28739 29.39323 29.56006 29.74443 29.91551 30.00137 29.98386</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2012 29.99512 29.99538 30.06951 29.97542 30.02093 30.12366 30.24137 30.39056</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2013 31.53005 31.66100 31.93896 32.07899 32.19701 32.23401 32.09729 32.02115</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2014 32.50283 32.50769 32.63948 32.62248 32.76874 33.00878 33.28123 33.48115</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2015 33.95972 33.99017 34.38011 34.80216 35.30036 35.73749 36.06430 36.46832</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2016 39.27063 39.40486 39.52451 39.35133 39.36444 39.45423 39.54653 39.39206</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2017 38.03293 37.84974 37.84733 37.69117 37.59469 37.51414 37.36042 37.14337</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2018 36.94066 37.00984 37.25950 37.34862 37.52463 37.68675 37.79298 37.78618</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2019 37.70942 37.53035 37.62023 37.55973 37.60214 37.63813 37.60210 37.52640</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2020 37.65576 37.52032 37.20392                                             </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2005 32.07939 32.25980 32.74226 33.27636 33.80971 34.25911 34.55435 34.77252</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2006 35.76071 35.90913 36.14147 36.27730 36.50683 36.86308 37.25220 37.60856</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2007 38.97614 39.03035 39.28600 39.48329 39.69815 39.92639 40.09850 40.20406</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2008 40.47124 40.30157 40.09897 39.60811 39.27129 38.97909 38.72151 38.35185</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2009 35.34426 34.59120 33.95789 33.31188 32.73949 32.23654 31.81130 31.34772</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2010 30.40860 30.38553 30.32349 30.00562 29.77579 29.58631 29.35820 29.25623</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2011 29.42473 29.28411 29.38747 29.56309 29.74884 29.91639 29.99963 29.98473</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2012 29.99516 29.99903 30.06822 29.98023 30.02411 30.12423 30.24166 30.39323</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2013 31.52913 31.66182 31.93221 32.07844 32.19504 32.22785 32.09164 32.01890</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2014 32.49913 32.50743 32.63269 32.62143 32.76577 33.00192 33.27336 33.47812</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2015 33.96134 33.99657 34.37921 34.80845 35.30204 35.73414 36.05937 36.46803</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2016 39.27063 39.40901 39.52274 39.35618 39.36581 39.45101 39.54353 39.39522</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2017 38.03677 37.85791 37.84489 37.69031 37.59041 37.50505 37.35237 37.14242</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2018 36.94906 37.02259 37.26271 37.35598 37.52775 37.68539 37.79041 37.78568</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2019 37.84267 37.68104 37.69345 37.49513 37.48148 37.55392 37.65149 37.63539</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2020 37.53637 37.41453 37.12507                                             </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>           Sep      Oct      Nov      Dec</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2005 34.88828 35.15174 35.33938 35.61889</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2006 37.93829 38.47807 38.80098 39.03094</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2007 40.22391 40.38854 40.45281 40.53866</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2008 37.81856 37.38594 36.77444 36.14962</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2009 30.85497 30.52272 30.29341 30.32387</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2010 29.28760 29.65548 29.74161 29.73291</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2011 29.89477 29.87531 29.84527 29.94941</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2012 30.53807 30.92900 31.19075 31.45025</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2013 31.97156 32.19309 32.30765 32.48926</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2014 33.64762 33.98057 34.08603 34.17340</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2015 36.99738 37.84750 38.45060 39.02190</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2016 39.05141 38.69207 38.34810 38.21983</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2017 36.91621 36.86689 36.80714 36.93597</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2018 37.79084 37.95634 37.95976 37.96390</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2019 37.46150 37.68942 37.73487 37.85571</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2005 34.89774 35.15780 35.34613 35.61685</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2006 37.94654 38.47736 38.79770 39.02154</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2007 40.22516 40.38576 40.45136 40.53393</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2008 37.82619 37.38859 36.77868 36.14870</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2009 30.85881 30.52233 30.29499 30.32092</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2010 29.29910 29.66108 29.74746 29.72993</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2011 29.90082 29.87777 29.84879 29.94689</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2012 30.54841 30.93251 31.19283 31.44606</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2013 31.97829 32.19461 32.30957 32.48306</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2014 33.65217 33.97910 34.08670 34.16751</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2015 37.00408 37.84781 38.45241 39.01576</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2016 39.06186 38.69731 38.35490 38.21878</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2017 36.92442 36.87081 36.81345 36.93537</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2018 37.78565 37.92761 37.94935 38.00233</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2019 37.55195 37.66041 37.63611 37.71717</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 2020                                    </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 </code></pre></div>

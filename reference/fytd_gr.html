@@ -62,20 +62,20 @@ fiscal year starts in July and accumulates the values from that month onward.</p
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="va">quarterly_data_example</span> <span class="op">|&gt;</span></span></span>
 <span class="r-in"><span>  <span class="fu">fytd_gr</span><span class="op">(</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 102 × 31</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 109 × 31</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    time       E_NF_HI ECT_HI  EMN_HI EWT_HI ERT_HI E_TRADE_HI E_TU_HI ETWTANS_HI</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;date&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 1</span> 1998-01-01  <span style="color: #BB0000;">NA</span>     <span style="color: #BB0000;">NA</span>     <span style="color: #BB0000;">NA</span>      <span style="color: #BB0000;">NA</span>     <span style="color: #BB0000;">NA</span>         <span style="color: #BB0000;">NA</span>      <span style="color: #BB0000;">NA</span>         <span style="color: #BB0000;">NA</span>    </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 2</span> 1998-04-01  <span style="color: #BB0000;">NA</span>     <span style="color: #BB0000;">NA</span>     <span style="color: #BB0000;">NA</span>      <span style="color: #BB0000;">NA</span>     <span style="color: #BB0000;">NA</span>         <span style="color: #BB0000;">NA</span>      <span style="color: #BB0000;">NA</span>         <span style="color: #BB0000;">NA</span>    </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 3</span> 1998-07-01  <span style="color: #BB0000;">NA</span>     <span style="color: #BB0000;">NA</span>     <span style="color: #BB0000;">NA</span>      <span style="color: #BB0000;">NA</span>     <span style="color: #BB0000;">NA</span>         <span style="color: #BB0000;">NA</span>      <span style="color: #BB0000;">NA</span>         <span style="color: #BB0000;">NA</span>    </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 4</span> 1998-10-01  <span style="color: #BB0000;">NA</span>     <span style="color: #BB0000;">NA</span>     <span style="color: #BB0000;">NA</span>      <span style="color: #BB0000;">NA</span>     <span style="color: #BB0000;">NA</span>         <span style="color: #BB0000;">NA</span>      <span style="color: #BB0000;">NA</span>         <span style="color: #BB0000;">NA</span>    </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 5</span> 1999-01-01   0.136 -<span style="color: #BB0000;">1.35</span>  -<span style="color: #BB0000;">0.692</span>   0.126 -<span style="color: #BB0000;">1.54</span>      -<span style="color: #BB0000;">1.19</span>   -<span style="color: #BB0000;">2.06</span>      -<span style="color: #BB0000;">0.667</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 6</span> 1999-04-01   0.163 -<span style="color: #BB0000;">0.865</span> -<span style="color: #BB0000;">0.047</span><span style="color: #BB0000; text-decoration: underline;">4</span> -<span style="color: #BB0000;">0.157</span> -<span style="color: #BB0000;">0.886</span>     -<span style="color: #BB0000;">0.730</span>  -<span style="color: #BB0000;">1.90</span>      -<span style="color: #BB0000;">0.500</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 7</span> 1999-07-01   0.871 -<span style="color: #BB0000;">0.304</span>  2.09   -<span style="color: #BB0000;">0.440</span>  1.40       1.02   -<span style="color: #BB0000;">0.145</span>      0.990</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 8</span> 1999-10-01   1.36   0.413  2.60   -<span style="color: #BB0000;">0.125</span>  2.05       1.60    1.00       1.99 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 9</span> 2000-01-01   1.84   2.41   2.79    0.881  2.38       2.08    1.81       3.69 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">10</span> 2000-04-01   2.22   4.14   2.88    1.29   2.26       2.07    1.99       4.27 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># ℹ 92 more rows</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 5</span> 1999-01-01   0.136 -<span style="color: #BB0000;">1.33</span>  -<span style="color: #BB0000;">0.694</span>   0.140 -<span style="color: #BB0000;">1.53</span>      -<span style="color: #BB0000;">1.19</span>   -<span style="color: #BB0000;">2.07</span>      -<span style="color: #BB0000;">0.111</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 6</span> 1999-04-01   0.163 -<span style="color: #BB0000;">0.864</span> -<span style="color: #BB0000;">0.049</span><span style="color: #BB0000; text-decoration: underline;">7</span> -<span style="color: #BB0000;">0.157</span> -<span style="color: #BB0000;">0.886</span>     -<span style="color: #BB0000;">0.732</span>  -<span style="color: #BB0000;">1.91</span>      -<span style="color: #BB0000;">0.417</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 7</span> 1999-07-01   0.871 -<span style="color: #BB0000;">0.319</span>  2.07   -<span style="color: #BB0000;">0.419</span>  1.40       1.03   -<span style="color: #BB0000;">0.145</span>      0.329</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 8</span> 1999-10-01   1.35   0.396  2.58   -<span style="color: #BB0000;">0.104</span>  2.05       1.61    1.00       1.49 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 9</span> 2000-01-01   1.84   2.39   2.78    0.909  2.39       2.09    1.81       3.24 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">10</span> 2000-04-01   2.22   4.13   2.88    1.31   2.27       2.07    2.00       3.93 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># ℹ 99 more rows</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># ℹ 22 more variables: ETWNS_HI &lt;dbl&gt;, EUT_HI &lt;dbl&gt;, EIF_HI &lt;dbl&gt;,</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;">#   EFI_HI &lt;dbl&gt;, E_FIR_HI &lt;dbl&gt;, ERE_HI &lt;dbl&gt;, EPS_HI &lt;dbl&gt;, E_PBS_HI &lt;dbl&gt;,</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;">#   E_ELSE_HI &lt;dbl&gt;, EMA_HI &lt;dbl&gt;, EAD_HI &lt;dbl&gt;, EED_HI &lt;dbl&gt;, EHC_HI &lt;dbl&gt;,</span></span>
@@ -87,13 +87,13 @@ fiscal year starts in July and accumulates the values from that month onward.</p
 <span class="r-in"><span>  <span class="fu">tsbox</span><span class="fu">::</span><span class="fu"><a href="https://docs.ropensci.org/tsbox/reference/ts_ts.html" class="external-link">ts_xts</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span></span></span>
 <span class="r-in"><span>  <span class="fu">fytd_gr</span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span></span></span>
 <span class="r-in"><span>  <span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">tail</a></span><span class="op">(</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>             VISNS_HI</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2023-02-01 21.809194</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2023-03-01 20.743637</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2023-04-01 18.394541</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2023-05-01 16.855794</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2023-06-01 15.732838</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2023-07-01  1.534944</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>            VISNS_HI</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2024-10-01 4.244738</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2024-11-01 4.442723</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2024-12-01 4.640796</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2025-01-01 4.517318</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2025-02-01 3.751294</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2025-03-01 3.654328</span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
