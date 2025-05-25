@@ -9,7 +9,10 @@ disagg(x, conv_type = "mean", target_freq = "quarter", pattern = NULL)
 \arguments{
 \item{x}{a tx-boxable object at a low frequency (e.g. annual or quarterly)}
 
-\item{conv_type}{match the quarterly value via "first", "last", "sum", "mean"}
+\item{conv_type}{match the interpolated value via "first", "last", "sum",
+"mean". If conv_type == "uhero" then the name of the time series x is
+compared to the internal variable \code{sum_pattern}. For matching series names
+the interpolation is based on "sum"; for all others it is based on "mean."}
 
 \item{target_freq}{target frequency "quarter" or "month"}
 
@@ -56,6 +59,8 @@ purrr::map2(
     tsbox::ts_span("2005-01-01", "2020-01-01") |>
     tsbox::ts_tslist(),
   monthly_data_example |>
+    tsbox::ts_long() |>
+    tsbox::ts_pick("VISNS_HI", "VAPNS_HI") |>
     tsbox::ts_long() |>
     tsbox::ts_tslist(),
   ~ disagg(.x, conv_type = "mean", target_freq = "month", pattern = .y)
