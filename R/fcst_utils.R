@@ -542,7 +542,6 @@ addf <- function(
 #   return("OK. Done.")
 # }
 
-
 #' Construct a series name from variable components and retrieve the series
 #'
 #' @param ser_in a variable name (character string with substituted expressions)
@@ -934,7 +933,6 @@ set_attr_tslist <- function(x) {
 #   }
 # }
 
-
 #' Check if a data frame is in wide format
 #'
 #' @param x tibble or data frame
@@ -1091,13 +1089,13 @@ conv_long <- function(x, ser_info = FALSE) {
 #'
 #' @param x a "ts-boxable" object to be converted
 #'
-#' @return returns an object in wide format with a `time` column and series 
+#' @return returns an object in wide format with a `time` column and series
 #' values in subsequent columns with `id` in column heading.
 #' @export
 #'
 #' @details This function performs a similar operation to `tsbox::ts_wide()`. It
-#' converts ts-boxable objects to the wide format. An important difference 
-#' compared with `tsbox::ts_wide()` is that `conv_wide()` does not require x 
+#' converts ts-boxable objects to the wide format. An important difference
+#' compared with `tsbox::ts_wide()` is that `conv_wide()` does not require x
 #' to be a long tbl.
 #'
 #' @examples
@@ -1130,7 +1128,7 @@ conv_wide <- function(x) {
 #' @export
 #'
 #' @details This function performs a similar operation to `tsbox::ts_xts()`. It
-#' converts ts-boxable objects to the xts format. An important difference 
+#' converts ts-boxable objects to the xts format. An important difference
 #' compared with `tsbox::ts_xts()` is that the x argument of `conv_xts()`
 #' can be a wide tbl.
 #'
@@ -1163,8 +1161,8 @@ conv_xts <- function(x) {
 #' @return returns an object as a tslist.
 #' @export
 #'
-#' @details This function performs a similar operation to `tsbox::ts_tslist()`. 
-#' It converts ts-boxable objects to the tslist format. An important difference 
+#' @details This function performs a similar operation to `tsbox::ts_tslist()`.
+#' It converts ts-boxable objects to the tslist format. An important difference
 #' compared with `tsbox::ts_tslist()` is that the x argument of `conv_tslist()`
 #' can be a wide tbl.
 #'
@@ -1197,7 +1195,11 @@ conv_tslist <- function(x) {
 #' Interpolate a single time series from low to high frequency
 #'
 #' @param x a single time series (e.g. xts) at low freq (e.g. annual or quarterly)
-#' @param conv_type match the quarterly value via "first", "last", "sum", "mean"
+#' @param x_name the name of the time series x
+#' @param conv_type match the interpolated value via "first", "last", "sum",
+#' "mean". If conv_type == "uhero" then the name of the time series x is
+#' compared to the internal variable `sum_pattern`. For matching series names
+#' the interpolation is based on "sum"; for all others it is based on "mean."
 #' @param target_freq target frequency "quarter" (default) or "month"
 #' @param pattern a single pattern series that the interpolation should follow
 #'
@@ -1211,7 +1213,7 @@ conv_tslist <- function(x) {
 #'   tsbox::ts_pick("E_NF_HI") |>
 #'   disagg_1(conv_type = "mean", target_freq = "month", pattern = NULL) |>
 #'   tsbox::ts_plot()
-disagg_1 <- function(x, conv_type, target_freq, pattern) {
+disagg_1 <- function(x, x_name, conv_type, target_freq, pattern) {
   if (is.null(pattern)) {
     formula <- stats::as.formula("x ~ 1")
   } else {
@@ -1219,6 +1221,13 @@ disagg_1 <- function(x, conv_type, target_freq, pattern) {
     end <- find_end(x, last_day = TRUE)
     pattern <- pattern %>% tsbox::ts_span(start, end)
     formula <- stats::as.formula("x ~ pattern")
+  }
+  if (stringr::str_to_lower(conv_type) %>% stringr::str_detect("^u")) {
+    if (stringr::str_to_upper(x_name) %>% stringr::str_detect(sum_pattern)) {
+      conv_type <- "sum"
+    } else {
+      conv_type <- "mean"
+    }
   }
   tempdisagg::td(
     formula = formula,
@@ -1233,7 +1242,10 @@ disagg_1 <- function(x, conv_type, target_freq, pattern) {
 #' Interpolate univariate or multivariate time series from low to high frequency
 #'
 #' @param x a tx-boxable object at a low frequency (e.g. annual or quarterly)
-#' @param conv_type match the quarterly value via "first", "last", "sum", "mean"
+#' @param conv_type match the interpolated value via "first", "last", "sum",
+#' "mean". If conv_type == "uhero" then the name of the time series x is
+#' compared to the internal variable `sum_pattern`. For matching series names
+#' the interpolation is based on "sum"; for all others it is based on "mean."
 #' @param target_freq target frequency "quarter" or "month"
 #' @param pattern a single high-frequency pattern that the interpolation should follow
 #'
@@ -1275,6 +1287,8 @@ disagg_1 <- function(x, conv_type, target_freq, pattern) {
 #'     tsbox::ts_tslist(),
 #'   monthly_data_example |>
 #'     tsbox::ts_long() |>
+#'     tsbox::ts_pick("VISNS_HI", "VAPNS_HI") |>
+#'     tsbox::ts_long() |>
 #'     tsbox::ts_tslist(),
 #'   ~ disagg(.x, conv_type = "mean", target_freq = "month", pattern = .y)
 #' )
@@ -1293,9 +1307,11 @@ disagg <- function(
   x_mod_int <- x_mod %>%
     # tidyr::drop_na() %>%
     tsbox::ts_tslist() %>%
-    purrr::map(
+    purrr::map2(
+      names(.),
       .f = ~ disagg_1(
         .x,
+        .y,
         conv_type = conv_type,
         target_freq = target_freq,
         pattern = pattern_mod
@@ -1411,6 +1427,91 @@ QtoA <- function(ser_in, aggr = "mean") {
 }
 
 
+#' Aggregate univariate or multivariate time series from low to high frequency
+#'
+#' @param x a tx-boxable object at a high frequency (e.g. monthly or quarterly)
+#' @param conv_type match the aggregated value via "first", "last", "sum",
+#' "mean". If conv_type == "uhero" then the name of the time series x is
+#' compared to the internal variable `sum_pattern`. For matching series names
+#' the aggregation is based on "sum"; for all others it is based on "mean."
+#' @param target_freq target frequency "year", "quarter", "month", "week"
+#' @param na_rm	logical, if TRUE, incomplete periods are aggregated as
+#' well. For irregular series, incomplete periods are always aggregated.
+#'
+#' @return aggregated object of the same type as the input
+#' @export
+#'
+#' @examples
+#' monthly_data_example |>
+#'   aggr(conv_type = "uhero", target_freq = "quarter")
+#' monthly_data_example |>
+#'   aggr(conv_type = "uhero", target_freq = "quarter") |>
+#'   tsbox::ts_long() |>
+#'   disagg(conv_type = "uhero", target_freq = "month") |>
+#'   tsbox::ts_wide() # this is close to original data
+#' # works with a single series too
+#' monthly_data_example |>
+#'   tsbox::ts_long() |>
+#'   tsbox::ts_pick("VISNS_HI") |>
+#'   aggr(conv_type = "uhero", target_freq = "year") |>
+#'   tsbox::ts_plot()
+aggr <- function(
+  x,
+  conv_type = "mean",
+  target_freq = "year",
+  na_rm = FALSE
+) {
+  # convert to long format and return additional details
+  x_mod <- conv_long(x, ser_info = TRUE)
+  # pattern_mod <- if (is.null(pattern)) pattern else
+  #   conv_long(pattern) %>% tsbox::ts_ts()
+
+  # convert to tslist and interpolate
+  x_mod_tslist <- x_mod %>%
+    tsbox::ts_tslist()
+
+  x_mod_names <- x_mod_tslist %>%
+    names() %>%
+    stringr::str_to_upper()
+
+  if (stringr::str_to_lower(conv_type) %>% stringr::str_detect("^u")) {
+    agg_type <- dplyr::if_else(
+      x_mod_names %>% stringr::str_detect(sum_pattern),
+      "sum",
+      "mean"
+    )
+  }
+
+  x_mod_agg <- x_mod_tslist %>%
+    purrr::map2(
+      agg_type,
+      .f = ~ tsbox::ts_frequency(
+        .x,
+        to = target_freq,
+        aggregate = .y,
+        na.rm = na_rm
+      )
+    ) %>%
+    set_attr_tslist() %>%
+    # univariate data requires special treatment
+    {
+      if (length(attr(x_mod, "ser_names")) == 1) {
+        tsbox::ts_tbl(.) %>%
+          tsbox::ts_long() %>%
+          dplyr::mutate(id = attr(x_mod, "ser_names"))
+      } else {
+        tsbox::ts_tbl(.)
+      }
+    }
+
+  # reclass the output to match the input
+  ans <- if (attr(x_mod, "was_wide")) tsbox::ts_wide(x_mod_agg) else
+    tsbox::copy_class(x_mod_agg, x)
+
+  return(ans)
+}
+
+
 #' Year to date sum or average
 #'
 #' @param x a ts-boxable object
@@ -1486,8 +1587,8 @@ ytd_gr <- function(x) {
 #'
 #' @return object of the same type as the input containing year to date sum or average
 #' @export
-#' 
-#' @details this function operates similarly to ytd_cum() but assumes that the 
+#'
+#' @details this function operates similarly to ytd_cum() but assumes that the
 #' fiscal year starts in July and accumulates the values from that month onward.
 #'
 #' @examples
@@ -1506,14 +1607,14 @@ fytd_cum <- function(x, avg = TRUE) {
   x_mod <- conv_long(x, ser_info = TRUE)
 
   x_mod_fytd <- x_mod %>%
-    tsbox::ts_lag("6 months") %>% 
+    tsbox::ts_lag("6 months") %>%
     dplyr::mutate(yr = lubridate::floor_date(.data$time, "year")) %>%
     dplyr::group_by(.data$id, .data$yr) %>%
     dplyr::mutate(
       value = if (avg) dplyr::cummean(.data$value) else cumsum(.data$value)
     ) %>%
     dplyr::ungroup() %>%
-    dplyr::select(!"yr") %>% 
+    dplyr::select(!"yr") %>%
     tsbox::ts_lag("-6 months")
 
   # reclass the output to match the input
@@ -1531,7 +1632,7 @@ fytd_cum <- function(x, avg = TRUE) {
 #' @return object of the same type as the input containing year to date growth rate
 #' @export
 #'
-#' @details this function operates similarly to ytd_gr() but assumes that the 
+#' @details this function operates similarly to ytd_gr() but assumes that the
 #' fiscal year starts in July and accumulates the values from that month onward.
 #'
 #' @examples
@@ -2485,8 +2586,8 @@ plot_1 <- function(
     } %>%
     # dygraphs::dyOptions(colors = RColorBrewer::brewer.pal(length(ser_names), "Set1")) %>%
     dygraphs::dyOptions(
-      colors = uhero_colors_light[1:length(ser_names_pct)] %>%
-        c(uhero_colors[1:length(ser_names)])
+      colors = uh_colors_light[1:length(ser_names_pct)] %>%
+        c(uh_colors[1:length(ser_names)])
     ) %>%
     dygraphs::dyLegend(show = "follow", labelsSeparateLines = TRUE) %>%
     # dygraphs::dyLegend(width = 0.9 * width, show = "auto", labelsSeparateLines = FALSE) %>%
@@ -2559,7 +2660,7 @@ plot_2ax <- function(
         dygraphs::dySeries(., ser_names[-1], strokeWidth = 2, axis = "y2")
     } %>%
     # dygraphs::dyOptions(colors = RColorBrewer::brewer.pal(length(ser_names), "Set1")) %>%
-    dygraphs::dyOptions(colors = uhero_colors[1:length(ser_names)]) %>%
+    dygraphs::dyOptions(colors = uh_colors[1:length(ser_names)]) %>%
     dygraphs::dyLegend(show = "follow", labelsSeparateLines = TRUE) %>%
     # dygraphs::dyLegend(width = 0.9 * width, show = "auto", labelsSeparateLines = FALSE) %>%
     dygraphs::dyRangeSelector(
@@ -2658,7 +2759,7 @@ plot_fc <- function(
       stringr::str_glue("{ser_names[1]}"),
       axis = "y",
       strokeWidth = 2,
-      color = uhero_colors[1]
+      color = uh_colors[1]
     ) %>%
     {
       if (length(ser_names) > 1)
@@ -2668,7 +2769,7 @@ plot_fc <- function(
           axis = "y",
           strokePattern = "dashed",
           strokeWidth = 2,
-          color = uhero_colors[2]
+          color = uh_colors[2]
         ) else .
     } %>%
     {
@@ -2679,7 +2780,7 @@ plot_fc <- function(
           axis = "y",
           strokePattern = "dashed",
           strokeWidth = 2,
-          color = uhero_colors[3]
+          color = uh_colors[3]
         ) else .
     } %>%
     dygraphs::dySeries(
@@ -2687,7 +2788,7 @@ plot_fc <- function(
       axis = "y2",
       stepPlot = TRUE,
       fillGraph = TRUE,
-      color = uhero_colors[1]
+      color = uh_colors[1]
     ) %>%
     dygraphs::dyRangeSelector(
       dateWindow = c(rng_start, rng_end),
@@ -2767,7 +2868,7 @@ plot_comp_2 <- function(
       width = width
     ) %>%
     dygraphs::dyLegend(width = width * 0.90) %>%
-    dygraphs::dyOptions(colors = uhero_colors[1:length(ser_names)]) # %>%
+    dygraphs::dyOptions(colors = uh_colors[1:length(ser_names)]) # %>%
   # dygraphs::dyOptions(colors = RColorBrewer::brewer.pal(length(ser_names), "Set2"))
   plot_growth <-
     x_mod %>%
@@ -2785,7 +2886,7 @@ plot_comp_2 <- function(
       if (gr_bar) dygraphs::dyBarChart(.) else .
     } %>%
     dygraphs::dyLegend(width = width * 0.90) %>%
-    dygraphs::dyOptions(colors = uhero_colors[1:length(ser_names)]) %>%
+    dygraphs::dyOptions(colors = uh_colors[1:length(ser_names)]) %>%
     # dygraphs::dyOptions(colors = RColorBrewer::brewer.pal(length(ser_names), "Set2")) %>%
     dygraphs::dyRangeSelector(
       dateWindow = c(rng_start, rng_end),
@@ -2849,7 +2950,7 @@ plot_comp_3 <- function(
       width = width
     ) %>%
     dygraphs::dyLegend(width = width * 0.90) %>%
-    dygraphs::dyOptions(colors = uhero_colors[1:length(ser_names)]) # %>%
+    dygraphs::dyOptions(colors = uh_colors[1:length(ser_names)]) # %>%
   # dygraphs::dyOptions(colors = RColorBrewer::brewer.pal(length(ser_names), "Set2"))
   # plot_level[["elementId"]] <- ser_names %>% extract(1) %>% str_extract("^.*@")
   plot_index <-
@@ -2864,7 +2965,7 @@ plot_comp_3 <- function(
     ) %>%
     # dygraphs::dyRebase(value = 100) %>%
     dygraphs::dyLegend(width = width * 0.90) %>%
-    dygraphs::dyOptions(colors = uhero_colors[1:length(ser_names)]) # %>%
+    dygraphs::dyOptions(colors = uh_colors[1:length(ser_names)]) # %>%
   # dygraphs::dyOptions(colors = RColorBrewer::brewer.pal(length(ser_names), "Set2"))
   plot_growth <-
     x_mod %>%
@@ -2882,7 +2983,7 @@ plot_comp_3 <- function(
       if (gr_bar) dygraphs::dyBarChart(.) else .
     } %>%
     dygraphs::dyLegend(width = width * 0.90) %>%
-    dygraphs::dyOptions(colors = uhero_colors[1:length(ser_names)]) %>%
+    dygraphs::dyOptions(colors = uh_colors[1:length(ser_names)]) %>%
     # dygraphs::dyOptions(colors = RColorBrewer::brewer.pal(length(ser_names), "Set2")) %>%
     dygraphs::dyRangeSelector(
       dateWindow = c(rng_start, rng_end),

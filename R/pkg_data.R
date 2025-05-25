@@ -23,8 +23,42 @@ bnk_start <- lubridate::ymd("1970-01-01")
 # bnk_end <- lubridate::ymd("2060-12-31")
 bnk_end <- lubridate::ymd("2100-12-31")
 
+
+#' end of data range in the data bank
+#' @name sum_pattern
+#' @format string of patterns in series names that should be aggregated via sum
+#' @docType data
+#' @author Peter Fuleky \email{fuleky@hawaii.edu}
+#' @source author
+#' @references \url{uhero.hawaii.edu}
+#' @keywords data
+# NULL
+"sum_pattern"
+sum_pattern <- stringr::str_flatten(
+  c(
+    "^KB",
+    "KN",
+    "KP",
+    "KR",
+    "NT",
+    "PC(?=(DM|IT))",
+    "TD",
+    "TG",
+    "TR(?!MS)",
+    "UI",
+    "VA(?!DC)",
+    "VDAY",
+    "VEXP(?!P)",
+    "VIS",
+    "VP",
+    "VS",
+    "VX(?!P)"
+  ),
+  collapse = "|^"
+)
+
 #' colors defined in the UHERO Style Guide
-#' @name uhcolors
+#' @name uh_colors
 #' @format vector of hex color codes
 #' @docType data
 #' @author Peter Fuleky \email{fuleky@hawaii.edu}
@@ -33,27 +67,46 @@ bnk_end <- lubridate::ymd("2100-12-31")
 #' @keywords data
 # NULL
 # plot <- plot +
-#   geom_point(data = data, aes(x = Low, y = Category), color = uhcolors["uhcyan"], size = point_size) +
-#   geom_point(data = data, aes(x = Median, y = Category), color = uhcolors["uhblue"], size = point_size) +
-#   geom_point(data = data, aes(x = High, y = Category), color = uhcolors["uhorange"], size = point_size)
-"uhcolors"
-uhcolors <- c("#1D667F", "#F6A01B", "#9BBB59", "#8064A2", "#7EC4CA", "#505050", "red","#6DA2BC", "#FFC593", "#BADA7C", "#B69CD9", "#9CE0E6", "#929292", "#FF9191") |>
-  magrittr::set_names(c("uhblue", "uhorange", "uhgreen", "uhpurple", "uhcyan", "uhgray", "uhred", "uhlblue", "uhlorange", "uhlgreen", "uhlpurple", "uhlcyan", "uhlgray", "uhlred"))
-
-#' colors defined in the UHERO Style Guide
-#' @name uhero_colors
-#' @format vector of hex color codes
-#' @docType data
-#' @author Peter Fuleky \email{fuleky@hawaii.edu}
-#' @source author
-#' @references \url{uhero.hawaii.edu}
-#' @keywords data
-# NULL
-"uhero_colors"
-uhero_colors <- c("#1D667F", "#F6A01B", "#9BBB59", "#8064A2", "#7EC4CA", "#505050", "red")
+#   geom_point(
+#     data = data,
+#     aes(x = Low, y = Category),
+#     color = uh_colors["uhcyan"],
+#     size = point_size
+#   ) +
+#   geom_point(
+#     data = data,
+#     aes(x = Median, y = Category),
+#     color = uh_colors["uhblue"],
+#     size = point_size
+#   ) +
+#   geom_point(
+#     data = data,
+#     aes(x = High, y = Category),
+#     color = uh_colors["uhorange"],
+#     size = point_size
+#   )
+"uh_colors"
+uh_colors <- c(
+  "#1D667F",
+  "#F6A01B",
+  "#9BBB59",
+  "#8064A2",
+  "#7EC4CA",
+  "#505050",
+  "red"
+) |>
+  magrittr::set_names(c(
+    "uhblue",
+    "uhorange",
+    "uhgreen",
+    "uhpurple",
+    "uhcyan",
+    "uhgray",
+    "uhred"
+  ))
 
 #' lighter versions of UHERO colors
-#' @name uhero_colors_light
+#' @name uh_colors_light
 #' @format vector of hex color codes
 #' @docType data
 #' @author Peter Fuleky \email{fuleky@hawaii.edu}
@@ -61,9 +114,9 @@ uhero_colors <- c("#1D667F", "#F6A01B", "#9BBB59", "#8064A2", "#7EC4CA", "#50505
 #' @references \url{uhero.hawaii.edu}
 #' @keywords data
 # NULL
-# oi <- uhero_colors
+# oi <- uh_colors
 # colorspace::swatchplot(
-#   "-60%" = colorspace::lighten(oi, 0.6),
+#   "-60%" = colorspace::lighten(oi, 0.6), # light color
 #   "-40%" = colorspace::lighten(oi, 0.4),
 #   "-20%" = colorspace::lighten(oi, 0.2),
 #   "  0%" = oi,
@@ -71,11 +124,28 @@ uhero_colors <- c("#1D667F", "#F6A01B", "#9BBB59", "#8064A2", "#7EC4CA", "#50505
 #   " 40%" =  colorspace::darken(oi, 0.4),
 #   off = c(0, 0)
 # )
-"uhero_colors_light"
-uhero_colors_light <- c("#90C3DC", "#FFD9BD", "#CAEA8D", "#D2B8F6", "#AAEEF4", "#B5B5B5", "#FFB8B8")
+"uh_colors_light"
+uh_colors_light <- c(
+  "#90C3DC",
+  "#FFD9BD",
+  "#CAEA8D",
+  "#D2B8F6",
+  "#AAEEF4",
+  "#B5B5B5",
+  "#FFB8B8"
+) |>
+  magrittr::set_names(c(
+    "uhlblue",
+    "uhlorange",
+    "uhlgreen",
+    "uhlpurple",
+    "uhlcyan",
+    "uhlgray",
+    "uhlred"
+  ))
 
 #' transparent versions of UHERO colors
-#' @name uhero_colors_50
+#' @name uh_colors_50
 #' @format vector of hex color codes
 #' @docType data
 #' @author Peter Fuleky \email{fuleky@hawaii.edu}
@@ -83,9 +153,26 @@ uhero_colors_light <- c("#90C3DC", "#FFD9BD", "#CAEA8D", "#D2B8F6", "#AAEEF4", "
 #' @references \url{uhero.hawaii.edu}
 #' @keywords data
 # NULL
-# colorspace::adjust_transparency(uhero_colors, alpha = 0.5)
-"uhero_colors_50"
-uhero_colors_50 <- c("#1D667F80", "#F6A01B80", "#9BBB5980", "#8064A280", "#7EC4CA80", "#50505080", "#FF000080")
+# colorspace::adjust_transparency(uh_colors, alpha = 0.5)
+"uh_colors_50"
+uh_colors_50 <- c(
+  "#1D667F80",
+  "#F6A01B80",
+  "#9BBB5980",
+  "#8064A280",
+  "#7EC4CA80",
+  "#50505080",
+  "#FF000080"
+) |>
+  magrittr::set_names(c(
+    "uhtblue",
+    "uhtorange",
+    "uhtgreen",
+    "uhtpurple",
+    "uhtcyan",
+    "uhtgray",
+    "uhtred"
+  ))
 
 #' quarterly data for examples
 #' @name quarterly_data_example
@@ -97,7 +184,7 @@ uhero_colors_50 <- c("#1D667F80", "#F6A01B80", "#9BBB5980", "#8064A280", "#7EC4C
 #' @keywords data
 # NULL
 # quarterly_data_example <- get_series_exp(74) |> tidyr::drop_na()
-# quarterly_data_example |> save(file = "quarterly_data_example.rda")
+# quarterly_data_example |> save(file = "data/quarterly_data_example.rda")
 "quarterly_data_example"
 
 #' monthly data for examples
@@ -109,8 +196,13 @@ uhero_colors_50 <- c("#1D667F80", "#F6A01B80", "#9BBB5980", "#8064A280", "#7EC4C
 #' @references \url{uhero.hawaii.edu}
 #' @keywords data
 # NULL
-# monthly_data_example <- get_series(c("VISNS@HI.M", "VAPNS@HI.M")) |> tidyr::drop_na()
-# monthly_data_example |> save(file = "monthly_data_example.rda")
+# monthly_data_example <- get_series(c(
+#   "VISNS@HI.M",
+#   "VAPNS@HI.M",
+#   "VADCNS@HI.M"
+# )) |>
+#   tidyr::drop_na()
+# monthly_data_example |> save(file = "data/monthly_data_example.rda")
 "monthly_data_example"
 
 #' daily data for examples
@@ -122,10 +214,25 @@ uhero_colors_50 <- c("#1D667F80", "#F6A01B80", "#9BBB5980", "#8064A280", "#7EC4C
 #' @references \url{uhero.hawaii.edu}
 #' @keywords data
 # NULL
-# daily_data_example <- get_series(c("VISPNS@HI.D", "VAPNS@HI.D")) |> tidyr::drop_na()
-# daily_data_example |> save(file = "daily_data_example.rda")
+# daily_data_example <- get_series(c("VISPNS@HI.D", "VAPNS@HI.D")) |>
+#   tidyr::drop_na()
+# daily_data_example |> save(file = "data/daily_data_example.rda")
 "daily_data_example"
 
-# usethis::use_data(bnk_start, bnk_end, uhcolors, uhero_colors, uhero_colors_light, uhero_colors_50, internal = FALSE, overwrite = TRUE)
-# usethis::use_data(quarterly_data_example, monthly_data_example, daily_data_example, internal = FALSE, overwrite = TRUE)
-
+# usethis::use_data(
+#   bnk_start,
+#   bnk_end,
+#   sum_pattern,
+#   uh_colors,
+#   uh_colors_light,
+#   uh_colors_50,
+#   internal = FALSE,
+#   overwrite = TRUE
+# )
+# usethis::use_data(
+#   quarterly_data_example,
+#   monthly_data_example,
+#   daily_data_example,
+#   internal = FALSE,
+#   overwrite = TRUE
+# )
