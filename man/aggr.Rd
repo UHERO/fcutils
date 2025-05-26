@@ -27,6 +27,8 @@ Aggregate univariate or multivariate time series from low to high frequency
 }
 \examples{
 monthly_data_example |>
+  aggr(conv_type = "sum", target_freq = "quarter")
+monthly_data_example |>
   aggr(conv_type = "uhero", target_freq = "quarter")
 monthly_data_example |>
   aggr(conv_type = "uhero", target_freq = "quarter") |>
