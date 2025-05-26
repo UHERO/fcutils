@@ -1427,6 +1427,91 @@ QtoA <- function(ser_in, aggr = "mean") {
 }
 
 
+# #' Aggregate univariate or multivariate time series from low to high frequency
+# #'
+# #' @param x a tx-boxable object at a high frequency (e.g. monthly or quarterly)
+# #' @param conv_type match the aggregated value via "first", "last", "sum",
+# #' "mean". If conv_type == "uhero" then the name of the time series x is
+# #' compared to the internal variable `sum_pattern`. For matching series names
+# #' the aggregation is based on "sum"; for all others it is based on "mean."
+# #' @param target_freq target frequency "year", "quarter", "month", "week"
+# #' @param na_rm	logical, if TRUE, incomplete periods are aggregated as
+# #' well. For irregular series, incomplete periods are always aggregated.
+# #'
+# #' @return aggregated object of the same type as the input
+# #' @export
+# #'
+# #' @examples
+# #' monthly_data_example |>
+# #'   aggr(conv_type = "uhero", target_freq = "quarter")
+# #' monthly_data_example |>
+# #'   aggr(conv_type = "uhero", target_freq = "quarter") |>
+# #'   tsbox::ts_long() |>
+# #'   disagg(conv_type = "uhero", target_freq = "month") |>
+# #'   tsbox::ts_wide() # this is close to original data
+# #' # works with a single series too
+# #' monthly_data_example |>
+# #'   tsbox::ts_long() |>
+# #'   tsbox::ts_pick("VISNS_HI") |>
+# #'   aggr(conv_type = "uhero", target_freq = "year") |>
+# #'   tsbox::ts_plot()
+# aggr <- function(
+#   x,
+#   conv_type = "mean",
+#   target_freq = "year",
+#   na_rm = FALSE
+# ) {
+#   # convert to long format and return additional details
+#   x_mod <- conv_long(x, ser_info = TRUE)
+
+#   # convert to tslist and interpolate
+#   x_mod_tslist <- x_mod %>%
+#     tsbox::ts_tslist()
+
+#   x_mod_names <- x_mod_tslist %>%
+#     names() %>%
+#     stringr::str_to_upper()
+
+#   if (stringr::str_to_lower(conv_type) %>% stringr::str_detect("^u")) {
+#     agg_type <- dplyr::if_else(
+#       x_mod_names %>% stringr::str_detect(sum_pattern),
+#       "sum",
+#       "mean"
+#     )
+#   } else {
+#     agg_type <- conv_type
+#   }
+
+#   x_mod_agg <- x_mod_tslist %>%
+#     purrr::map2(
+#       agg_type,
+#       .f = ~ tsbox::ts_frequency(
+#         .x,
+#         to = target_freq,
+#         aggregate = .y,
+#         na.rm = na_rm
+#       )
+#     ) %>%
+#     set_attr_tslist() %>%
+#     # univariate data requires special treatment
+#     {
+#       if (length(attr(x_mod, "ser_names")) == 1) {
+#         tsbox::ts_tbl(.) %>%
+#           tsbox::ts_long() %>%
+#           dplyr::mutate(id = attr(x_mod, "ser_names"))
+#       } else {
+#         tsbox::ts_tbl(.)
+#       }
+#     }
+
+#   # reclass the output to match the input
+#   ans <- if (attr(x_mod, "was_wide")) tsbox::ts_wide(x_mod_agg) else
+#     tsbox::copy_class(x_mod_agg, x)
+
+#   return(ans)
+# }
+
+
 #' Aggregate univariate or multivariate time series from low to high frequency
 #'
 #' @param x a tx-boxable object at a high frequency (e.g. monthly or quarterly)
@@ -1442,6 +1527,8 @@ QtoA <- function(ser_in, aggr = "mean") {
 #' @export
 #'
 #' @examples
+#' monthly_data_example |>
+#'   aggr(conv_type = "sum", target_freq = "quarter")
 #' monthly_data_example |>
 #'   aggr(conv_type = "uhero", target_freq = "quarter")
 #' monthly_data_example |>
@@ -1463,46 +1550,37 @@ aggr <- function(
 ) {
   # convert to long format and return additional details
   x_mod <- conv_long(x, ser_info = TRUE)
-  # pattern_mod <- if (is.null(pattern)) pattern else
-  #   conv_long(pattern) %>% tsbox::ts_ts()
 
-  # convert to tslist and interpolate
-  x_mod_tslist <- x_mod %>%
-    tsbox::ts_tslist()
-
-  x_mod_names <- x_mod_tslist %>%
-    names() %>%
-    stringr::str_to_upper()
-
-  if (stringr::str_to_lower(conv_type) %>% stringr::str_detect("^u")) {
-    agg_type <- dplyr::if_else(
-      x_mod_names %>% stringr::str_detect(sum_pattern),
-      "sum",
-      "mean"
-    )
-  }
-
-  x_mod_agg <- x_mod_tslist %>%
-    purrr::map2(
-      agg_type,
-      .f = ~ tsbox::ts_frequency(
-        .x,
-        to = target_freq,
-        aggregate = .y,
-        na.rm = na_rm
-      )
-    ) %>%
-    set_attr_tslist() %>%
-    # univariate data requires special treatment
-    {
-      if (length(attr(x_mod, "ser_names")) == 1) {
-        tsbox::ts_tbl(.) %>%
-          tsbox::ts_long() %>%
-          dplyr::mutate(id = attr(x_mod, "ser_names"))
+    # convert to nested tibble and aggregate
+    x_mod_agg <- x_mod %>%
+    tidyr::nest(data = c("id":"value"), .by = "id") %>%
+    dplyr::mutate(
+      # add a column with aggregation type
+      agg_type = if (
+        stringr::str_to_lower(conv_type) %>% stringr::str_detect("^u")
+      ) {
+        dplyr::if_else(
+          .data$id %>% stringr::str_detect(sum_pattern),
+          "sum",
+          "mean"
+        )
       } else {
-        tsbox::ts_tbl(.)
+        conv_type
       }
-    }
+    ) %>%
+    # operation on the nested column
+    dplyr::rowwise() %>%
+    dplyr::mutate(
+      aggd = list(tsbox::ts_frequency(
+        .data$data,
+        to = target_freq,
+        aggregate = .data$agg_type,
+        na.rm = na_rm
+      ))
+    ) %>%
+    # only keep the aggregated data
+    dplyr::select("aggd") %>%
+    tidyr::unnest("aggd")
 
   # reclass the output to match the input
   ans <- if (attr(x_mod, "was_wide")) tsbox::ts_wide(x_mod_agg) else
