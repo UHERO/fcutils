@@ -1511,7 +1511,6 @@ QtoA <- function(ser_in, aggr = "mean") {
 #   return(ans)
 # }
 
-
 #' Aggregate univariate or multivariate time series from low to high frequency
 #'
 #' @param x a tx-boxable object at a high frequency (e.g. monthly or quarterly)
@@ -1551,8 +1550,8 @@ aggr <- function(
   # convert to long format and return additional details
   x_mod <- conv_long(x, ser_info = TRUE)
 
-    # convert to nested tibble and aggregate
-    x_mod_agg <- x_mod %>%
+  # convert to nested tibble and aggregate
+  x_mod_agg <- x_mod %>%
     tidyr::nest(data = c("id":"value"), .by = "id") %>%
     dplyr::mutate(
       # add a column with aggregation type
@@ -2000,22 +1999,36 @@ pcmp <- function(x, lag = 4, comp_freq = 1) {
   # convert to long format and return additional details
   x_mod <- conv_long(x, ser_info = TRUE)
 
+  # x_mod_pcmp <- x_mod %>%
+  #   tsbox::ts_tslist() %>%
+  #   purrr::map(
+  #     ~ (((.x / tsbox::ts_lag(.x, lag))^(comp_freq / lag)) - 1) * 100
+  #   ) %>%
+  #   set_attr_tslist() %>%
+  #   # univariate data requires special treatment
+  #   {
+  #     if (length(attr(x_mod, "ser_names")) == 1) {
+  #       tsbox::ts_tbl(.) %>%
+  #         tsbox::ts_long() %>%
+  #         dplyr::mutate(id = attr(x_mod, "ser_names"))
+  #     } else {
+  #       tsbox::ts_tbl(.)
+  #     }
+  #   }
+
+  # convert to nested tibble and calculate
   x_mod_pcmp <- x_mod %>%
-    tsbox::ts_tslist() %>%
-    purrr::map(
-      ~ (((.x / tsbox::ts_lag(.x, lag))^(comp_freq / lag)) - 1) * 100
+    tidyr::nest(data = c("id":"value"), .by = "id") %>%
+    # operation on the nested column
+    dplyr::rowwise() %>%
+    dplyr::mutate(
+      calc = list((((.data$data %ts/% tsbox::ts_lag(.data$data, lag))))) 
+      #^(comp_freq / lag)) - 1) * 100)
     ) %>%
-    set_attr_tslist() %>%
-    # univariate data requires special treatment
-    {
-      if (length(attr(x_mod, "ser_names")) == 1) {
-        tsbox::ts_tbl(.) %>%
-          tsbox::ts_long() %>%
-          dplyr::mutate(id = attr(x_mod, "ser_names"))
-      } else {
-        tsbox::ts_tbl(.)
-      }
-    }
+    # only keep the calculated data
+    dplyr::select("calc") %>%
+    tidyr::unnest("calc") %>%
+    dplyr::mutate(value = ((.data$value^(comp_freq / lag)) - 1) * 100)
 
   # reclass the output to match the input
   ans <- if (attr(x_mod, "was_wide")) tsbox::ts_wide(x_mod_pcmp) else
