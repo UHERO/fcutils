@@ -3521,7 +3521,7 @@ update_eqs <- function(model_1, model_2, eqList) {
 set_tsrange <- function(model_w_dat, max_lag = 4, eqns = NULL) {
   # if no equations are specified, use all behavioral equations
   if (is.null(eqns)) {
-    eqns <- model_w_dat$vendog
+    eqns <- model_w_dat$vendogBehaviorals
   }
 
   # for each behavioral equation, set the tsrange to the available data
