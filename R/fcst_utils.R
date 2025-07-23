@@ -37,10 +37,11 @@ get_series_1 <- function(ser_id, expand, rename, descr, public) {
   if (
     stringr::str_length(Sys.getenv("udaman_token")) == 0 &
       length(keyring::key_list("udaman_token")$service) == 0
-  )
+  ) {
     rlang::abort(
       "UDAMAN token is not available in .Renviron or among credentials"
     )
+  }
   # API call
   if (public) {
     url <- stringr::str_c(
@@ -201,8 +202,12 @@ get_series <- function(
     ) %>%
     purrr::reduce(dplyr::full_join, by = "time") %>%
     dplyr::arrange(.data$time)
-  if (format == "wide") ser_out <- ser_tbl
-  if (format == "long") ser_out <- ser_tbl %>% tsbox::ts_long()
+  if (format == "wide") {
+    ser_out <- ser_tbl
+  }
+  if (format == "long") {
+    ser_out <- ser_tbl %>% tsbox::ts_long()
+  }
   if (format == "xts") {
     ser_out <- ser_tbl %>%
       tsbox::ts_long() %>%
@@ -250,10 +255,11 @@ get_series_exp <- function(
   if (
     stringr::str_length(Sys.getenv("udaman_token")) == 0 &
       length(keyring::key_list("udaman_token")$service) == 0
-  )
+  ) {
     rlang::abort(
       "UDAMAN token is not available in .Renviron or among credentials"
     )
+  }
   # API call
   if (public) {
     url <- stringr::str_c(
@@ -367,8 +373,12 @@ get_series_exp <- function(
     data_tbl %>% readr::write_csv(file = save_loc)
   }
 
-  if (format == "wide") data_out <- data_tbl
-  if (format == "long") data_out <- data_tbl %>% tsbox::ts_long()
+  if (format == "wide") {
+    data_out <- data_tbl
+  }
+  if (format == "long") {
+    data_out <- data_tbl %>% tsbox::ts_long()
+  }
   if (format == "xts") {
     data_out <- data_tbl %>%
       tsbox::ts_long() %>%
@@ -410,8 +420,9 @@ make_xts <- function(
   per = "year",
   val = NA_real_
 ) {
-  if (nchar(as.character(start)) > 4 & nchar(as.character(start)) < 8)
+  if (nchar(as.character(start)) > 4 & nchar(as.character(start)) < 8) {
     per <- "quarter"
+  }
   start <- to_ymd(start)
   end <- if (!is.null(end)) to_ymd(end) else NULL
   if ("tbl_df" %in% class(val)) {
@@ -1060,10 +1071,13 @@ conv_long <- function(x, ser_info = FALSE) {
   # need long tbl series names for differential treatment of univariate data
   ser_names_2 <- tsbox::ts_summary(x_mod) %>%
     dplyr::pull(.data$id)
-  ser_names <- if (length(ser_names_1) == 1) ser_names_1 else if (
-    length(ser_names_2) == 1
-  )
-    ser_names_2 else ser_names_2
+  ser_names <- if (length(ser_names_1) == 1) {
+    ser_names_1
+  } else if (length(ser_names_2) == 1) {
+    ser_names_2
+  } else {
+    ser_names_2
+  }
   # add an id column to univariate data
   x_mod <- x_mod %>%
     {
@@ -1300,8 +1314,11 @@ disagg <- function(
 ) {
   # convert to long format and return additional details
   x_mod <- conv_long(x, ser_info = TRUE)
-  pattern_mod <- if (is.null(pattern)) pattern else
+  pattern_mod <- if (is.null(pattern)) {
+    pattern
+  } else {
     conv_long(pattern) %>% tsbox::ts_ts()
+  }
 
   # convert to tslist and interpolate
   x_mod_int <- x_mod %>%
@@ -1330,8 +1347,11 @@ disagg <- function(
     }
 
   # reclass the output to match the input
-  ans <- if (attr(x_mod, "was_wide")) tsbox::ts_wide(x_mod_int) else
+  ans <- if (attr(x_mod, "was_wide")) {
+    tsbox::ts_wide(x_mod_int)
+  } else {
     tsbox::copy_class(x_mod_int, x)
+  }
 
   return(ans)
 }
@@ -1392,7 +1412,9 @@ AtoQ <- function(ser_in, aggr = "mean") {
       cumsum()) %>%
     as.numeric()
   ser_out <- ser_out - 1.5 * increment
-  if (aggr != "mean") ser_out <- ser_out / 4
+  if (aggr != "mean") {
+    ser_out <- ser_out / 4
+  }
   colnames(ser_out) <- colnames(ser_in) %>%
     stringr::str_replace_all(".SOLA", ".SOLQ") %>%
     stringr::str_replace_all(".A", ".Q")
@@ -1582,8 +1604,11 @@ aggr <- function(
     tidyr::unnest("aggd")
 
   # reclass the output to match the input
-  ans <- if (attr(x_mod, "was_wide")) tsbox::ts_wide(x_mod_agg) else
+  ans <- if (attr(x_mod, "was_wide")) {
+    tsbox::ts_wide(x_mod_agg)
+  } else {
     tsbox::copy_class(x_mod_agg, x)
+  }
 
   return(ans)
 }
@@ -1620,8 +1645,11 @@ ytd_cum <- function(x, avg = TRUE) {
     dplyr::select(!"yr")
 
   # reclass the output to match the input
-  ans <- if (attr(x_mod, "was_wide")) tsbox::ts_wide(x_mod_ytd) else
+  ans <- if (attr(x_mod, "was_wide")) {
+    tsbox::ts_wide(x_mod_ytd)
+  } else {
     tsbox::copy_class(x_mod_ytd, x)
+  }
 
   return(ans)
 }
@@ -1650,8 +1678,11 @@ ytd_gr <- function(x) {
     tsbox::ts_pcy()
 
   # reclass the output to match the input
-  ans <- if (attr(x_mod, "was_wide")) tsbox::ts_wide(x_mod_ytd_gr) else
+  ans <- if (attr(x_mod, "was_wide")) {
+    tsbox::ts_wide(x_mod_ytd_gr)
+  } else {
     tsbox::copy_class(x_mod_ytd_gr, x)
+  }
 
   return(ans)
 }
@@ -1695,8 +1726,11 @@ fytd_cum <- function(x, avg = TRUE) {
     tsbox::ts_lag("-6 months")
 
   # reclass the output to match the input
-  ans <- if (attr(x_mod, "was_wide")) tsbox::ts_wide(x_mod_fytd) else
+  ans <- if (attr(x_mod, "was_wide")) {
+    tsbox::ts_wide(x_mod_fytd)
+  } else {
     tsbox::copy_class(x_mod_fytd, x)
+  }
 
   return(ans)
 }
@@ -1730,8 +1764,11 @@ fytd_gr <- function(x) {
     tsbox::ts_pcy()
 
   # reclass the output to match the input
-  ans <- if (attr(x_mod, "was_wide")) tsbox::ts_wide(x_mod_fytd_gr) else
+  ans <- if (attr(x_mod, "was_wide")) {
+    tsbox::ts_wide(x_mod_fytd_gr)
+  } else {
     tsbox::copy_class(x_mod_fytd_gr, x)
+  }
 
   return(ans)
 }
@@ -1767,8 +1804,11 @@ mtd_cum <- function(x, avg = TRUE) {
     dplyr::select(!"yrmo")
 
   # reclass the output to match the input
-  ans <- if (attr(x_mod, "was_wide")) tsbox::ts_wide(x_mod_mtd) else
+  ans <- if (attr(x_mod, "was_wide")) {
+    tsbox::ts_wide(x_mod_mtd)
+  } else {
     tsbox::copy_class(x_mod_mtd, x)
+  }
 
   return(ans)
 }
@@ -1794,8 +1834,11 @@ mtd_gr <- function(x) {
     tsbox::ts_pcy()
 
   # reclass the output to match the input
-  ans <- if (attr(x_mod, "was_wide")) tsbox::ts_wide(x_mod_mtd_gr) else
+  ans <- if (attr(x_mod, "was_wide")) {
+    tsbox::ts_wide(x_mod_mtd_gr)
+  } else {
     tsbox::copy_class(x_mod_mtd_gr, x)
+  }
 
   return(ans)
 }
@@ -1837,8 +1880,11 @@ ptd_cum <- function(x, per = "year", avg = TRUE) {
     dplyr::select(!"time_per")
 
   # reclass the output to match the input
-  ans <- if (attr(x_mod, "was_wide")) tsbox::ts_wide(x_mod_ptd) else
+  ans <- if (attr(x_mod, "was_wide")) {
+    tsbox::ts_wide(x_mod_ptd)
+  } else {
     tsbox::copy_class(x_mod_ptd, x)
+  }
 
   return(ans)
 }
@@ -1889,8 +1935,11 @@ ptd_gr <- function(x, per = "year", lag_length = "1 year") {
     }
 
   # reclass the output to match the input
-  ans <- if (attr(x_mod, "was_wide")) tsbox::ts_wide(x_mod_ptd_gr) else
+  ans <- if (attr(x_mod, "was_wide")) {
+    tsbox::ts_wide(x_mod_ptd_gr)
+  } else {
     tsbox::copy_class(x_mod_ptd_gr, x)
+  }
 
   return(ans)
 }
@@ -1929,8 +1978,11 @@ pca_to_pc <- function(x, freq = 4) {
     dplyr::mutate(value = ((1 + .data$value / 100)^(1 / freq) - 1) * 100)
 
   # reclass the output to match the input
-  ans <- if (attr(x_mod, "was_wide")) tsbox::ts_wide(x_mod_pc) else
+  ans <- if (attr(x_mod, "was_wide")) {
+    tsbox::ts_wide(x_mod_pc)
+  } else {
     tsbox::copy_class(x_mod_pc, x)
+  }
 
   return(ans)
 }
@@ -1969,8 +2021,11 @@ pc_to_pca <- function(x, freq = 4) {
     dplyr::mutate(value = ((1 + .data$value / 100)^freq - 1) * 100)
 
   # reclass the output to match the input
-  ans <- if (attr(x_mod, "was_wide")) tsbox::ts_wide(x_mod_pc) else
+  ans <- if (attr(x_mod, "was_wide")) {
+    tsbox::ts_wide(x_mod_pc)
+  } else {
     tsbox::copy_class(x_mod_pc, x)
+  }
 
   return(ans)
 }
@@ -2022,7 +2077,7 @@ pcmp <- function(x, lag = 4, comp_freq = 1) {
     # operation on the nested column
     dplyr::rowwise() %>%
     dplyr::mutate(
-      calc = list((((.data$data %ts/% tsbox::ts_lag(.data$data, lag))))) 
+      calc = list((((.data$data %ts/% tsbox::ts_lag(.data$data, lag)))))
       #^(comp_freq / lag)) - 1) * 100)
     ) %>%
     # only keep the calculated data
@@ -2031,8 +2086,11 @@ pcmp <- function(x, lag = 4, comp_freq = 1) {
     dplyr::mutate(value = ((.data$value^(comp_freq / lag)) - 1) * 100)
 
   # reclass the output to match the input
-  ans <- if (attr(x_mod, "was_wide")) tsbox::ts_wide(x_mod_pcmp) else
+  ans <- if (attr(x_mod, "was_wide")) {
+    tsbox::ts_wide(x_mod_pcmp)
+  } else {
     tsbox::copy_class(x_mod_pcmp, x)
+  }
 
   return(ans)
 }
@@ -2202,8 +2260,11 @@ yoy_to_lev <- function(yoy_gr, hist_lev, smooth_span = 0) {
   }
 
   # reclass the output to match the input
-  ans <- if (attr(hist_lev_mod, "was_wide")) tsbox::ts_wide(ext_lev_mod) else
+  ans <- if (attr(hist_lev_mod, "was_wide")) {
+    tsbox::ts_wide(ext_lev_mod)
+  } else {
     tsbox::copy_class(ext_lev_mod, hist_lev)
+  }
 
   return(ans)
 }
@@ -2246,8 +2307,11 @@ index <- function(x, base_per = as.character(Sys.Date()), base_value = 100) {
     }
 
   # reclass the output to match the input
-  ans <- if (attr(x_mod, "was_wide")) tsbox::ts_wide(x_mod_index) else
+  ans <- if (attr(x_mod, "was_wide")) {
+    tsbox::ts_wide(x_mod_index)
+  } else {
     tsbox::copy_class(x_mod_index, x)
+  }
 
   return(ans)
 }
@@ -2298,8 +2362,11 @@ span <- function(x, start = NULL, end = NULL, template = NULL, extend = FALSE) {
     }
 
   # reclass the output to match the input
-  ans <- if (attr(x_mod, "was_wide")) tsbox::ts_wide(x_mod_span) else
+  ans <- if (attr(x_mod, "was_wide")) {
+    tsbox::ts_wide(x_mod_span)
+  } else {
     tsbox::copy_class(x_mod_span, x)
+  }
 
   return(ans)
 }
@@ -2381,8 +2448,12 @@ find_end <- function(x, last_day = FALSE) {
 #' p("2010Q1", "2020Q4")
 #' p(2010, 2020) # for annual period only
 p <- function(dat1 = "", dat2 = "") {
-  if (nchar(dat1) != 0) dat1 <- to_ymd(dat1)
-  if (nchar(dat2) != 0) dat2 <- to_ymd(dat2)
+  if (nchar(dat1) != 0) {
+    dat1 <- to_ymd(dat1)
+  }
+  if (nchar(dat2) != 0) {
+    dat2 <- to_ymd(dat2)
+  }
   stringr::str_c(dat1, dat2, sep = "/")
 }
 
@@ -2593,8 +2664,11 @@ ma <- function(x, order) {
     )
 
   # reclass the output to match the input
-  ans <- if (attr(x_mod, "was_wide")) tsbox::ts_wide(x_mod_ma) else
+  ans <- if (attr(x_mod, "was_wide")) {
+    tsbox::ts_wide(x_mod_ma)
+  } else {
     tsbox::copy_class(x_mod_ma, x)
+  }
 
   return(ans)
 }
@@ -2639,14 +2713,20 @@ plot_1 <- function(
 
   ser_names <- attr(x_mod, "ser_names")
 
-  ser_names_pct <- if (gr_1) stringr::str_glue("{ser_names}%")[1] else
+  ser_names_pct <- if (gr_1) {
+    stringr::str_glue("{ser_names}%")[1]
+  } else {
     stringr::str_glue("{ser_names}%")
+  }
 
   ser_plot <- x_mod %>%
     tsbox::ts_xts() %>%
     {
-      if (yoy_gr) tsbox::ts_c(., tsbox::ts_pcy(.)) else
+      if (yoy_gr) {
+        tsbox::ts_c(., tsbox::ts_pcy(.))
+      } else {
         tsbox::ts_c(., tsbox::ts_pc(.))
+      }
     } %>%
     # magrittr::extract(, 1:length(c(ser_names, ser_names_pct))) %>%
     tsbox::ts_pick(1:length(c(ser_names, ser_names_pct))) %>%
@@ -2665,15 +2745,19 @@ plot_1 <- function(
       independentTicks = TRUE
     ) %>%
     {
-      if (length(ser_names_pct) > 1)
+      if (length(ser_names_pct) > 1) {
         dygraphs::dyGroup(., ser_names_pct, axis = "y") %>%
-          dygraphs::dyMultiColumnGroup(ser_names_pct) else
+          dygraphs::dyMultiColumnGroup(ser_names_pct)
+      } else {
         dygraphs::dyBarSeries(., ser_names_pct, axis = "y")
+      }
     } %>%
     {
-      if (length(ser_names) > 1)
-        dygraphs::dyGroup(., ser_names, strokeWidth = 2, axis = "y2") else
+      if (length(ser_names) > 1) {
+        dygraphs::dyGroup(., ser_names, strokeWidth = 2, axis = "y2")
+      } else {
         dygraphs::dySeries(., ser_names, strokeWidth = 2, axis = "y2")
+      }
     } %>%
     # dygraphs::dyOptions(colors = RColorBrewer::brewer.pal(length(ser_names), "Set1")) %>%
     dygraphs::dyOptions(
@@ -2746,9 +2830,11 @@ plot_2ax <- function(
       dygraphs::dySeries(., ser_names[1], strokeWidth = 2, axis = "y")
     } %>%
     {
-      if (length(ser_names[-1]) > 1)
-        dygraphs::dyGroup(., ser_names[-1], strokeWidth = 2, axis = "y2") else
+      if (length(ser_names[-1]) > 1) {
+        dygraphs::dyGroup(., ser_names[-1], strokeWidth = 2, axis = "y2")
+      } else {
         dygraphs::dySeries(., ser_names[-1], strokeWidth = 2, axis = "y2")
+      }
     } %>%
     # dygraphs::dyOptions(colors = RColorBrewer::brewer.pal(length(ser_names), "Set1")) %>%
     dygraphs::dyOptions(colors = uh_colors[1:length(ser_names)]) %>%
@@ -2825,8 +2911,11 @@ plot_fc <- function(
   ser_to_plot <- x_mod %>%
     tsbox::ts_xts() %>%
     {
-      if (yoy_gr) tsbox::ts_c(., tsbox::ts_pcy(.[, 1])) else
+      if (yoy_gr) {
+        tsbox::ts_c(., tsbox::ts_pcy(.[, 1]))
+      } else {
         tsbox::ts_c(., tsbox::ts_pc(.[, 1]))
+      }
     } %>%
     magrittr::set_names(c(ser_names, stringr::str_glue("{ser_names[1]}%")))
 
@@ -2853,7 +2942,7 @@ plot_fc <- function(
       color = uh_colors[1]
     ) %>%
     {
-      if (length(ser_names) > 1)
+      if (length(ser_names) > 1) {
         dygraphs::dySeries(
           .,
           stringr::str_glue("{ser_names[2]}"),
@@ -2861,10 +2950,13 @@ plot_fc <- function(
           strokePattern = "dashed",
           strokeWidth = 2,
           color = uh_colors[2]
-        ) else .
+        )
+      } else {
+        .
+      }
     } %>%
     {
-      if (length(ser_names) > 2)
+      if (length(ser_names) > 2) {
         dygraphs::dySeries(
           .,
           stringr::str_glue("{ser_names[3]}"),
@@ -2872,7 +2964,10 @@ plot_fc <- function(
           strokePattern = "dashed",
           strokeWidth = 2,
           color = uh_colors[3]
-        ) else .
+        )
+      } else {
+        .
+      }
     } %>%
     dygraphs::dySeries(
       stringr::str_glue("{ser_names[1]}%"),
@@ -3458,7 +3553,7 @@ extract_data <- function(model_in, y_name) {
     dplyr::rename_with(
       ~ stringr::str_replace_all(., c("iis" = "IIS_", "sis" = "SIS_"))
     ) %>%
-    dplyr::rename_with(~ stringr::str_replace(., "-", "_")) %>%
+    dplyr::rename_with(~ stringr::str_replace_all(., "-", "_")) %>%
     tsbox::ts_long() %>%
     tsbox::ts_xts()
 
@@ -3579,8 +3674,11 @@ set_tsrange <- function(model_w_dat, max_lag = 4, eqns = NULL) {
 #' @examplesIf interactive()
 #' set_udaman_token("-ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890=")
 set_udaman_token <- function(key) {
-  if (!rlang::is_string(key)) rlang::abort("`key` must be a string.")
-  if (nchar(key) != 44)
+  if (!rlang::is_string(key)) {
+    rlang::abort("`key` must be a string.")
+  }
+  if (nchar(key) != 44) {
     rlang::warn("`key` does not have a length of 44 characters.")
+  }
   Sys.setenv(udaman_token = key)
 }
