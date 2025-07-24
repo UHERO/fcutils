@@ -3493,7 +3493,12 @@ model_equation <- function(model, ...) {
       "TSDELTA(\\1)"
     ) %>% # dynlm::d() = diff()
     stringr::str_replace_all("[\\(]+", "_") %>% # drop parentheses from equation name
-    stringr::str_replace_all("[., \\)[:digit:]]+", "") # drop parentheses and extra items from equation name
+    stringr::str_replace_all("[., \\)[:digit:]]+", "") %>% # drop parentheses and extra items from equation name
+    stringr::str_replace_all(c(
+      "^TSDELTALOG_" = "",
+      "^TSDELTA_" = "",
+      "^LOG_" = ""
+    )) # clean equation name
   model_eqn_bim <- model_eqn_bim %>%
     stringr::str_replace_all("DL_([_.[:alnum:]]+)", "TSDELTALOG(\\1)") %>% # replace DL_ with TSDELTALOG()
     stringr::str_replace_all("L_([_.[:alnum:]]+)", "LOG(\\1)") %>% # replace L_ with LOG()
