@@ -3403,12 +3403,12 @@ gen_table <- function(
 #' @param model a model estimated by lm() (lm object)
 #' @param ... arguments to format the coefficients e.g. digits = 3
 #'
-#' @return a character vector containing the estimated equation (1) and bimets components (2:4)
+#' @return a character vector containing the estimated equation (1) and bimets components (2:5)
 #' @export
 #'
 #' @examplesIf interactive()
 #' # this function combines coefficient estimates and variable names into an equation
-#' # in vector element 1 and into bimets components in vector elements 2-4.
+#' # in vector element 1 and into bimets components in vector elements 2-5.
 #' # https://stats.stackexchange.com/questions/63600/
 #' # how-to-translate-the-results-from-lm-to-an-equation
 #' data("UKDriverDeaths", package = "datasets")
@@ -3419,17 +3419,19 @@ gen_table <- function(
 #' # L(uk, 1:3)3 + 0.37480999 * L(log(uk), c(5:6, 12))5 - 0.22709846 * L(log(uk), c(5:6, 12))6 +
 #' # 1.62340449 * L(log(uk), c(5:6, 12))12"
 #' # (2) "BEHAVIORAL> uk"
-#' # (3) "EQ> uk = b0 + b1 * TSLAG(uk, 1) + b2 * TSLAG(uk, 2) + b3 * TSLAG(uk, 3) + b4 *
+#' # (3) "TSRANGE 1990 1 2010 4"
+#' # (4) "EQ> uk = b0 + b1 * TSLAG(uk, 1) + b2 * TSLAG(uk, 2) + b3 * TSLAG(uk, 3) + b4 *
 #' # TSLAG(LOG(uk), 5) + b5 * TSLAG(LOG(uk), 6) + b6 * TSLAG(LOG(uk), 12)"
-#' # (4) "COEFF> b0 b1 b2 b3 b4 b5 b6"
+#' # (5) "COEFF> b0 b1 b2 b3 b4 b5 b6"
 #' ## regression on multiple lags in a single L() call
 #' dfm <- dynlm::dynlm(d(log(uk)) ~ L(uk, c(1, 11, 12)), start = c(1975, 1), end = c(1982, 12))
 #' model_equation(dfm)
 #' # (1) "d(log(uk)) = 0.1018542 - 0.2379287 * L(uk, c(1, 11, 12))1 + 0.0368355 *
 #' # L(uk, c(1, 11, 12))11 + 0.1689896 * L(uk, c(1, 11, 12))12"
-#' # (2) "BEHAVIORAL> TSDELTA_LOG_uk"
-#' # (3) "EQ> TSDELTA(LOG(uk)) = b0 + b1 * TSLAG(uk, 1) + b2 * TSLAG(uk, 11) + b3 * TSLAG(uk, 12)"
-#' # (4) "COEFF> b0 b1 b2 b3"
+#' # (2) "BEHAVIORAL> uk"
+#' # (3) "TSRANGE 1990 1 2010 4"
+#' # (4) "EQ> TSDELTA(LOG(uk)) = b0 + b1 * TSLAG(uk, 1) + b2 * TSLAG(uk, 11) + b3 * TSLAG(uk, 12)"
+#' # (5) "COEFF> b0 b1 b2 b3"
 model_equation <- function(model, ...) {
   #   model =  est_lm   {model_equation(est_lm)[2:4]}
   format_args <- list(...)
@@ -3441,6 +3443,19 @@ model_equation <- function(model, ...) {
     model_coeff_sign == -1 ~ " - ",
     model_coeff_sign == 1 ~ " + ",
     model_coeff_sign == 0 ~ " + "
+  )
+
+  # components of TSRANGE from date stamps of residuals
+  model_tsr <- model$residuals %>% names()
+  model_eqn_tsr <- str_flatten(
+    c(
+      "TSRANGE",
+      year(model_tsr %>% head(1)),
+      quarter(model_tsr %>% head(1)),
+      year(model_tsr %>% tail(1)),
+      quarter(model_tsr %>% tail(1))
+    ),
+    collapse = " "
   )
 
   # model_eqn <- paste(strsplit(as.character(model$call$formula), "~")[[2]], # 'y'
@@ -3524,6 +3539,15 @@ model_equation <- function(model, ...) {
     "L\\(([_., \\(\\)[:alnum:]]+)\\)",
     "TSLAG(\\1)"
   ) # dynlm::L(x, k) = lag(x, -k)
+  model_eqn_bim <- stringr::str_replace_all(
+    model_eqn_bim,
+    "(\\d{4})_(\\d{2})_(\\d{2})",
+    "\\1-\\2-\\3"
+  ) %>%
+    stringr::str_replace_all(
+      "(\\d{4}-\\d{2}-\\d{2})",
+      ymd_to_yQq
+    ) # convert IIS_1980_10_01 to IIS_1980Q4
   model_eqn_coe <- stringr::str_extract_all(
     model_eqn_bim,
     "(b[[:digit:]]+)",
@@ -3534,7 +3558,13 @@ model_equation <- function(model, ...) {
   model_eqn_bim <- stringr::str_replace_all(model_eqn_bim, "^", "EQ> ") # add EQ> to start of line
   model_eqn_coe <- stringr::str_replace_all(model_eqn_coe, "^", "COEFF> ") # add COEFF> to start of line
 
-  return(c(model_eqn, model_eqn_beh, model_eqn_bim, model_eqn_coe))
+  return(c(
+    model_eqn,
+    model_eqn_beh,
+    model_eqn_tsr,
+    model_eqn_bim,
+    model_eqn_coe
+  ))
 }
 
 
