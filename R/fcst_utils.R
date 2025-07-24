@@ -3541,13 +3541,13 @@ model_equation <- function(model, ...) {
   ) # dynlm::L(x, k) = lag(x, -k)
   model_eqn_bim <- stringr::str_replace_all(
     model_eqn_bim,
-    "(\\d{4})_(\\d{2})_(\\d{2})",
-    "\\1-\\2-\\3"
+    "S_(\\d{4})_(\\d{2})_(\\d{2})",
+    "S_\\1-\\2-\\3"
   ) %>%
     stringr::str_replace_all(
       "(\\d{4}-\\d{2}-\\d{2})",
       ymd_to_yQq
-    ) # convert IIS_1980_10_01 to IIS_1980Q4
+    ) # convert IIS_1980_10_01 to IIS_1980Q4 and SIS_1980_10_01 to SIS_1980Q4
   model_eqn_coe <- stringr::str_extract_all(
     model_eqn_bim,
     "(b[[:digit:]]+)",
