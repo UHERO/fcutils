@@ -3446,7 +3446,10 @@ model_equation <- function(model, ...) {
   )
 
   # components of TSRANGE from date stamps of residuals
-  model_tsr <- model$residuals %>% names()
+  model_tsr <- model$residuals %>%
+    names() %>%
+    parse_date_time(c("ymd", "my", "yq", "y")) %>%
+    ymd()
   model_eqn_tsr <- str_flatten(
     c(
       "TSRANGE",
