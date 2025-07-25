@@ -3448,15 +3448,15 @@ model_equation <- function(model, ...) {
   # components of TSRANGE from date stamps of residuals
   model_tsr <- model$residuals %>%
     names() %>%
-    parse_date_time(c("ymd", "my", "yq", "y")) %>%
-    ymd()
-  model_eqn_tsr <- str_flatten(
+    lubridate::parse_date_time(c("ymd", "my", "yq", "y")) %>%
+    lubridate::ymd()
+  model_eqn_tsr <- stringr::str_flatten(
     c(
       "TSRANGE",
-      year(model_tsr %>% head(1)),
-      quarter(model_tsr %>% head(1)),
-      year(model_tsr %>% tail(1)),
-      quarter(model_tsr %>% tail(1))
+      lubridate::year(model_tsr %>% utils::head(1)),
+      lubridate::quarter(model_tsr %>% utils::head(1)),
+      lubridate::year(model_tsr %>% utils::tail(1)),
+      lubridate::quarter(model_tsr %>% utils::tail(1))
     ),
     collapse = " "
   )
