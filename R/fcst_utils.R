@@ -2762,7 +2762,8 @@ plot_1 <- function(
     # dygraphs::dyOptions(colors = RColorBrewer::brewer.pal(length(ser_names), "Set1")) %>%
     dygraphs::dyOptions(
       colors = uh_colors_light[1:length(ser_names_pct)] %>%
-        c(uh_colors[1:length(ser_names)])
+        as.vector() %>%
+        c(uh_colors[1:length(ser_names)] %>% as.vector())
     ) %>%
     dygraphs::dyLegend(show = "follow", labelsSeparateLines = TRUE) %>%
     # dygraphs::dyLegend(width = 0.9 * width, show = "auto", labelsSeparateLines = FALSE) %>%
@@ -2837,7 +2838,9 @@ plot_2ax <- function(
       }
     } %>%
     # dygraphs::dyOptions(colors = RColorBrewer::brewer.pal(length(ser_names), "Set1")) %>%
-    dygraphs::dyOptions(colors = uh_colors[1:length(ser_names)]) %>%
+    dygraphs::dyOptions(
+      colors = uh_colors[1:length(ser_names)] %>% as.vector()
+    ) %>%
     dygraphs::dyLegend(show = "follow", labelsSeparateLines = TRUE) %>%
     # dygraphs::dyLegend(width = 0.9 * width, show = "auto", labelsSeparateLines = FALSE) %>%
     dygraphs::dyRangeSelector(
@@ -3054,7 +3057,7 @@ plot_comp_2 <- function(
       width = width
     ) %>%
     dygraphs::dyLegend(width = width * 0.90) %>%
-    dygraphs::dyOptions(colors = uh_colors[1:length(ser_names)]) # %>%
+    dygraphs::dyOptions(colors = uh_colors[1:length(ser_names)] %>% as.vector()) # %>%
   # dygraphs::dyOptions(colors = RColorBrewer::brewer.pal(length(ser_names), "Set2"))
   plot_growth <-
     x_mod %>%
@@ -3072,7 +3075,9 @@ plot_comp_2 <- function(
       if (gr_bar) dygraphs::dyBarChart(.) else .
     } %>%
     dygraphs::dyLegend(width = width * 0.90) %>%
-    dygraphs::dyOptions(colors = uh_colors[1:length(ser_names)]) %>%
+    dygraphs::dyOptions(
+      colors = uh_colors[1:length(ser_names)] %>% as.vector()
+    ) %>%
     # dygraphs::dyOptions(colors = RColorBrewer::brewer.pal(length(ser_names), "Set2")) %>%
     dygraphs::dyRangeSelector(
       dateWindow = c(rng_start, rng_end),
@@ -3136,7 +3141,7 @@ plot_comp_3 <- function(
       width = width
     ) %>%
     dygraphs::dyLegend(width = width * 0.90) %>%
-    dygraphs::dyOptions(colors = uh_colors[1:length(ser_names)]) # %>%
+    dygraphs::dyOptions(colors = uh_colors[1:length(ser_names)] %>% as.vector()) # %>%
   # dygraphs::dyOptions(colors = RColorBrewer::brewer.pal(length(ser_names), "Set2"))
   # plot_level[["elementId"]] <- ser_names %>% extract(1) %>% str_extract("^.*@")
   plot_index <-
@@ -3151,7 +3156,7 @@ plot_comp_3 <- function(
     ) %>%
     # dygraphs::dyRebase(value = 100) %>%
     dygraphs::dyLegend(width = width * 0.90) %>%
-    dygraphs::dyOptions(colors = uh_colors[1:length(ser_names)]) # %>%
+    dygraphs::dyOptions(colors = uh_colors[1:length(ser_names)] %>% as.vector()) # %>%
   # dygraphs::dyOptions(colors = RColorBrewer::brewer.pal(length(ser_names), "Set2"))
   plot_growth <-
     x_mod %>%
@@ -3169,7 +3174,9 @@ plot_comp_3 <- function(
       if (gr_bar) dygraphs::dyBarChart(.) else .
     } %>%
     dygraphs::dyLegend(width = width * 0.90) %>%
-    dygraphs::dyOptions(colors = uh_colors[1:length(ser_names)]) %>%
+    dygraphs::dyOptions(
+      colors = uh_colors[1:length(ser_names)] %>% as.vector()
+    ) %>%
     # dygraphs::dyOptions(colors = RColorBrewer::brewer.pal(length(ser_names), "Set2")) %>%
     dygraphs::dyRangeSelector(
       dateWindow = c(rng_start, rng_end),
