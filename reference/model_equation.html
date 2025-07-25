@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">fcutils</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.0.9030</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.0.9031</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -54,14 +54,14 @@
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p>a character vector containing the estimated equation (1) and bimets components (2:4)</p>
+    <p>a character vector containing the estimated equation (1) and bimets components (2:5)</p>
     </div>
 
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span> <span class="co"># interactive()</span></span></span>
 <span class="r-in"><span><span class="co"># this function combines coefficient estimates and variable names into an equation</span></span></span>
-<span class="r-in"><span><span class="co"># in vector element 1 and into bimets components in vector elements 2-4.</span></span></span>
+<span class="r-in"><span><span class="co"># in vector element 1 and into bimets components in vector elements 2-5.</span></span></span>
 <span class="r-in"><span><span class="co"># https://stats.stackexchange.com/questions/63600/</span></span></span>
 <span class="r-in"><span><span class="co"># how-to-translate-the-results-from-lm-to-an-equation</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="st">"UKDriverDeaths"</span>, package <span class="op">=</span> <span class="st">"datasets"</span><span class="op">)</span></span></span>
@@ -72,17 +72,19 @@
 <span class="r-in"><span><span class="co"># L(uk, 1:3)3 + 0.37480999 * L(log(uk), c(5:6, 12))5 - 0.22709846 * L(log(uk), c(5:6, 12))6 +</span></span></span>
 <span class="r-in"><span><span class="co"># 1.62340449 * L(log(uk), c(5:6, 12))12"</span></span></span>
 <span class="r-in"><span><span class="co"># (2) "BEHAVIORAL&gt; uk"</span></span></span>
-<span class="r-in"><span><span class="co"># (3) "EQ&gt; uk = b0 + b1 * TSLAG(uk, 1) + b2 * TSLAG(uk, 2) + b3 * TSLAG(uk, 3) + b4 *</span></span></span>
+<span class="r-in"><span><span class="co"># (3) "TSRANGE 1990 1 2010 4"</span></span></span>
+<span class="r-in"><span><span class="co"># (4) "EQ&gt; uk = b0 + b1 * TSLAG(uk, 1) + b2 * TSLAG(uk, 2) + b3 * TSLAG(uk, 3) + b4 *</span></span></span>
 <span class="r-in"><span><span class="co"># TSLAG(LOG(uk), 5) + b5 * TSLAG(LOG(uk), 6) + b6 * TSLAG(LOG(uk), 12)"</span></span></span>
-<span class="r-in"><span><span class="co"># (4) "COEFF&gt; b0 b1 b2 b3 b4 b5 b6"</span></span></span>
+<span class="r-in"><span><span class="co"># (5) "COEFF&gt; b0 b1 b2 b3 b4 b5 b6"</span></span></span>
 <span class="r-in"><span><span class="co">## regression on multiple lags in a single L() call</span></span></span>
 <span class="r-in"><span><span class="va">dfm</span> <span class="op">&lt;-</span> <span class="fu">dynlm</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/dynlm/man/dynlm.html" class="external-link">dynlm</a></span><span class="op">(</span><span class="fu">d</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="va">uk</span><span class="op">)</span><span class="op">)</span> <span class="op">~</span> <span class="fu">L</span><span class="op">(</span><span class="va">uk</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">11</span>, <span class="fl">12</span><span class="op">)</span><span class="op">)</span>, start <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1975</span>, <span class="fl">1</span><span class="op">)</span>, end <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1982</span>, <span class="fl">12</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu">model_equation</span><span class="op">(</span><span class="va">dfm</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="co"># (1) "d(log(uk)) = 0.1018542 - 0.2379287 * L(uk, c(1, 11, 12))1 + 0.0368355 *</span></span></span>
 <span class="r-in"><span><span class="co"># L(uk, c(1, 11, 12))11 + 0.1689896 * L(uk, c(1, 11, 12))12"</span></span></span>
-<span class="r-in"><span><span class="co"># (2) "BEHAVIORAL&gt; TSDELTA_LOG_uk"</span></span></span>
-<span class="r-in"><span><span class="co"># (3) "EQ&gt; TSDELTA(LOG(uk)) = b0 + b1 * TSLAG(uk, 1) + b2 * TSLAG(uk, 11) + b3 * TSLAG(uk, 12)"</span></span></span>
-<span class="r-in"><span><span class="co"># (4) "COEFF&gt; b0 b1 b2 b3"</span></span></span>
+<span class="r-in"><span><span class="co"># (2) "BEHAVIORAL&gt; uk"</span></span></span>
+<span class="r-in"><span><span class="co"># (3) "TSRANGE 1990 1 2010 4"</span></span></span>
+<span class="r-in"><span><span class="co"># (4) "EQ&gt; TSDELTA(LOG(uk)) = b0 + b1 * TSLAG(uk, 1) + b2 * TSLAG(uk, 11) + b3 * TSLAG(uk, 12)"</span></span></span>
+<span class="r-in"><span><span class="co"># (5) "COEFF&gt; b0 b1 b2 b3"</span></span></span>
 <span class="r-in"><span><span class="op">}</span></span></span>
 </code></pre></div>
     </div>
