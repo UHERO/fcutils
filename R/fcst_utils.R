@@ -3524,16 +3524,7 @@ model_equation <- function(model, ...) {
       "^TSDELTA_" = "",
       "^LOG_" = ""
     )) # clean equation name
-  model_eqn_bim <- model_eqn_bim %>%
-    stringr::str_replace_all("DL_([_.[:alnum:]]+)", "TSDELTALOG(\\1)") %>% # replace DL_ with TSDELTALOG()
-    stringr::str_replace_all("L_([_.[:alnum:]]+)", "LOG(\\1)") %>% # replace L_ with LOG()
-    stringr::str_replace_all("D_([_.[:alnum:]]+)", "TSDELTA(\\1)") %>% # replace D_ with TSDELTA()
-    stringr::str_replace_all("log\\(([_.[:alnum:]]+)\\)", "LOG(\\1)") %>% # replace log() with LOG()
-    stringr::str_replace_all(
-      "d\\(([_., \\(\\)[:alnum:]]+)\\)",
-      "TSDELTA(\\1)"
-    ) %>% # dynlm::d() = diff()
-    stringr::str_replace_all("lag\\(([_., \\(\\)[:alnum:]]+)\\)", "TSLAG(\\1)") # lag() with TSLAG()
+  # first deal with lags then with other transformations
   model_eqn_bim <- stringr::str_replace_all(
     model_eqn_bim,
     "([_[:alpha:]]+)(\\.)([[:digit:]]{1,2})",
@@ -3549,6 +3540,16 @@ model_equation <- function(model, ...) {
     "L\\(([_., \\(\\)[:alnum:]]+)\\)",
     "TSLAG(\\1)"
   ) # dynlm::L(x, k) = lag(x, -k)
+  model_eqn_bim <- model_eqn_bim %>%
+    stringr::str_replace_all("DL_([_.[:alnum:]]+)", "TSDELTALOG(\\1)") %>% # replace DL_ with TSDELTALOG()
+    stringr::str_replace_all("L_([_.[:alnum:]]+)", "LOG(\\1)") %>% # replace L_ with LOG()
+    stringr::str_replace_all("D_([_.[:alnum:]]+)", "TSDELTA(\\1)") %>% # replace D_ with TSDELTA()
+    stringr::str_replace_all("log\\(([_.[:alnum:]]+)\\)", "LOG(\\1)") %>% # replace log() with LOG()
+    stringr::str_replace_all(
+      "d\\(([_., \\(\\)[:alnum:]]+)\\)",
+      "TSDELTA(\\1)"
+    ) %>% # dynlm::d() = diff()
+    stringr::str_replace_all("lag\\(([_., \\(\\)[:alnum:]]+)\\)", "TSLAG(\\1)") # lag() with TSLAG()
   model_eqn_bim <- stringr::str_replace_all(
     model_eqn_bim,
     "S_(\\d{4})_(\\d{2})_(\\d{2})",
