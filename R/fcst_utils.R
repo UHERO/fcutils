@@ -3600,6 +3600,11 @@ extract_data <- function(model_in, y_name) {
       ~ stringr::str_replace_all(., c("iis" = "IIS_", "sis" = "SIS_"))
     ) %>%
     dplyr::rename_with(~ stringr::str_replace_all(., "-", "_")) %>%
+    dplyr::mutate(
+      time = lubridate::ymd(index),
+      .before = 1,
+      .keep = "unused"
+    ) %>%
     tsbox::ts_long() %>%
     tsbox::ts_xts()
 
