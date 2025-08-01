@@ -3440,7 +3440,6 @@ gen_table <- function(
 #' # (4) "EQ> TSDELTA(LOG(uk)) = b0 + b1 * TSLAG(uk, 1) + b2 * TSLAG(uk, 11) + b3 * TSLAG(uk, 12)"
 #' # (5) "COEFF> b0 b1 b2 b3"
 model_equation <- function(model, ...) {
-  #   model =  est_lm   {model_equation(est_lm)[2:4]}
   format_args <- list(...)
 
   model_coeff <- model$coefficients
@@ -3468,43 +3467,62 @@ model_equation <- function(model, ...) {
     collapse = " "
   )
 
-  # model_eqn <- paste(strsplit(as.character(model$call$formula), "~")[[2]], # 'y'
-  # model_eqn <- paste(strsplit(as.character(model$full_formula), "~")[[2]], # 'y'
-  model_eqn <- paste(
-    strsplit(as.character(model$terms), "~")[[2]], # 'y'
-    "=",
-    paste(
-      dplyr::if_else(model_coeff[1] < 0, "- ", ""),
-      do.call(format, format_args)[1],
-      paste(
-        model_coeff_prefix[-1],
-        do.call(format, format_args)[-1],
-        " * ",
-        names(model_coeff[-1]),
-        sep = "",
-        collapse = ""
-      ),
-      sep = ""
+  # model equation with estimated coefficients
+  model_eqn <- stringr::str_c(
+    stringr::str_split(as.character(model$terms), "~")[[2]], # 'y'
+    " = ",
+    stringr::str_c(
+      model_coeff_prefix,
+      do.call(format, format_args),
+      " * ",
+      names(model_coeff),
+      collapse = ""
     )
-  )
+  ) %>%
+    stringr::str_squish() %>%
+    stringr::str_replace("= \\+ ", "= ") %>%
+    stringr::str_replace("\\* c |\\* CONST |\\* \\(Intercept\\) ", "* CONST ")
 
-  model_eqn_bim <- paste(
-    strsplit(as.character(model$terms), "~")[[2]], # 'y'
-    "=",
-    paste(
-      "b0",
-      paste(
-        paste(" + b", 1:length(model_coeff_prefix[-1]), sep = ""),
-        " * ",
-        names(model_coeff[-1]),
-        sep = "",
-        collapse = ""
-      ),
-      sep = ""
+  # formal model equation with b coefficients
+  # if there is a constant term in the model (Intercept, CONST, c)
+  # move it to the first position with b0 coefficient
+  if (
+    names(model_coeff) %>% stringr::str_detect("CONST|Intercept|^c$") %>% any()
+  ) {
+    const_index <- which(
+      names(model_coeff) %>% stringr::str_detect("CONST|Intercept|^c$")
     )
-  )
+    model_eqn_bim <- stringr::str_c(
+      stringr::str_split(as.character(model$terms), "~")[[2]], # 'y'
+      " = ",
+      stringr::str_c(
+        "b0",
+        stringr::str_c(
+          stringr::str_c(" + b", 1:length(model_coeff[-1]), sep = ""),
+          " * ",
+          names(model_coeff[-const_index]),
+          collapse = ""
+        )
+      )
+    ) %>%
+      stringr::str_squish() %>%
+      stringr::str_replace("= \\+ ", "= ")
+  } else {
+    model_eqn_bim <- stringr::str_c(
+      stringr::str_split(as.character(model$terms), "~")[[2]], # 'y'
+      " = ",
+      stringr::str_c(
+        stringr::str_c(" + b", 1:length(model_coeff), sep = ""),
+        " * ",
+        names(model_coeff),
+        collapse = ""
+      )
+    ) %>%
+      stringr::str_squish() %>%
+      stringr::str_replace("= \\+ ", "= ")
+  }
 
-  # model_eqn_beh <- stringr::str_extract(model_eqn_bim, "\\w*") %>% # extract the target variable name
+  # format model equation in bimets format
   model_eqn_beh <- stringr::str_extract(
     model_eqn_bim,
     "[_.\\(\\)[:alnum:]]+"
@@ -3591,7 +3609,6 @@ model_equation <- function(model, ...) {
 #' # save the data associated with a gets model
 extract_data <- function(model_in, y_name) {
   data_out <- gets::eviews(model_in, print = FALSE, return = TRUE)$data %>%
-    dplyr::select(-c) %>%
     dplyr::rename_with(~y_name, .cols = 2) %>%
     dplyr::rename_with(
       ~ stringr::str_replace(., "ar", stringr::str_glue("{y_name}."))
