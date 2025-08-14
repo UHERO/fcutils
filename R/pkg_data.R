@@ -24,7 +24,7 @@ bnk_start <- lubridate::ymd("1970-01-01")
 bnk_end <- lubridate::ymd("2100-12-31")
 
 
-#' end of data range in the data bank
+#' pattern in series names that should be aggregate as sum
 #' @name sum_pattern
 #' @format string of patterns in series names that should be aggregated via sum
 #' @docType data

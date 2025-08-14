@@ -3,7 +3,7 @@
 \docType{data}
 \name{sum_pattern}
 \alias{sum_pattern}
-\title{end of data range in the data bank}
+\title{pattern in series names that should be aggregate as sum}
 \format{
 string of patterns in series names that should be aggregated via sum
 }
@@ -14,7 +14,7 @@ author
 sum_pattern
 }
 \description{
-end of data range in the data bank
+pattern in series names that should be aggregate as sum
 }
 \references{
 \url{uhero.hawaii.edu}

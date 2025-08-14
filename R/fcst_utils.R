@@ -1614,6 +1614,89 @@ aggr <- function(
 }
 
 
+#' Aggregate univariate or multivariate fiscal time series from low to high frequency
+#'
+#' @param x a tx-boxable object at a high frequency (e.g. monthly or quarterly)
+#' @param conv_type match the aggregated value via "first", "last", "sum",
+#' "mean". If conv_type == "uhero" then the name of the time series x is
+#' compared to the internal variable `sum_pattern`. For matching series names
+#' the aggregation is based on "sum"; for all others it is based on "mean."
+#' @param target_freq target frequency "year", "quarter", "month", "week"
+#' @param na_rm	logical, if TRUE, incomplete periods are aggregated as
+#' well. For irregular series, incomplete periods are always aggregated.
+#'
+#' @return aggregated object of the same type as the input
+#' @export
+#'
+#' @details date stamps typically reflect the start of a period, but here the
+#' date stamps in the result are shifted 6 months forward relative to calendar
+#' dates, so Jul21 becomes Jan22, or 2022-01-01, and 21Q3 becomes 22Q1.
+#'
+#' @examples
+#' monthly_data_example |>
+#'   faggr(conv_type = "sum", target_freq = "quarter")
+#' monthly_data_example |>
+#'   faggr(conv_type = "uhero", target_freq = "quarter")
+#' # works with a single series too
+#' monthly_data_example |>
+#'   tsbox::ts_long() |>
+#'   tsbox::ts_pick("VISNS_HI") |>
+#'   faggr(conv_type = "uhero", target_freq = "year") |>
+#'   tsbox::ts_plot()
+faggr <- function(
+  x,
+  conv_type = "mean",
+  target_freq = "year",
+  na_rm = FALSE
+) {
+  # convert to long format and return additional details
+  x_mod <- conv_long(x, ser_info = TRUE)
+
+  # convert to nested tibble and aggregate
+  x_mod_agg <- x_mod %>%
+    tsbox::ts_lag("6 months") %>%
+    dplyr::mutate(yr = lubridate::floor_date(.data$time, "year")) %>%
+    tidyr::nest(data = c("id":"value"), .by = c("id", "yr")) %>%
+    dplyr::mutate(
+      # add a column with aggregation type
+      agg_type = if (
+        stringr::str_to_lower(conv_type) %>% stringr::str_detect("^u")
+      ) {
+        dplyr::if_else(
+          .data$id %>% stringr::str_detect(sum_pattern),
+          "sum",
+          "mean"
+        )
+      } else {
+        conv_type
+      }
+    ) %>%
+    # operation on the nested column
+    dplyr::rowwise() %>%
+    dplyr::mutate(
+      aggd = list(tsbox::ts_frequency(
+        .data$data,
+        to = target_freq,
+        aggregate = .data$agg_type,
+        na.rm = na_rm
+      ))
+    ) %>%
+    # only keep the aggregated data
+    dplyr::select("aggd") %>%
+    tidyr::unnest("aggd") #%>%
+  # tsbox::ts_lag("-6 months")
+
+  # reclass the output to match the input
+  ans <- if (attr(x_mod, "was_wide")) {
+    tsbox::ts_wide(x_mod_agg)
+  } else {
+    tsbox::copy_class(x_mod_agg, x)
+  }
+
+  return(ans)
+}
+
+
 #' Year to date sum or average
 #'
 #' @param x a ts-boxable object
