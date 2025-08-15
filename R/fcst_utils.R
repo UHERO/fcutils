@@ -1336,15 +1336,16 @@ disagg <- function(
     ) %>%
     set_attr_tslist() %>%
     # univariate data requires special treatment
-    {
-      if (length(attr(x_mod, "ser_names")) == 1) {
-        tsbox::ts_tbl(.) %>%
-          tsbox::ts_long() %>%
-          dplyr::mutate(id = attr(x_mod, "ser_names"))
-      } else {
-        tsbox::ts_tbl(.)
-      }
-    }
+    # {
+    #   if (length(attr(x_mod, "ser_names")) == 1) {
+    #     tsbox::ts_tbl(.) %>%
+    #       tsbox::ts_long() %>%
+    #       dplyr::mutate(id = attr(x_mod, "ser_names"))
+    #   } else {
+    #     tsbox::ts_tbl(.)
+    #   }
+    # }
+    tsbox::ts_tbl()
 
   # reclass the output to match the input
   ans <- if (attr(x_mod, "was_wide")) {
@@ -2378,16 +2379,17 @@ index <- function(x, base_per = as.character(Sys.Date()), base_value = 100) {
     tsbox::ts_index(base = to_ymd(base_per)) %>%
     dplyr::mutate(value = .data$value * base_value) %>%
 
-    # univariate data requires special treatment
-    {
-      if (length(attr(x_mod, "ser_names")) == 1) {
-        tsbox::ts_tbl(.) %>%
-          tsbox::ts_long() %>%
-          dplyr::mutate(id = attr(x_mod, "ser_names"))
-      } else {
-        tsbox::ts_tbl(.)
-      }
-    }
+    # # univariate data requires special treatment
+    # {
+    #   if (length(attr(x_mod, "ser_names")) == 1) {
+    #     tsbox::ts_tbl(.) %>%
+    #       tsbox::ts_long() %>%
+    #       dplyr::mutate(id = attr(x_mod, "ser_names"))
+    #   } else {
+    #     tsbox::ts_tbl(.)
+    #   }
+    # }
+    tsbox::ts_tbl()
 
   # reclass the output to match the input
   ans <- if (attr(x_mod, "was_wide")) {
@@ -2433,16 +2435,17 @@ span <- function(x, start = NULL, end = NULL, template = NULL, extend = FALSE) {
       extend = extend
     ) %>%
 
-    # univariate data requires special treatment
-    {
-      if (length(attr(x_mod, "ser_names")) == 1) {
-        tsbox::ts_tbl(.) %>%
-          tsbox::ts_long() %>%
-          dplyr::mutate(id = attr(x_mod, "ser_names"))
-      } else {
-        tsbox::ts_tbl(.)
-      }
-    }
+    # # univariate data requires special treatment
+    # {
+    #   if (length(attr(x_mod, "ser_names")) == 1) {
+    #     tsbox::ts_tbl(.) %>%
+    #       tsbox::ts_long() %>%
+    #       dplyr::mutate(id = attr(x_mod, "ser_names"))
+    #   } else {
+    #     tsbox::ts_tbl(.)
+    #   }
+    # }
+    tsbox::ts_tbl()
 
   # reclass the output to match the input
   ans <- if (attr(x_mod, "was_wide")) {
