@@ -1206,7 +1206,228 @@ conv_tslist <- function(x) {
 # time series utility functions ----
 # **************************
 
-#' Interpolate a single time series from low to high frequency
+#' Interpolate a single vector containing missing values based on a pattern
+#'
+#' @param vec_incomplete numeric vector with NAs to be filled
+#' @param vec_pattern numeric vector representing the pattern
+#' @return numeric vector with NAs filled
+interpolate_vector <- function(vec_incomplete, vec_pattern) {
+  # return immediately if no work is needed
+  if (!any(is.na(vec_incomplete))) {
+    return(vec_incomplete)
+  }
+
+  # create a data frame to work with
+  dat_tbl <- dplyr::tibble(
+    idx = 1:length(vec_incomplete),
+    vec_incomplete = vec_incomplete,
+    vec_pattern = vec_pattern
+  )
+
+  # Step 1: find the boundaries of each gap using tidyr::fill()
+  dat_tbl <- dat_tbl %>%
+    dplyr::mutate(
+      last_known_inc = dplyr::if_else(
+        is.na(vec_incomplete),
+        NA_real_,
+        vec_incomplete
+      ),
+      next_known_inc = .data$last_known_inc
+    ) %>%
+    tidyr::fill(.data$last_known_inc, .direction = "down") %>%
+    tidyr::fill(.data$next_known_inc, .direction = "up") %>%
+    # use group_by and mutate to get the corresponding boundary values for vec_pattern and idx
+    dplyr::group_by(grp = cumsum(!is.na(vec_incomplete))) %>%
+    dplyr::mutate(
+      last_known_pat = dplyr::first(vec_pattern),
+      last_known_idx = dplyr::first(.data$idx)
+    ) %>%
+    dplyr::ungroup() %>%
+    dplyr::select(-"grp") %>%
+    dplyr::group_by(grp = rev(cumsum(!is.na(rev(vec_incomplete))))) %>%
+    dplyr::mutate(
+      next_known_pat = dplyr::last(vec_pattern),
+      next_known_idx = dplyr::last(.data$idx)
+    ) %>%
+    dplyr::ungroup() %>%
+    dplyr::select(-"grp")
+
+  # Step 2: apply interpolation logic to all NAs at once
+  dat_tbl <- dat_tbl %>%
+    dplyr::mutate(
+      interpolated_val = dplyr::case_when(
+        # CASE 1: INTERNAL GAP (including correction for growth mismatch)
+        !is.na(last_known_inc) &
+          !is.na(next_known_inc) &
+          last_known_idx != next_known_idx ~
+          {
+            # total_q_growth <- next_known_inc / last_known_inc
+            # total_c_growth <- next_known_pat / last_known_pat
+            # adj_factor <- total_q_growth / total_c_growth
+            # k <- idx - last_known_idx
+            # n <- next_known_idx - last_known_idx
+            # feathered_adj <- (adj_factor - 1) * (k / n) + 1
+            # c_growth_to_i <- vec_pattern / last_known_pat
+            # last_known_inc * c_growth_to_i * feathered_adj
+
+            last_known_inc *
+              (vec_pattern / last_known_pat) * # c_growth_to_i
+              (((next_known_inc / last_known_inc) / # total_q_growth
+                (next_known_pat / last_known_pat) - # total_c_growth
+                1) *
+                ((.data$idx - last_known_idx) / # k
+                  (next_known_idx - last_known_idx)) + # n
+                1)
+          },
+        # CASE 2: TRAILING GAP (forward fill)
+        !is.na(last_known_inc) & is.na(next_known_inc) ~
+          last_known_inc * (vec_pattern / last_known_pat),
+        # CASE 3: LEADING GAP (backward fill)
+        is.na(last_known_inc) & !is.na(next_known_inc) ~
+          next_known_inc * (vec_pattern / next_known_pat),
+        TRUE ~ NA_real_
+      )
+    )
+
+  # Step 3. return the original values combined with the new interpolated values
+  final_vec <- dplyr::if_else(
+    is.na(dat_tbl$vec_incomplete),
+    dat_tbl$interpolated_val,
+    dat_tbl$vec_incomplete
+  )
+
+  return(final_vec)
+}
+
+
+#' Interpolate univariate or multivariate time series with missing values
+#'
+#' @param incomplete a ts-boxable object with NAs
+#' @param pattern a ts-boxable object no missing values
+#' @param extend_range logical. If TRUE, uses a full_join to potentially extend
+#'   the date range. If FALSE (default), uses a left_join to only fill NAs
+#'   within the original date range.
+#'
+#' @return interpolated object of the same type as the input
+#' @export
+#'
+#' @details the function aligns two sets of time series by date and then
+#' interpolates the first set using the second set as a pattern.
+#' The time-span of the pattern has to match or be larger
+#' than the time-span of the incomplete data.
+#'
+#' @examples
+#' monthly_data_example |>
+#'   dplyr::filter(time > "2002-01-01") |>
+#'   tsbox::ts_long() |>
+#'   dplyr::mutate(
+#'     value = dplyr::if_else(time > "2021-01-01" & time < "2022-01-01",
+#'     NA_real_, value)
+#'   )|>
+#'   interpolate_series(monthly_data_example, extend_range = TRUE)
+#' monthly_data_example |>
+#'   tsbox::ts_long() |>
+#'   dplyr::mutate(
+#'     value = dplyr::if_else(
+#'       time > "2021-01-01" & time < "2022-01-01",
+#'       NA_real_,
+#'       value
+#'     )
+#'   ) |>
+#'   interpolate_series(
+#'     # missing values in the pattern
+#'     monthly_data_example |>
+#'       tsbox::ts_long() |>
+#'       dplyr::mutate(
+#'         value = dplyr::if_else(
+#'           time > "2021-03-01" & time < "2021-09-01",
+#'           NA_real_,
+#'           value
+#'         )
+#'       )
+#'   ) %>%
+#'   # no interpolation where pattern has NAs
+#'   tsbox::ts_wide()
+interpolate_series <- function(
+  incomplete,
+  pattern,
+  extend_range = FALSE
+) {
+  # convert to wide format and return additional details
+  incomplete_mod <- conv_long(incomplete, ser_info = TRUE)
+  incomplete_wide <- incomplete_mod %>%
+    dplyr::mutate(id = stringr::str_c(.data$id, "_I")) %>%
+    tsbox::ts_wide()
+  pattern_wide <- conv_long(pattern) %>%
+    dplyr::mutate(id = stringr::str_c(.data$id, "_P")) %>%
+    tsbox::ts_wide()
+
+  # make the join strategy an explicit parameter
+  join_fun <- if (extend_range) dplyr::full_join else dplyr::left_join
+  aligned_data <- join_fun(incomplete_wide, pattern_wide, by = "time") %>%
+    dplyr::arrange(.data$time)
+
+  # create a robust mapping of incomplete columns to pattern columns by name
+  inc_cols <- names(incomplete_wide)[-1]
+  pat_cols <- names(pattern_wide)[-1]
+
+  # check that all needed pattern columns exist
+  if (length(inc_cols) > 1 & length(pat_cols) == 1) {
+    pat_cols <- rep(pat_cols, length(inc_cols))
+    warning(
+      "The same pattern is used for all interpolated series."
+    )
+  } else if (length(inc_cols) != length(pat_cols)) {
+    stop(
+      "Mismatch: could not find a pattern for every series."
+    )
+  }
+
+  # mapping betwen incomplete series and pattern series
+  col_map <- stats::setNames(
+    pat_cols, # pattern column names
+    inc_cols # incomplete column name
+  )
+
+  cat(
+    "The mapping betwen interpolated series and pattern series is the following:\n"
+  )
+  print(col_map, quote = FALSE)
+
+  # carry out the interpolation using the interpolate_vector function
+  interpolated_data <- aligned_data %>%
+    dplyr::mutate(dplyr::across(
+      .cols = dplyr::all_of(inc_cols),
+      .fns = ~ interpolate_vector(
+        vec_incomplete = .x,
+        # dynamically get the correct pattern column
+        vec_pattern = get(col_map[dplyr::cur_column()])
+      )
+    )) %>%
+    dplyr::select(c("time", dplyr::all_of(inc_cols))) %>%
+    dplyr::rename_with(
+      .cols = dplyr::all_of(inc_cols),
+      .fn = ~ stringr::str_remove(.x, "_I$")
+    )
+
+  # return the final data, filtered to the original date range if not extending
+  if (!extend_range) {
+    interpolated_data <- interpolated_data %>%
+      dplyr::semi_join(incomplete_wide, by = "time")
+  }
+
+  # reclass the output to match the input
+  ans <- if (attr(incomplete_mod, "was_wide")) {
+    interpolated_data
+  } else {
+    conv_long(interpolated_data) %>% tsbox::copy_class(incomplete)
+  }
+
+  return(ans)
+}
+
+
+#' Disaggregate a single time series from low to high frequency
 #'
 #' @param x a single time series (e.g. xts) at low freq (e.g. annual or quarterly)
 #' @param x_name the name of the time series x
@@ -1253,7 +1474,7 @@ disagg_1 <- function(x, x_name, conv_type, target_freq, pattern) {
 }
 
 
-#' Interpolate univariate or multivariate time series from low to high frequency
+#' Disaggregate univariate or multivariate time series from low to high frequency
 #'
 #' @param x a tx-boxable object at a low frequency (e.g. annual or quarterly)
 #' @param conv_type match the interpolated value via "first", "last", "sum",
@@ -1726,7 +1947,7 @@ ytd_cum <- function(x, avg = TRUE) {
       value = if (avg) dplyr::cummean(.data$value) else cumsum(.data$value)
     ) %>%
     dplyr::ungroup() %>%
-    dplyr::select(!"yr")
+    dplyr::select(-"yr")
 
   # reclass the output to match the input
   ans <- if (attr(x_mod, "was_wide")) {
@@ -1806,7 +2027,7 @@ fytd_cum <- function(x, avg = TRUE) {
       value = if (avg) dplyr::cummean(.data$value) else cumsum(.data$value)
     ) %>%
     dplyr::ungroup() %>%
-    dplyr::select(!"yr") %>%
+    dplyr::select(-"yr") %>%
     tsbox::ts_lag("-6 months")
 
   # reclass the output to match the input
@@ -1885,7 +2106,7 @@ mtd_cum <- function(x, avg = TRUE) {
       value = if (avg) dplyr::cummean(.data$value) else cumsum(.data$value)
     ) %>%
     dplyr::ungroup() %>%
-    dplyr::select(!"yrmo")
+    dplyr::select(-"yrmo")
 
   # reclass the output to match the input
   ans <- if (attr(x_mod, "was_wide")) {
@@ -1961,7 +2182,7 @@ ptd_cum <- function(x, per = "year", avg = TRUE) {
       value = if (avg) dplyr::cummean(.data$value) else cumsum(.data$value)
     ) %>%
     dplyr::ungroup() %>%
-    dplyr::select(!"time_per")
+    dplyr::select(-"time_per")
 
   # reclass the output to match the input
   ans <- if (attr(x_mod, "was_wide")) {
@@ -1991,7 +2212,7 @@ ptd_cum <- function(x, per = "year", avg = TRUE) {
 #'   ptd_gr() |>
 #'   tail()
 #' monthly_data_example |>
-#'   dplyr::select(time, "VAPNS_HI") |>
+#'   dplyr::select("time", "VAPNS_HI") |>
 #'   ptd_gr(per = "month", lag_length = "3 years") |>
 #'   tail()
 #' # don't use lag_length = "1 year" with weekly data
@@ -2340,7 +2561,7 @@ yoy_to_lev <- function(yoy_gr, hist_lev, smooth_span = 0) {
           .data$value
         )
       ) %>%
-      dplyr::select(!"value_smooth")
+      dplyr::select(-"value_smooth")
   }
 
   # reclass the output to match the input

@@ -2,7 +2,7 @@
 % Please edit documentation in R/fcst_utils.R
 \name{disagg}
 \alias{disagg}
-\title{Interpolate univariate or multivariate time series from low to high frequency}
+\title{Disaggregate univariate or multivariate time series from low to high frequency}
 \usage{
 disagg(x, conv_type = "mean", target_freq = "quarter", pattern = NULL)
 }
@@ -22,7 +22,7 @@ the interpolation is based on "sum"; for all others it is based on "mean."}
 interpolated object of the same type as the input
 }
 \description{
-Interpolate univariate or multivariate time series from low to high frequency
+Disaggregate univariate or multivariate time series from low to high frequency
 }
 \details{
 the time-span of the high-frequency pattern has to match or be larger

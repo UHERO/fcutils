@@ -27,7 +27,7 @@ monthly_data_example |>
   ptd_gr() |>
   tail()
 monthly_data_example |>
-  dplyr::select(time, "VAPNS_HI") |>
+  dplyr::select("time", "VAPNS_HI") |>
   ptd_gr(per = "month", lag_length = "3 years") |>
   tail()
 # don't use lag_length = "1 year" with weekly data
