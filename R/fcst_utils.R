@@ -1211,7 +1211,7 @@ conv_tslist <- function(x) {
 #' @param vec_incomplete numeric vector with NAs to be filled
 #' @param vec_pattern numeric vector representing the pattern
 #' @return numeric vector with NAs filled
-interpolate_vector <- function(vec_incomplete, vec_pattern) {
+interpol_1 <- function(vec_incomplete, vec_pattern) {
   # return immediately if no work is needed
   if (!any(is.na(vec_incomplete))) {
     return(vec_incomplete)
@@ -1324,7 +1324,7 @@ interpolate_vector <- function(vec_incomplete, vec_pattern) {
 #'     value = dplyr::if_else(time > "2021-01-01" & time < "2022-01-01",
 #'     NA_real_, value)
 #'   )|>
-#'   interpolate_series(monthly_data_example, extend_range = TRUE)
+#'   interpol(monthly_data_example, extend_range = TRUE)
 #' monthly_data_example |>
 #'   tsbox::ts_long() |>
 #'   dplyr::mutate(
@@ -1334,7 +1334,7 @@ interpolate_vector <- function(vec_incomplete, vec_pattern) {
 #'       value
 #'     )
 #'   ) |>
-#'   interpolate_series(
+#'   interpol(
 #'     # missing values in the pattern
 #'     monthly_data_example |>
 #'       tsbox::ts_long() |>
@@ -1348,7 +1348,7 @@ interpolate_vector <- function(vec_incomplete, vec_pattern) {
 #'   ) %>%
 #'   # no interpolation where pattern has NAs
 #'   tsbox::ts_wide()
-interpolate_series <- function(
+interpol <- function(
   incomplete,
   pattern,
   extend_range = FALSE
@@ -1394,11 +1394,11 @@ interpolate_series <- function(
   )
   print(col_map, quote = FALSE)
 
-  # carry out the interpolation using the interpolate_vector function
+  # carry out the interpolation using the interpol_1() function
   interpolated_data <- aligned_data %>%
     dplyr::mutate(dplyr::across(
       .cols = dplyr::all_of(inc_cols),
-      .fns = ~ interpolate_vector(
+      .fns = ~ interpol_1(
         vec_incomplete = .x,
         # dynamically get the correct pattern column
         vec_pattern = get(col_map[dplyr::cur_column()])
