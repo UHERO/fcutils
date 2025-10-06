@@ -1206,6 +1206,114 @@ conv_tslist <- function(x) {
 # time series utility functions ----
 # **************************
 
+#' Extend "ts-boxable" objects by chaining (extension of `tsbox::ts_chain()`)
+#'
+#' @param x a "ts-boxable" object to be extended
+#' @param y a "ts-boxable" object containing data to extend x
+#' @param ids a character vector with series names to be extended (default: NULL,
+#' in which case all series common to x and y are extended)
+#'
+#' @return object of the same type as the input with extended series
+#' @export
+#'
+#' @details This function performs a similar operation to `tsbox::ts_chain()`,
+#' but for multiple series.
+#'
+#' @examples
+#' quarterly_data_example |>
+#'   dplyr::filter(time < as.Date("2000-01-01")) |>
+#'   multi_chain(quarterly_data_example, ids = c("E_NF_HI", "ECT_HI"))
+#' quarterly_data_example |>
+#'   dplyr::filter(time < as.Date("2000-01-01")) |>
+#'   multi_chain(quarterly_data_example)
+multi_chain <- function(x, y, ids = NULL) {
+  x_wide <- conv_wide(x)
+  y_wide <- conv_wide(y)
+
+  # identify series to be extended
+  if (is.null(ids)) {
+    ids <- intersect(colnames(x_wide), colnames(y_wide)) %>%
+      setdiff("time")
+    if (length(ids) == 0L) {
+      return(x)
+    } else {
+      message(
+        "Extending the following series: ",
+        stringr::str_flatten(ids, collapse = ", ")
+      )
+    }
+  } else {
+    ids <- intersect(ids, colnames(x_wide)) %>%
+      intersect(colnames(y_wide))
+    if (length(ids) == 0L) {
+      return(x)
+    } else {
+      message(
+        "Extending the following series: ",
+        stringr::str_flatten(ids, collapse = ", ")
+      )
+    }
+  }
+
+  # extend x with y
+  chained_x <- x_wide %>%
+    dplyr::select(dplyr::all_of(c("time", ids))) %>%
+    dplyr::full_join(
+      y_wide %>%
+        dplyr::select(dplyr::all_of(c("time", ids))),
+      by = "time"
+    ) %>%
+    dplyr::arrange(.data$time) %>%
+    dplyr::mutate(dplyr::across(
+      .cols = dplyr::contains(".x"),
+      .fns = ~ dplyr::left_join(
+        dplyr::pick("time"),
+        tsbox::ts_chain(
+          tibble::tibble(
+            id = dplyr::cur_column(),
+            time = dplyr::pick("time"),
+            value = dplyr::pick(dplyr::cur_column()) %>%
+              dplyr::pull()
+          ) %>%
+            tidyr::drop_na(),
+          tibble::tibble(
+            id = dplyr::cur_column() %>% stringr::str_replace(".x", ".y"),
+            time = dplyr::pick("time"),
+            value = dplyr::pick(
+              dplyr::cur_column() %>% stringr::str_replace(".x", ".y")
+            ) %>%
+              dplyr::pull()
+          ) %>%
+            tidyr::drop_na()
+        ),
+        by = "time",
+      ) %>%
+        dplyr::pull(.data$value)
+    )) %>%
+    dplyr::rename_with(
+      ~ stringr::str_replace(.x, ".x", ""),
+      .cols = dplyr::contains(".x")
+    ) %>%
+    dplyr::select(-dplyr::contains(".y"))
+
+  # insert the chained columns into the original x_wide
+  chained_x <- x_wide %>%
+    dplyr::rows_upsert(
+      chained_x,
+      by = "time"
+    )
+
+  # reclass the output to match the input
+  ans <- if (is_wide(x)) {
+    chained_x
+  } else {
+    conv_long(chained_x) %>% tsbox::copy_class(x)
+  }
+
+  return(ans)
+}
+
+
 #' Interpolate a single vector containing missing values based on a pattern
 #'
 #' @param vec_incomplete numeric vector with NAs to be filled
