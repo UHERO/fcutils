@@ -4115,7 +4115,7 @@ set_tsrange <- function(model_w_dat, max_lag = 4, eqns = NULL) {
       tidyr::drop_na() %>%
       dplyr::slice(1 + max_lag, dplyr::n()) %>%
       dplyr::pull(.data$time) %>%
-      purrr::map(~ c(year(.x), quarter(.x))) %>%
+      purrr::map(~ c(lubridate::year(.x), lubridate::quarter(.x))) %>%
       purrr::reduce(c)
   }
 
