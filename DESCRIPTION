@@ -10,6 +10,7 @@ License: MIT + file LICENSE
 URL: https://uhero.github.io/fcutils/
 Depends: 
     R (>= 3.5)
+Remotes: github::andrea-luciani/bimets
 Imports: 
     dplyr,
     dygraphs,
