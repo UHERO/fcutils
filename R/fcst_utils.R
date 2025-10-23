@@ -711,17 +711,17 @@ write_tsd <- function(x, file) {
         in_summary %>% dplyr::filter(.data$id == ser_i) %>% dplyr::pull(freq) ==
           12 ~
           in_summary %>%
-            dplyr::filter(.data$id == ser_i) %>%
-            dplyr::pull(start) %>%
-            lubridate::month() %>%
-            formatC(width = 2, flag = "0"),
+          dplyr::filter(.data$id == ser_i) %>%
+          dplyr::pull(start) %>%
+          lubridate::month() %>%
+          formatC(width = 2, flag = "0"),
         in_summary %>% dplyr::filter(.data$id == ser_i) %>% dplyr::pull(freq) ==
           4 ~
           in_summary %>%
-            dplyr::filter(.data$id == ser_i) %>%
-            dplyr::pull(start) %>%
-            lubridate::quarter() %>%
-            formatC(width = 2, flag = "0"),
+          dplyr::filter(.data$id == ser_i) %>%
+          dplyr::pull(start) %>%
+          lubridate::quarter() %>%
+          formatC(width = 2, flag = "0"),
         TRUE ~ "01"
       ),
       "00",
@@ -734,17 +734,17 @@ write_tsd <- function(x, file) {
         in_summary %>% dplyr::filter(.data$id == ser_i) %>% dplyr::pull(freq) ==
           12 ~
           in_summary %>%
-            dplyr::filter(.data$id == ser_i) %>%
-            dplyr::pull(end) %>%
-            lubridate::month() %>%
-            formatC(width = 2, flag = "0"),
+          dplyr::filter(.data$id == ser_i) %>%
+          dplyr::pull(end) %>%
+          lubridate::month() %>%
+          formatC(width = 2, flag = "0"),
         in_summary %>% dplyr::filter(.data$id == ser_i) %>% dplyr::pull(freq) ==
           4 ~
           in_summary %>%
-            dplyr::filter(.data$id == ser_i) %>%
-            dplyr::pull(end) %>%
-            lubridate::quarter() %>%
-            formatC(width = 2, flag = "0"),
+          dplyr::filter(.data$id == ser_i) %>%
+          dplyr::pull(end) %>%
+          lubridate::quarter() %>%
+          formatC(width = 2, flag = "0"),
         TRUE ~ "01"
       ),
       "00",
@@ -1238,7 +1238,7 @@ multi_chain <- function(x, y, ids = NULL) {
       return(x)
     } else {
       message(
-        "Extending the following series: ",
+        "Extending the following series: \n",
         stringr::str_flatten(ids, collapse = ", ")
       )
     }
@@ -1249,7 +1249,7 @@ multi_chain <- function(x, y, ids = NULL) {
       return(x)
     } else {
       message(
-        "Extending the following series: ",
+        "Extending the following series: \n",
         stringr::str_flatten(ids, collapse = ", ")
       )
     }
