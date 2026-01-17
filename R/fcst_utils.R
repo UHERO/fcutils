@@ -3942,9 +3942,15 @@ model_equation <- function(model, ...) {
     model_eqn_bim,
     "[_.\\(\\)[:alnum:]]+"
   ) %>% # extract the target variable name
-    stringr::str_replace_all("DL_([_.[:alnum:]]+)", "TSDELTALOG(\\1)") %>% # replace DL_ with TSDELTALOG()
-    stringr::str_replace_all("L_([_.[:alnum:]]+)", "LOG(\\1)") %>% # replace L_ with LOG()
-    stringr::str_replace_all("D_([_.[:alnum:]]+)", "TSDELTA(\\1)") %>% # replace D_ with TSDELTA()
+    stringr::str_replace_all(
+      "(?<![:alpha:])DL_([_.[:alnum:]]+)",
+      "TSDELTALOG(\\1)"
+    ) %>% # replace DL_ with TSDELTALOG()
+    stringr::str_replace_all("(?<![:alpha:])L_([_.[:alnum:]]+)", "LOG(\\1)") %>% # replace L_ with LOG()
+    stringr::str_replace_all(
+      "(?<![:alpha:])D_([_.[:alnum:]]+)",
+      "TSDELTA(\\1)"
+    ) %>% # replace D_ with TSDELTA()
     stringr::str_replace_all("log\\(([_.[:alnum:]]+)\\)", "LOG(\\1)") %>% # replace log() with LOG()
     stringr::str_replace_all(
       "d\\(([_., \\(\\)[:alnum:]]+)\\)",
@@ -3974,9 +3980,15 @@ model_equation <- function(model, ...) {
     "TSLAG(\\1)"
   ) # dynlm::L(x, k) = lag(x, -k)
   model_eqn_bim <- model_eqn_bim %>%
-    stringr::str_replace_all("DL_([_.[:alnum:]]+)", "TSDELTALOG(\\1)") %>% # replace DL_ with TSDELTALOG()
-    stringr::str_replace_all("L_([_.[:alnum:]]+)", "LOG(\\1)") %>% # replace L_ with LOG()
-    stringr::str_replace_all("D_([_.[:alnum:]]+)", "TSDELTA(\\1)") %>% # replace D_ with TSDELTA()
+    stringr::str_replace_all(
+      "(?<![:alpha:])DL_([_.[:alnum:]]+)",
+      "TSDELTALOG(\\1)"
+    ) %>% # replace DL_ with TSDELTALOG()
+    stringr::str_replace_all("(?<![:alpha:])L_([_.[:alnum:]]+)", "LOG(\\1)") %>% # replace L_ with LOG()
+    stringr::str_replace_all(
+      "(?<![:alpha:])D_([_.[:alnum:]]+)",
+      "TSDELTA(\\1)"
+    ) %>% # replace D_ with TSDELTA()
     stringr::str_replace_all("log\\(([_.[:alnum:]]+)\\)", "LOG(\\1)") %>% # replace log() with LOG()
     stringr::str_replace_all(
       "d\\(([_., \\(\\)[:alnum:]]+)\\)",
