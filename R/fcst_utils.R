@@ -673,9 +673,11 @@ rename_udaman <- function(ser_in, freq = NULL) {
 write_tsd <- function(x, file) {
   # convert the ts-boxable object to tslist
   x_mod <- conv_long(x, ser_info = TRUE)
+  # in_list <- x_mod %>%
+  #   tidyr::drop_na() %>%
+  #   tsbox::ts_tslist()
   in_list <- x_mod %>%
-    tidyr::drop_na() %>%
-    tsbox::ts_tslist()
+    tidyr::drop_na()
 
   # get summary info about the time series
   in_summary <- in_list %>%
@@ -767,8 +769,9 @@ write_tsd <- function(x, file) {
 
     # replace missing values in the data
     ser_data <- in_list %>%
-      purrr::pluck(ser_i) %>%
-      tsbox::ts_tbl() %>%
+      # purrr::pluck(ser_i) %>%
+      # tsbox::ts_tbl() %>%
+      dplyr::filter(.data$id == ser_i) %>%
       dplyr::mutate(
         value = dplyr::if_else(is.na(.data$value), 1.000000E+0015, .data$value)
       ) %>%
