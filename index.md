@@ -10,6 +10,7 @@ You can install the development version of fcutils from
 [GitHub](https://github.com/) with:
 
 ``` r
+
 # install.packages("devtools")
 devtools::install_github("UHERO/fcutils")
 ```
@@ -19,6 +20,7 @@ devtools::install_github("UHERO/fcutils")
 Illustration of some package features.
 
 ``` r
+
 # load the fcutils package
 library(fcutils)
 
