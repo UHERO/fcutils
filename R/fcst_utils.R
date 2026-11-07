@@ -78,7 +78,7 @@ get_series_1 <- function(ser_id, expand, rename, descr, public) {
       )
     )
   }
-  json <- httr::content(req, as = "text")
+  json <- httr::content(req, as = "text", encoding = "UTF-8")
   uhero_data <- jsonlite::fromJSON(json)
   # extract series info
   dates <- uhero_data$data$observations$transformationResults$dates[[1]]
@@ -296,7 +296,7 @@ get_series_exp <- function(
       )
     )
   }
-  json <- httr::content(req, as = "text")
+  json <- httr::content(req, as = "text", encoding = "UTF-8")
   uhero_data <- jsonlite::fromJSON(json)
   # extract series info
   dates <- uhero_data$data$seriesObservations$transformationResults %>%
