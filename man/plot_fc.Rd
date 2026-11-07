@@ -13,7 +13,8 @@ plot_fc(
   table_end = rng_end,
   height = 300,
   width = 900,
-  yoy_gr = TRUE
+  yoy_gr = TRUE,
+  rate = FALSE
 )
 }
 \arguments{
@@ -34,6 +35,9 @@ plot_fc(
 \item{width}{width of a single panel (px)}
 
 \item{yoy_gr}{year-over-year (default) or annualized growth}
+
+\item{rate}{if TRUE, the bars show the change in points instead of the \%
+change (for rates such as the unemployment rate; default = FALSE)}
 }
 \value{
 a dygraph plot
@@ -48,4 +52,8 @@ quarterly_data_example |>
   tsbox::ts_long() |>
   tsbox::ts_pick("E_TU_HI", "ECT_HI", "EMN_HI") |>
   plot_fc()
+quarterly_data_example |>
+  tsbox::ts_long() |>
+  tsbox::ts_pick("E_TU_HI") |>
+  plot_fc(rate = TRUE)
 }

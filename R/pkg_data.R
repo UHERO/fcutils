@@ -1,29 +1,3 @@
-#' start of data range in the data bank
-#' @name bnk_start
-#' @format scalar yyyy-mm-dd date
-#' @docType data
-#' @author Peter Fuleky \email{fuleky@hawaii.edu}
-#' @source author
-#' @references \url{uhero.hawaii.edu}
-#' @keywords data
-# NULL
-"bnk_start"
-bnk_start <- lubridate::ymd("1970-01-01")
-
-#' end of data range in the data bank
-#' @name bnk_end
-#' @format scalar yyyy-mm-dd date
-#' @docType data
-#' @author Peter Fuleky \email{fuleky@hawaii.edu}
-#' @source author
-#' @references \url{uhero.hawaii.edu}
-#' @keywords data
-# NULL
-"bnk_end"
-# bnk_end <- lubridate::ymd("2060-12-31")
-bnk_end <- lubridate::ymd("2100-12-31")
-
-
 #' pattern in series names that should be aggregate as sum
 #' @name sum_pattern
 #' @format string of patterns in series names that should be aggregated via sum
@@ -220,8 +194,6 @@ uh_colors_50 <- c(
 "daily_data_example"
 
 # usethis::use_data(
-#   bnk_start,
-#   bnk_end,
 #   sum_pattern,
 #   uh_colors,
 #   uh_colors_light,

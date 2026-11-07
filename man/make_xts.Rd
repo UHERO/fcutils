@@ -4,7 +4,7 @@
 \alias{make_xts}
 \title{Create xts and fill with values}
 \usage{
-make_xts(start = bnk_start, end = NULL, per = "year", val = NA_real_)
+make_xts(start = bank_start(), end = NULL, per = "year", val = NA_real_)
 }
 \arguments{
 \item{start}{date of series start (character: "yyyy-mm-dd", "yyyyqq", "yyyy")}
@@ -12,7 +12,8 @@ make_xts(start = bnk_start, end = NULL, per = "year", val = NA_real_)
 \item{end}{date of series end (character: "yyyy-mm-dd", "yyyyqq", "yyyy")}
 
 \item{per}{periodicity of series (character: "year" - default)
-if date format of start is quarterly, automatically set to "quarter"}
+if start is written as a quarter or a month (see \code{to_ymd()}), per is set
+to "quarter" or "month"}
 
 \item{val}{values to fill in (numeric scalar, vector, or tibble)}
 }
@@ -25,11 +26,15 @@ Create xts and fill with values
 \details{
 when end is missing, but val is a vector of more than one element,
 the end date is automatically determined by the length of the val vector.
-if end is missing and val is a scalar, the end date is set to bnk_end.
+if end is missing and val is a scalar, the end date is set to the bank end,
+\code{getOption("fcutils.bnk_end")}. The default start is the bank start,
+\code{getOption("fcutils.bnk_start")}. Set both once per session, e.g. in
+setup.R: \code{options(fcutils.bnk_start = as.Date("1970-01-01"), fcutils.bnk_end = as.Date("2070-12-31"))}.
 if end is missing the remaining arguments have to be named. if val is a tibble,
 the end date is automatically determined by the number of rows in the tibble.
 }
 \examples{
+options(fcutils.bnk_start = as.Date("1970-01-01"), fcutils.bnk_end = as.Date("2070-12-31"))
 make_xts()
 make_xts(val = 0, per = "m")
 make_xts(start = 20100101, per = "quarter", val = 0)

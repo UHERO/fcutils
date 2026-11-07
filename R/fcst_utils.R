@@ -388,12 +388,42 @@ get_series_exp <- function(
 }
 
 
+#' Bank start and end, from the options `fcutils.bnk_start` and
+#' `fcutils.bnk_end`
+#'
+#' @return a Date; an error if the option is not set
+#' @noRd
+bank_start <- function() {
+  bank_option("fcutils.bnk_start")
+}
+
+#' @rdname bank_start
+#' @noRd
+bank_end <- function() {
+  bank_option("fcutils.bnk_end")
+}
+
+bank_option <- function(name) {
+  x <- getOption(name)
+  if (is.null(x)) {
+    stop(
+      "No bank set (", name, "). Set it once, for example in setup.R:\n",
+      "  options(fcutils.bnk_start = as.Date(\"1970-01-01\"), ",
+      "fcutils.bnk_end = as.Date(\"2070-12-31\"))",
+      call. = FALSE
+    )
+  }
+  to_ymd(x)
+}
+
+
 #' Create xts and fill with values
 #'
 #' @param start date of series start (character: "yyyy-mm-dd", "yyyyqq", "yyyy")
 #' @param end date of series end (character: "yyyy-mm-dd", "yyyyqq", "yyyy")
 #' @param per periodicity of series (character: "year" - default)
-#'   if date format of start is quarterly, automatically set to "quarter"
+#'   if start is written as a quarter or a month (see `to_ymd()`), per is set
+#'   to "quarter" or "month"
 #' @param val values to fill in (numeric scalar, vector, or tibble)
 #'
 #' @return an xts series
@@ -401,11 +431,16 @@ get_series_exp <- function(
 #'
 #' @details when end is missing, but val is a vector of more than one element,
 #' the end date is automatically determined by the length of the val vector.
-#' if end is missing and val is a scalar, the end date is set to bnk_end.
+#' if end is missing and val is a scalar, the end date is set to the bank end,
+#' `getOption("fcutils.bnk_end")`. The default start is the bank start,
+#' `getOption("fcutils.bnk_start")`. Set both once per session, e.g. in
+#' setup.R: `options(fcutils.bnk_start = as.Date("1970-01-01"),
+#' fcutils.bnk_end = as.Date("2070-12-31"))`.
 #' if end is missing the remaining arguments have to be named. if val is a tibble,
 #' the end date is automatically determined by the number of rows in the tibble.
 #'
 #' @examples
+#' options(fcutils.bnk_start = as.Date("1970-01-01"), fcutils.bnk_end = as.Date("2070-12-31"))
 #' make_xts()
 #' make_xts(val = 0, per = "m")
 #' make_xts(start = 20100101, per = "quarter", val = 0)
@@ -415,13 +450,14 @@ get_series_exp <- function(
 #' make_xts(start = 201001, per = "q",
 #'          val = tibble::tibble(E_NF_HON = c(1:10), ECT_HI = c(11:20)))
 make_xts <- function(
-  start = bnk_start,
+  start = bank_start(),
   end = NULL,
   per = "year",
   val = NA_real_
 ) {
-  if (nchar(as.character(start)) > 4 & nchar(as.character(start)) < 8) {
-    per <- "quarter"
+  start_unit <- parse_period(start)$unit[1]
+  if (start_unit %in% c("quarter", "month")) {
+    per <- start_unit
   }
   start <- to_ymd(start)
   end <- if (!is.null(end)) to_ymd(end) else NULL
@@ -436,7 +472,7 @@ make_xts <- function(
       tsbox::ts_xts()
   } else if (is.null(end) & length(val) == 1) {
     tibble::tibble(
-      time = seq.Date(from = start, to = bnk_end, by = per),
+      time = seq.Date(from = start, to = bank_end(), by = per),
       value = val
     ) %>%
       tsbox::ts_long() %>%
@@ -461,40 +497,125 @@ make_xts <- function(
 
 #' Create xts addfactor
 #'
-#' @param start start date of linear interpolation (character: "yyyy-mm-dd", "yyyyqq", "yyyy")
+#' @param start start date of linear interpolation (character: "yyyy-mm-dd", "yyyyqq", "yyyy"),
+#'   or a data frame of ramps with columns start, end, from, to (one ramp per
+#'   row; see details)
 #' @param end end date of linear interpolation (character: "yyyy-mm-dd", "yyyyqq", "yyyy")
 #' @param from first value for linear interpolation (numeric)
 #' @param to last value for linear interpolation (numeric)
 #' @param ser_name name of the xts series (string)
 #' @param per periodicity of series (character: "year" - default)
-#'   if date format of start is quarterly, automatically set to "quarter"
+#'   if start is written as a quarter or a month (see `to_ymd()`), per is set
+#'   to "quarter" or "month"
+#' @param ... with formulas: further points (see details)
 #'
-#' @return a single xts series spanning bnk_start-bnk_end
+#' @return a single xts series spanning the bank: from
+#'   `getOption("fcutils.bnk_start")` to `getOption("fcutils.bnk_end")` (see
+#'   `make_xts()`)
 #' @export
 #'
 #' @details this is a wrapper around make_xts with some additional functionality.
 #' the start and end dates specify the span of the non-zero add-factor value. the
 #' remaining period between start and end is filled with zeros.
 #'
+#' Given a data frame of ramps, addf() builds one add-factor per row and
+#' returns their sum, so overlapping ramps add up. A data frame with no rows
+#' gives zeros over the bank.
+#' The dates take any form `to_ymd()` reads, decimal years included, but a
+#' column must be all numbers or all strings.
+#'
+#' Given formulas, `addf(2026.3 ~ 0, 2027.4 ~ -0.3, 2030.4 ~ 0)`, the
+#' add-factor runs through the points in straight lines, one equal step per
+#' period, and is zero before the first point and after the last. Each
+#' formula has a date on the left and a value on the right. The frequency
+#' follows the first date (2026.3 is a quarter), unless `per` is given by
+#' name; `ser_name` and `per` must be named. Decimal dates are quarters, so
+#' monthly points need strings (`"2026M10" ~ 1`).
+#'
 #' @examples
+#' options(fcutils.bnk_start = as.Date("1970-01-01"), fcutils.bnk_end = as.Date("2070-12-31"))
 #' addf()
 #' addf(201002, 201504, 1, 2)
 #' addf(20100101, 20601201, 1, 2, per = "month")
 #' addf(20100101, from = 1, to = 2, per = "quarter")
 #' addf(2010.2, 2015.4, 1, 2, "ECT_HI")
+#' # several ramps at once
+#' ramps <- tibble::tribble(
+#'   ~start,   ~end,     ~from, ~to,
+#'   "2026Q3", "2027Q4", 0,     -0.3,
+#'   "2028Q1", "2030Q4", -0.3,  0
+#' )
+#' addf(ramps)
+#' # the same with decimal dates
+#' ramps <- tibble::tribble(
+#'   ~start, ~end,   ~from, ~to,
+#'   2026.3, 2027.4, 0,     -0.3,
+#'   2028.1, 2030.4, -0.3,  0
+#' )
+#' addf(ramps)
+#' # the same as points, with decimal or quoted dates
+#' addf(2026.3 ~ 0, 2027.4 ~ -0.3, 2028.1 ~ -0.3, 2030.4 ~ 0)
+#' addf("2026Q3" ~ 0, "2027Q4" ~ -0.3, "2028Q1" ~ -0.3, "2030Q4" ~ 0)
 addf <- function(
-  start = bnk_start,
-  end = bnk_end,
+  start = bank_start(),
+  end = bank_end(),
   from = 0,
   to = 0,
   ser_name = "value",
-  per = "year"
+  per = "year",
+  ...
 ) {
-  if (
-    nchar(as.character(start)) > 4 &
-      nchar(as.character(start)) < 8 |
-      per == "quarter"
-  ) {
+  if (inherits(start, "formula")) {
+    # formulas fill the positional slots first; collect them all
+    pts <- list(start)
+    if (!missing(end)) pts <- c(pts, list(end))
+    if (!missing(from)) pts <- c(pts, list(from))
+    if (!missing(to)) pts <- c(pts, list(to))
+    if (!missing(ser_name) && inherits(ser_name, "formula")) {
+      pts <- c(pts, list(ser_name))
+      ser_name <- "value"
+    }
+    per_given <- !missing(per)
+    if (per_given && inherits(per, "formula")) {
+      pts <- c(pts, list(per))
+      per_given <- FALSE
+    }
+    pts <- c(pts, list(...))
+    return(addf_points(pts, ser_name, if (per_given) per else NULL))
+  }
+  slots <- list(end, from, to, ser_name, per)
+  if (length(list(...)) > 0 || any(vapply(slots, inherits, logical(1), "formula"))) {
+    stop(
+      "addf(): formulas (2026.3 ~ 0) cannot be mixed with start, end, from and to",
+      call. = FALSE
+    )
+  }
+  if (is.data.frame(start)) {
+    ramps <- start
+    missing_cols <- setdiff(c("start", "end", "from", "to"), names(ramps))
+    if (length(missing_cols) > 0) {
+      stop(
+        "addf(): the ramp table lacks the column(s) ",
+        stringr::str_flatten(missing_cols, collapse = ", "),
+        call. = FALSE
+      )
+    }
+    if (nrow(ramps) == 0) {
+      return(addf(ser_name = ser_name, per = per))
+    }
+    parts <- purrr::pmap(
+      ramps[c("start", "end", "from", "to")],
+      function(start, end, from, to) {
+        addf(start, end, from, to, ser_name = ser_name, per = per)
+      }
+    )
+    return(Reduce(`+`, parts))
+  }
+  start_unit <- parse_period(start)$unit[1]
+  if (identical(start_unit, "month")) {
+    per <- "month"
+  }
+  if (identical(start_unit, "quarter") || per == "quarter") {
     per <- "quarter"
     start <- to_ymd(start) %>% lubridate::quarter(type = "year.quarter")
     end <- to_ymd(end) %>% lubridate::quarter(type = "year.quarter")
@@ -524,6 +645,42 @@ addf <- function(
       tsbox::ts_bind(make_xts(val = 0, per = per)) %>%
       magrittr::set_names(ser_name)
   }
+}
+
+
+#' addf() from points given as formulas
+#' @noRd
+addf_points <- function(pts, ser_name, per = NULL) {
+  fp <- formula_points(pts, "addf")
+  if (is.null(per)) {
+    per <- fp$units[1]
+    if (identical(per, "day")) {
+      stop("addf(): with daily dates, give per by name", call. = FALSE)
+    }
+  }
+  if (per == "month" && any(fp$decimal)) {
+    stop(
+      "addf(): monthly points are dated as decimal years ",
+      "(2026.1 reads as 2026Q1). Write months as \"2026M10\".",
+      call. = FALSE
+    )
+  }
+  ord <- order(fp$dates)
+  dates <- fp$dates[ord]
+  values <- fp$values[ord]
+  out <- make_xts(val = 0, per = per)
+  pos <- match(dates, zoo::index(out))
+  if (anyNA(pos)) {
+    stop(
+      "addf(): ", stringr::str_flatten(format(dates[is.na(pos)]), collapse = ", "),
+      " is not the start of a ", per, " within the bank",
+      call. = FALSE
+    )
+  }
+  span <- seq(min(pos), max(pos))
+  out[span] <- stats::approx(pos, values, xout = span)$y
+  colnames(out) <- ser_name
+  out
 }
 
 
@@ -1209,18 +1366,104 @@ conv_tslist <- function(x) {
 # time series utility functions ----
 # **************************
 
+#' Rename y's series after their partners in x (used by `multi_chain()`)
+#'
+#' @param x_wide,y_wide wide tibbles with a time column
+#' @param how "name" or "stem"
+#'
+#' @return y_wide, with partner series renamed to x's names
+#' @noRd
+match_names <- function(x_wide, y_wide, how) {
+  x_names <- setdiff(colnames(x_wide), "time")
+  y_names <- setdiff(colnames(y_wide), "time")
+  # one series each: they are partners whatever their names
+  if (length(x_names) == 1 && length(y_names) == 1) {
+    return(dplyr::rename(y_wide, !!x_names := dplyr::all_of(y_names)))
+  }
+  if (how == "name") {
+    return(y_wide)
+  }
+  stem <- function(nm) stringr::str_remove(nm, "[._](SOL)?[AQM]$")
+  for (side in list(list(x_names, "x"), list(y_names, "y"))) {
+    dup <- unique(stem(side[[1]])[duplicated(stem(side[[1]]))])
+    if (length(dup) > 0) {
+      stop(
+        "multi_chain(): several series in ", side[[2]], " share the stem ",
+        stringr::str_flatten(dup, collapse = ", "),
+        call. = FALSE
+      )
+    }
+  }
+  partner <- x_names[match(stem(y_names), stem(x_names))]
+  has <- !is.na(partner)
+  # keep y's unmatched series under their own names
+  new_names <- y_names
+  new_names[has] <- partner[has]
+  colnames(y_wide) <- c("time", new_names)[match(colnames(y_wide), c("time", y_names))]
+  y_wide
+}
+
+
+#' Chain one series with another (used by `multi_chain()`)
+#'
+#' @param a,b tibbles with columns id, time, value and no missing values
+#' @param method "ratio" or "diff"
+#' @param direction "both", "forward" or "backward"
+#'
+#' @return tibble with columns id, time, value: a, extended with b
+#' @noRd
+chain_1 <- function(a, b, method, direction) {
+  if (method == "ratio" && direction == "both") {
+    return(tsbox::ts_chain(a, b))
+  }
+  link <- function(t) {
+    vb <- b$value[b$time == t]
+    if (length(vb) != 1) {
+      stop("multi_chain(): y has no value at ", t, call. = FALSE)
+    }
+    va <- a$value[a$time == t]
+    function(v) if (method == "ratio") v * va / vb else v + va - vb
+  }
+  out <- a
+  if (direction %in% c("both", "forward")) {
+    t1 <- max(a$time)
+    tail <- b[b$time > t1, ]
+    tail$value <- link(t1)(tail$value)
+    out <- dplyr::bind_rows(out, dplyr::mutate(tail, id = a$id[1]))
+  }
+  if (direction %in% c("both", "backward")) {
+    t0 <- min(a$time)
+    head <- b[b$time < t0, ]
+    head$value <- link(t0)(head$value)
+    out <- dplyr::bind_rows(dplyr::mutate(head, id = a$id[1]), out)
+  }
+  dplyr::arrange(out, .data$time)
+}
+
 #' Extend "ts-boxable" objects by chaining (extension of `tsbox::ts_chain()`)
 #'
 #' @param x a "ts-boxable" object to be extended
 #' @param y a "ts-boxable" object containing data to extend x
 #' @param ids a character vector with series names to be extended (default: NULL,
 #' in which case all series common to x and y are extended)
+#' @param method "ratio" (default) scales y so that it meets x, which keeps
+#' y's growth rates (for levels); "diff" shifts y by a constant, which keeps
+#' y's changes (for rates such as the unemployment rate)
+#' @param direction "both" (default) extends x at both ends, "forward" only
+#' after its last observation, "backward" only before its first
+#' @param match how series in x find their partner in y: "name" (default)
+#' needs the same name; "stem" compares names without a final frequency or
+#' solution ending (`_A`, `_Q`, `_M`, `_SOLA`, `_SOLQ`, `_SOLM`, or the same
+#' with `.`), so `UR_AT_US_A` pairs with `UR_AT_US_SOLQ`. A single series in
+#' x always pairs with a single series in y. The result keeps x's names.
 #'
 #' @return object of the same type as the input with extended series
 #' @export
 #'
 #' @details This function performs a similar operation to `tsbox::ts_chain()`,
-#' but for multiple series.
+#' but for multiple series. x and y are linked at x's first observation (going
+#' backward) and its last (going forward); y needs a value at those dates.
+#' The default, method "ratio" with direction "both", is `tsbox::ts_chain()`.
 #'
 #' @examples
 #' quarterly_data_example |>
@@ -1229,9 +1472,30 @@ conv_tslist <- function(x) {
 #' quarterly_data_example |>
 #'   dplyr::filter(time < as.Date("2000-01-01")) |>
 #'   multi_chain(quarterly_data_example)
-multi_chain <- function(x, y, ids = NULL) {
-  x_wide <- conv_wide(x)
-  y_wide <- conv_wide(y)
+#' # continue an annual history with the changes of a forecast
+#' hist <- make_xts(2020, val = c(8.1, 5.4, 3.6, 3.6))
+#' fcst <- make_xts(2022, val = c(3.5, 3.7, 4.0, 4.2, 4.3))
+#' multi_chain(hist, fcst, method = "diff", direction = "forward")
+#' # pair series by name stem: UR_A with UR_SOLA, LF_A with LF_SOLA
+#' hist <- make_xts(2020, val = tibble::tibble(UR_A = c(8.1, 5.4, 3.6), LF_A = c(160, 161, 164)))
+#' fcst <- make_xts(2022, val = tibble::tibble(UR_SOLA = c(3.6, 3.8, 4.1), LF_SOLA = c(165, 166, 168)))
+#' multi_chain(hist, fcst, match = "stem", direction = "forward")
+multi_chain <- function(
+  x,
+  y,
+  ids = NULL,
+  method = c("ratio", "diff"),
+  direction = c("both", "forward", "backward"),
+  match = c("name", "stem")
+) {
+  method <- match.arg(method)
+  direction <- match.arg(direction)
+  match <- match.arg(match)
+  # doubles throughout: chained values replace x's in place, which fails
+  # for an integer column
+  x_wide <- conv_wide(x) %>% dplyr::mutate(dplyr::across(-"time", as.double))
+  y_wide <- conv_wide(y) %>% dplyr::mutate(dplyr::across(-"time", as.double))
+  y_wide <- match_names(x_wide, y_wide, match)
 
   # identify series to be extended
   if (is.null(ids)) {
@@ -1268,36 +1532,38 @@ multi_chain <- function(x, y, ids = NULL) {
     ) %>%
     dplyr::arrange(.data$time) %>%
     dplyr::mutate(dplyr::across(
-      .cols = dplyr::contains(".x"),
+      .cols = dplyr::ends_with(".x"),
       .fns = ~ dplyr::left_join(
         dplyr::pick("time"),
-        tsbox::ts_chain(
+        chain_1(
           tibble::tibble(
             id = dplyr::cur_column(),
-            time = dplyr::pick("time"),
+            time = dplyr::pick("time")$time,
             value = dplyr::pick(dplyr::cur_column()) %>%
               dplyr::pull()
           ) %>%
             tidyr::drop_na(),
           tibble::tibble(
-            id = dplyr::cur_column() %>% stringr::str_replace(".x", ".y"),
-            time = dplyr::pick("time"),
+            id = dplyr::cur_column() %>% stringr::str_replace("\\.x$", ".y"),
+            time = dplyr::pick("time")$time,
             value = dplyr::pick(
-              dplyr::cur_column() %>% stringr::str_replace(".x", ".y")
+              dplyr::cur_column() %>% stringr::str_replace("\\.x$", ".y")
             ) %>%
               dplyr::pull()
           ) %>%
-            tidyr::drop_na()
+            tidyr::drop_na(),
+          method = method,
+          direction = direction
         ),
         by = "time",
       ) %>%
         dplyr::pull(.data$value)
     )) %>%
     dplyr::rename_with(
-      ~ stringr::str_replace(.x, ".x", ""),
-      .cols = dplyr::contains(".x")
+      ~ stringr::str_remove(.x, "\\.x$"),
+      .cols = dplyr::ends_with(".x")
     ) %>%
-    dplyr::select(-dplyr::contains(".y"))
+    dplyr::select(-dplyr::ends_with(".y"))
 
   # insert the chained columns into the original x_wide
   chained_x <- x_wide %>%
@@ -1319,6 +1585,7 @@ multi_chain <- function(x, y, ids = NULL) {
 
 #' Interpolate a single vector containing missing values based on a pattern
 #'
+#' @keywords internal
 #' @param vec_incomplete numeric vector with NAs to be filled
 #' @param vec_pattern numeric vector representing the pattern
 #' @return numeric vector with NAs filled
@@ -1414,7 +1681,8 @@ interpol_1 <- function(vec_incomplete, vec_pattern) {
 #' Interpolate univariate or multivariate time series with missing values
 #'
 #' @param incomplete a ts-boxable object with NAs
-#' @param pattern a ts-boxable object no missing values
+#' @param pattern a ts-boxable object no missing values, or NULL (default)
+#'   to fill the gaps inside each series along a straight line
 #' @param extend_range logical. If TRUE, uses a full_join to potentially extend
 #'   the date range. If FALSE (default), uses a left_join to only fill NAs
 #'   within the original date range.
@@ -1423,11 +1691,18 @@ interpol_1 <- function(vec_incomplete, vec_pattern) {
 #' @export
 #'
 #' @details the function aligns two sets of time series by date and then
-#' interpolates the first set using the second set as a pattern.
+#' interpolates the first set using the second set as a pattern. Without a
+#' pattern, missing values between a series' first and last observation are
+#' filled linearly (by position, so each period counts the same); missing
+#' dates in a regular series are added first, and leading and trailing gaps
+#' stay empty. extend_range has no effect then.
 #' The time-span of the pattern has to match or be larger
 #' than the time-span of the incomplete data.
 #'
 #' @examples
+#' # straight-line fill of an internal gap
+#' make_xts("2025M7", val = c(1, 2, NA, 4, 5)) |>
+#'   interpol()
 #' monthly_data_example |>
 #'   dplyr::filter(time > "2002-01-01") |>
 #'   tsbox::ts_long() |>
@@ -1461,9 +1736,12 @@ interpol_1 <- function(vec_incomplete, vec_pattern) {
 #'   tsbox::ts_wide()
 interpol <- function(
   incomplete,
-  pattern,
+  pattern = NULL,
   extend_range = FALSE
 ) {
+  if (is.null(pattern)) {
+    return(interpol_linear(incomplete))
+  }
   # convert to wide format and return additional details
   incomplete_mod <- conv_long(incomplete, ser_info = TRUE)
   incomplete_wide <- incomplete_mod %>%
@@ -1538,6 +1816,38 @@ interpol <- function(
 }
 
 
+#' Fill gaps inside series by linear interpolation (`interpol()` without a
+#' pattern)
+#'
+#' @param x ts-boxable object
+#'
+#' @return object of the same type as x; missing values between the first
+#'   and last observation of each series are filled along a straight line,
+#'   leading and trailing ones are kept
+#' @noRd
+interpol_linear <- function(x) {
+  x_mod <- conv_long(x, ser_info = TRUE)
+  filled <- x_mod %>%
+    tsbox::ts_regular() %>%
+    dplyr::group_by(.data$id) %>%
+    dplyr::mutate(value = {
+      pos <- seq_along(.data$value)
+      have <- !is.na(.data$value)
+      if (sum(have) < 2) {
+        .data$value
+      } else {
+        stats::approx(pos[have], .data$value[have], xout = pos, rule = 1)$y
+      }
+    }) %>%
+    dplyr::ungroup()
+  if (attr(x_mod, "was_wide")) {
+    tsbox::ts_wide(filled)
+  } else {
+    tsbox::copy_class(filled, x)
+  }
+}
+
+
 #' Disaggregate a single time series from low to high frequency
 #'
 #' @param x a single time series (e.g. xts) at low freq (e.g. annual or quarterly)
@@ -1594,12 +1904,20 @@ disagg_1 <- function(x, x_name, conv_type, target_freq, pattern) {
 #' the interpolation is based on "sum"; for all others it is based on "mean."
 #' @param target_freq target frequency "quarter" or "month"
 #' @param pattern a single high-frequency pattern that the interpolation should follow
+#' @param extend_with NULL (default), "last_growth", or a ts-boxable object. Without
+#'   a pattern the interpolation has nothing to follow at the end of a series
+#'   and bends toward zero growth over the last periods (and the first).
+#'   "last_growth" first continues each series at its last growth rate for three
+#'   periods; a series (one per series in x, with the same names, or a single
+#'   one for a single x) continues x with its growth at both ends, wherever
+#'   it reaches beyond x. The result is cut back to x's own periods.
 #'
 #' @return interpolated object of the same type as the input
 #' @export
 #'
 #' @details the time-span of the high-frequency pattern has to match or be larger
-#' than the time-span of the low frequency series. NA values are not allowed.
+#' than the time-span of the low frequency series. NA values are not allowed,
+#' except that with extend_with, leading and trailing NAs of x are dropped.
 #'
 #' @examples
 #' quarterly_data_example |>
@@ -1638,14 +1956,37 @@ disagg_1 <- function(x, x_name, conv_type, target_freq, pattern) {
 #'     tsbox::ts_tslist(),
 #'   ~ disagg(.x, conv_type = "mean", target_freq = "month", pattern = .y)
 #' )
+#' # the last year without and with an extension
+#' a <- make_xts(2015, val = 100 * 1.02^(0:10))
+#' disagg(a) |> tsbox::ts_pc() |> tail(4)
+#' disagg(a, extend_with = "last_growth") |> tsbox::ts_pc() |> tail(4)
 disagg <- function(
   x,
   conv_type = "mean",
   target_freq = "quarter",
-  pattern = NULL
+  pattern = NULL,
+  extend_with = NULL
 ) {
   # convert to long format and return additional details
   x_mod <- conv_long(x, ser_info = TRUE)
+
+  # continue each series before interpolating; keep its span to cut back to
+  if (!is.null(extend_with)) {
+    info <- attributes(x_mod)[c("was_wide", "ser_names")]
+    x_mod <- tidyr::drop_na(x_mod, "value")
+    x_span <- tsbox::ts_summary(x_mod) %>%
+      dplyr::mutate(
+        last_day = purrr::map2_vec(
+          .data$end,
+          .data$diff,
+          ~ lubridate::ceiling_date(.x, unit = .y) %>% lubridate::rollback()
+        )
+      ) %>%
+      dplyr::select("id", "start", "last_day")
+    x_mod <- extend_low(x_mod, extend_with)
+    attr(x_mod, "was_wide") <- info$was_wide
+    attr(x_mod, "ser_names") <- info$ser_names
+  }
   pattern_mod <- if (is.null(pattern)) {
     pattern
   } else {
@@ -1679,6 +2020,20 @@ disagg <- function(
     # }
     tsbox::ts_tbl()
 
+  # cut the extension back off
+  if (!is.null(extend_with)) {
+    if (!"id" %in% names(x_mod_int)) {
+      x_mod_int <- dplyr::mutate(x_mod_int, id = x_span$id[1], .before = 1)
+    }
+    x_mod_int <- x_mod_int %>%
+      dplyr::inner_join(x_span, by = "id") %>%
+      dplyr::filter(.data$time >= .data$start, .data$time <= .data$last_day) %>%
+      dplyr::select("id", "time", "value")
+    if (nrow(x_span) == 1) {
+      x_mod_int <- dplyr::select(x_mod_int, -"id")
+    }
+  }
+
   # reclass the output to match the input
   ans <- if (attr(x_mod, "was_wide")) {
     tsbox::ts_wide(x_mod_int)
@@ -1690,13 +2045,65 @@ disagg <- function(
 }
 
 
+#' Continue low-frequency series before interpolation (used by `disagg()`)
+#'
+#' @param x_long long tibble (id, time, value) without missing values
+#' @param extend_with "last_growth" or a ts-boxable object (see `disagg()`)
+#' @param n_hold number of periods added by "last_growth"
+#'
+#' @return long tibble, each series continued after its last observation
+#'   ("last_growth"), or at both ends as far as extend_with reaches (a series)
+#' @noRd
+extend_low <- function(x_long, extend_with, n_hold = 3) {
+  ids <- unique(x_long$id)
+  if (identical(extend_with, "last_growth")) {
+    ext <- purrr::map(ids, function(i) {
+      s <- dplyr::filter(x_long, .data$id == i) %>% dplyr::arrange(.data$time)
+      n <- nrow(s)
+      if (n < 2) {
+        return(s)
+      }
+      step <- tsbox::ts_summary(s)$diff
+      growth <- s$value[n] / s$value[n - 1]
+      dates <- seq(s$time[n], by = step, length.out = n_hold + 1)[-1]
+      dplyr::bind_rows(
+        s,
+        tibble::tibble(id = i, time = dates, value = s$value[n] * growth^(1:n_hold))
+      )
+    })
+    return(dplyr::bind_rows(ext))
+  }
+  if (is.character(extend_with)) {
+    stop("disagg(): extend_with must be NULL, \"last_growth\" or a series", call. = FALSE)
+  }
+  ew <- conv_long(extend_with) %>% tidyr::drop_na("value")
+  if (!"id" %in% names(ew)) {
+    ew <- dplyr::mutate(ew, id = ids[1], .before = 1)
+  }
+  if (length(ids) == 1 && length(unique(ew$id)) == 1) {
+    ew$id <- ids
+  }
+  purrr::map(ids, function(i) {
+    a <- dplyr::filter(x_long, .data$id == i)
+    b <- dplyr::filter(ew, .data$id == i)
+    if (nrow(b) == 0) {
+      stop("disagg(): extend_with has no series ", i, call. = FALSE)
+    }
+    chain_1(a, b, method = "ratio", direction = "both")
+  }) %>%
+    dplyr::bind_rows()
+}
+
+
 #' Linear interpolation based on AREMOS command reference page 292
 #' (superseded by disagg())
 #'
 #' @param ser_in the xts series to be interpolated (freq = a)
 #' @param aggr interpolation method: aggregate via mean (default) or sum
 #'
-#' @return interpolated xts series (freq = q)
+#' @return interpolated xts series (freq = q). A name ending in `.A`, `_A`,
+#'   `.SOLA` or `_SOLA` gets the quarterly ending (`.Q`, `_Q`, `.SOLQ`,
+#'   `_SOLQ`); other names are kept.
 #' @export
 #'
 #' @examples
@@ -1749,8 +2156,8 @@ AtoQ <- function(ser_in, aggr = "mean") {
     ser_out <- ser_out / 4
   }
   colnames(ser_out) <- colnames(ser_in) %>%
-    stringr::str_replace_all(".SOLA", ".SOLQ") %>%
-    stringr::str_replace_all(".A", ".Q")
+    stringr::str_replace("([._])SOLA$", "\\1SOLQ") %>%
+    stringr::str_replace("([._])A$", "\\1Q")
   return(ser_out)
 }
 
@@ -1761,7 +2168,8 @@ AtoQ <- function(ser_in, aggr = "mean") {
 #' @param ser_in the xts series to be converted (freq = q)
 #' @param	aggr aggregate via mean (default) or sum
 #'
-#' @return converted xts series (freq = a)
+#' @return converted xts series (freq = a). A name ending in `.Q`, `_Q`,
+#'   `.SOLQ` or `_SOLQ` gets the annual ending; other names are kept.
 #' @export
 #'
 #' @examples
@@ -1776,8 +2184,8 @@ AtoQ <- function(ser_in, aggr = "mean") {
 QtoA <- function(ser_in, aggr = "mean") {
   ser_out <- tsbox::ts_frequency(ser_in, to = "year", aggregate = aggr)
   colnames(ser_out) <- colnames(ser_in) %>%
-    stringr::str_replace_all(".SOLQ", ".SOLA") %>%
-    stringr::str_replace_all(".Q", ".A")
+    stringr::str_replace("([._])SOLQ$", "\\1SOLA") %>%
+    stringr::str_replace("([._])Q$", "\\1A")
   return(ser_out)
 }
 
@@ -2686,7 +3094,10 @@ yoy_to_lev <- function(yoy_gr, hist_lev, smooth_span = 0) {
 }
 
 
-#' Get indexed series (wrapper around tsbox::ts_index())
+#' Rebase series to an index (wrapper around tsbox::ts_index())
+#'
+#' Formerly `index()`, renamed because it masked `zoo::index()` and
+#' `xts::index()`.
 #'
 #' @param x ts-boxable object to be indexed
 #' @param base_per base date when the index is set to base_value (see examples).
@@ -2698,12 +3109,12 @@ yoy_to_lev <- function(yoy_gr, hist_lev, smooth_span = 0) {
 #'
 #' @examples
 #' quarterly_data_example |>
-#'   index(2010.1)
+#'   ts_rebase(2010.1)
 #' quarterly_data_example |>
-#'   index(c(2010.1, 2010.4))
+#'   ts_rebase(c(2010.1, 2010.4))
 #' quarterly_data_example |>
-#'   index(c("2010-01-01", "2010-12-31"), 1)
-index <- function(x, base_per = as.character(Sys.Date()), base_value = 100) {
+#'   ts_rebase(c("2010-01-01", "2010-12-31"), 1)
+ts_rebase <- function(x, base_per = as.character(Sys.Date()), base_value = 100) {
   # convert to long format and return additional details
   x_mod <- conv_long(x, ser_info = TRUE)
 
@@ -2852,11 +3263,15 @@ find_end <- function(x, last_day = FALSE) {
 
 #' Concatenate dates to obtain period
 #'
-#' @param dat1 date of period start (string: see examples)
-#' @param dat2 date of period end (string: see examples)
+#' @param dat1 date of period start (any form read by `to_ymd()`)
+#' @param dat2 date of period end (any form read by `to_ymd()`)
 #'
-#' @return string containing date range
+#' @return string containing date range, for subsetting xts objects
 #' @export
+#'
+#' @details The range runs from the first day of dat1 to the last day of
+#' dat2: a year, quarter or month given as dat2 is included in full, so
+#' `p(2019.4, 2026)` ends on 2026-12-31. A day given as dat2 is kept as is.
 #'
 #' @examples
 #' p("2010-01-01", "2020-01-01")
@@ -2864,15 +3279,33 @@ find_end <- function(x, last_day = FALSE) {
 #' p(2010.1, 2020.4)
 #' p(,2020.4)
 #' p("2010Q1", "2020Q4")
-#' p(2010, 2020) # for annual period only
+#' p(2010, 2020)
+#' p("2010M1", "2010M6")
 p <- function(dat1 = "", dat2 = "") {
   if (nchar(dat1) != 0) {
     dat1 <- to_ymd(dat1)
   }
   if (nchar(dat2) != 0) {
-    dat2 <- to_ymd(dat2)
+    dat2 <- period_end(dat2)
   }
   stringr::str_c(dat1, dat2, sep = "/")
+}
+
+
+#' Last day of the period a date names
+#'
+#' @param x dates as accepted by `to_ymd()`
+#'
+#' @return Dates: the last day of each year, quarter or month given; days
+#'   are returned unchanged
+#' @noRd
+period_end <- function(x) {
+  pp <- parse_period(x)
+  out <- pp$date
+  step <- c(year = 12L, quarter = 3L, month = 1L)[pp$unit]
+  i <- !is.na(step)
+  out[i] <- lubridate::add_with_rollback(out[i], months(step[i])) - 1
+  out
 }
 
 
@@ -2974,19 +3407,88 @@ ymd_to_yQq <- function(x) {
 }
 
 
-#' Parse strings into dates in yyyy-mm-dd format
+#' Read dates written as years, quarters, months or days
 #'
-#' @param x string (string: yyyymmdd, yyyyqq, yyyy.q, yyyy)
+#' @param x dates as numbers, strings or Dates (see details)
 #'
-#' @return formatted dates (yyyy-mm-dd)
+#' @return Dates, each the first day of the period given
 #' @export
 #'
+#' @details Accepted forms, as numbers or strings:
+#' * year: `2019`
+#' * quarter: `2019.4`, `"2019Q4"`, `"2019q4"`, `201904` (yyyyqq, quarters
+#'   01 to 04)
+#' * month (strings only): `"2019M10"`, `"2019m3"`, `"2019-10"`
+#' * day: `"2019-10-15"`, `20191015`, a Date
+#'
+#' All of `2019.4`, `"2019Q4"` and `201904` give 2019-10-01. Months cannot be
+#' numbers, because `2019.10` and `2019.1` are the same number. Anything else
+#' stops with an error naming the value. `NA` and `""` give `NA`.
+#'
 #' @examples
-#' to_ymd(c("2010.0211", 202002, 2020.2, "2020"))
+#' to_ymd(c(2020, 2020.2, "2020Q2", 202002, "2020M5", "2020-05", "2020-05-15"))
 to_ymd <- function(x) {
-  x %>%
-    lubridate::parse_date_time(orders = c("ymd", "yq", "y")) %>%
-    lubridate::ymd()
+  parse_period(x)$date
+}
+
+
+#' Parse dates and keep the period each one names
+#'
+#' @param x dates as accepted by `to_ymd()`
+#'
+#' @return list with `date` (first day of each period) and `unit` ("year",
+#'   "quarter", "month", "day" or NA)
+#' @noRd
+parse_period <- function(x) {
+  if (inherits(x, "Date")) {
+    return(list(date = x, unit = rep("day", length(x))))
+  }
+  if (inherits(x, "POSIXt")) {
+    return(list(date = as.Date(x), unit = rep("day", length(x))))
+  }
+  s <- trimws(as.character(x))
+  n <- length(s)
+  date <- rep(as.Date(NA), n)
+  unit <- rep(NA_character_, n)
+  ok <- is.na(s) | s == ""
+
+  # each form: pattern, unit, and how to build the date from the matches
+  num <- function(m, i) as.integer(m[, i])
+  forms <- list(
+    list("^(\\d{4})$", "year", function(m) lubridate::make_date(num(m, 2))),
+    list("^(\\d{4})[.Qq]([1-4])$", "quarter",
+         function(m) lubridate::make_date(num(m, 2), 3 * num(m, 3) - 2)),
+    list("^(\\d{4})0([1-4])$", "quarter",
+         function(m) lubridate::make_date(num(m, 2), 3 * num(m, 3) - 2)),
+    list("^(\\d{4})[Mm-](\\d{1,2})$", "month",
+         function(m) lubridate::make_date(num(m, 2), num(m, 3))),
+    list("^(\\d{4})[-/.](\\d{1,2})[-/.](\\d{1,2})$", "day",
+         function(m) lubridate::make_date(num(m, 2), num(m, 3), num(m, 4))),
+    list("^(\\d{4})(\\d{2})(\\d{2})$", "day",
+         function(m) lubridate::make_date(num(m, 2), num(m, 3), num(m, 4)))
+  )
+  for (f in forms) {
+    todo <- !ok & stringr::str_detect(s, f[[1]])
+    if (!any(todo)) next
+    m <- stringr::str_match(s[todo], f[[1]])
+    d <- suppressWarnings(f[[3]](m))
+    # month 13 or day 32 give NA: leave them for the error below
+    good <- !is.na(d)
+    idx <- which(todo)[good]
+    date[idx] <- d[good]
+    unit[idx] <- f[[2]]
+    ok[idx] <- TRUE
+  }
+  if (!all(ok)) {
+    stop(
+      "to_ymd() cannot read ",
+      stringr::str_flatten(unique(s[!ok]), collapse = ", "),
+      ". Use a year (2019), a quarter (2019.4, \"2019Q4\", 201904), ",
+      "a month (\"2019M10\", \"2019-10\") or a day (\"2019-10-15\").",
+      call. = FALSE
+    )
+  }
+  list(date = date, unit = unit)
 }
 
 
@@ -3005,10 +3507,10 @@ qtrs <- function(nr_quarters) {
 }
 
 
-#' Calculate number of months between two dates yyyyMm, yyyy.m or yyyy-mm-dd
+#' Calculate number of months between two dates yyyyMm or yyyy-mm-dd
 #'
-#' @param dat1 date of period start (string: yyyyMm, yyyy.m, or yyyy-mm-dd)
-#' @param dat2 date of period end (string: yyyyMm, yyyy.m, or yyyy-mm-dd)
+#' @param dat1 date of period start (string: yyyyMm or yyyy-mm-dd; see `to_ymd()`)
+#' @param dat2 date of period end (string: yyyyMm or yyyy-mm-dd; see `to_ymd()`)
 #'
 #' @return numeric length of date range in months
 #' @export
@@ -3018,7 +3520,7 @@ qtrs <- function(nr_quarters) {
 #'
 #' @examples
 #' nmons("2010M1", "2010M2")
-#' nmons(2010.1, 2010.4)
+#' nmons("2010M1", "2010M4")
 #' nmons("2010-01-15", "2010-04-15")
 #' nmons("2010-01-15", "2010-04-18")
 #' nmons("2010-01-15", "2010-04-12")
@@ -3285,6 +3787,8 @@ plot_2ax <- function(
 #' @param height height of a single panel (px)
 #' @param width width of a single panel (px)
 #' @param yoy_gr year-over-year (default) or annualized growth
+#' @param rate if TRUE, the bars show the change in points instead of the %
+#'   change (for rates such as the unemployment rate; default = FALSE)
 #'
 #' @return a dygraph plot
 #' @export
@@ -3296,6 +3800,10 @@ plot_2ax <- function(
 #'   tsbox::ts_long() |>
 #'   tsbox::ts_pick("E_TU_HI", "ECT_HI", "EMN_HI") |>
 #'   plot_fc()
+#' quarterly_data_example |>
+#'   tsbox::ts_long() |>
+#'   tsbox::ts_pick("E_TU_HI") |>
+#'   plot_fc(rate = TRUE)
 plot_fc <- function(
   x,
   rng_start = as.character(Sys.Date() - lubridate::years(10)),
@@ -3305,7 +3813,8 @@ plot_fc <- function(
   table_end = rng_end,
   height = 300,
   width = 900,
-  yoy_gr = TRUE
+  yoy_gr = TRUE,
+  rate = FALSE
 ) {
   rng_start <- to_ymd(rng_start)
   rng_end <- to_ymd(rng_end)
@@ -3328,17 +3837,25 @@ plot_fc <- function(
 
   ser_names <- attr(x_mod, "ser_names")
 
+  # bars: % change, or the change in points for rates
+  gr_fun <- if (rate) {
+    if (yoy_gr) tsbox::ts_diffy else tsbox::ts_diff
+  } else {
+    if (yoy_gr) tsbox::ts_pcy else tsbox::ts_pc
+  }
+  gr_name <- if (rate) {
+    stringr::str_glue("{ser_names[1]} chg")
+  } else {
+    stringr::str_glue("{ser_names[1]}%")
+  }
+
   # series to plot
   ser_to_plot <- x_mod %>%
     tsbox::ts_xts() %>%
     {
-      if (yoy_gr) {
-        tsbox::ts_c(., tsbox::ts_pcy(.[, 1]))
-      } else {
-        tsbox::ts_c(., tsbox::ts_pc(.[, 1]))
-      }
+      tsbox::ts_c(., gr_fun(.[, 1]))
     } %>%
-    magrittr::set_names(c(ser_names, stringr::str_glue("{ser_names[1]}%")))
+    magrittr::set_names(c(ser_names, gr_name))
 
   # generate the plot
   ser_plot <- ser_to_plot %>%
@@ -3351,7 +3868,7 @@ plot_fc <- function(
     dygraphs::dyAxis("y", label = "level") %>%
     dygraphs::dyAxis(
       "y2",
-      label = "% Chg",
+      label = if (rate) "Chg" else "% Chg",
       drawGrid = FALSE,
       independentTicks = TRUE
     ) %>%
@@ -3391,7 +3908,7 @@ plot_fc <- function(
       }
     } %>%
     dygraphs::dySeries(
-      stringr::str_glue("{ser_names[1]}%"),
+      gr_name,
       axis = "y2",
       stepPlot = TRUE,
       fillGraph = TRUE,
@@ -3609,6 +4126,30 @@ plot_comp_3 <- function(
 }
 
 
+#' Make pandoc available to rmarkdown, falling back on Quarto's copy
+#'
+#' @return TRUE if pandoc is available
+#' @noRd
+find_pandoc <- function() {
+  if (rmarkdown::pandoc_available()) {
+    return(TRUE)
+  }
+  quarto <- Sys.which("quarto")
+  if (quarto == "") {
+    return(FALSE)
+  }
+  # Quarto ships pandoc under bin/tools/<arch>/ (bin/tools/ on some builds)
+  bin <- dirname(normalizePath(quarto))
+  for (dir in file.path(bin, "tools", c(R.version$arch, ""))) {
+    rmarkdown::find_pandoc(cache = FALSE, dir = dir)
+    if (rmarkdown::pandoc_available()) {
+      return(TRUE)
+    }
+  }
+  FALSE
+}
+
+
 #' Save a list of interactive plots to html
 #'
 #' @param plot_list a list of plots generated by fcutils::plot_xxxx() functions
@@ -3616,6 +4157,11 @@ plot_comp_3 <- function(
 #'
 #' @return nothing (silently save the html to a user defined location)
 #' @export
+#'
+#' @details The page embeds its scripts with pandoc. When rmarkdown finds no
+#' pandoc (as under Rscript or VS Code, where RStudio's copy is not known),
+#' the function looks for the copy that ships with Quarto. Without either, it
+#' saves the page with its scripts in a folder next to it and says so.
 #'
 #' @examples
 #' # hold the plots in a list
@@ -3635,6 +4181,21 @@ plot_comp_3 <- function(
 #' @examplesIf interactive()
 #' plot_out |> save_plot_list(save_loc)
 save_plot_list <- function(plot_list, save_loc) {
+  if (!find_pandoc()) {
+    lib_dir <- stringr::str_c(
+      stringr::str_remove(basename(save_loc), "\\.[^.]*$"),
+      "_files"
+    )
+    message(
+      "pandoc not found: ", save_loc, " needs the folder ", lib_dir,
+      " next to it. Install Quarto or run from RStudio to embed the scripts."
+    )
+    plot_list %>%
+      htmltools::tagList() %>%
+      htmltools::browsable() %>%
+      htmltools::save_html(file = save_loc, libdir = lib_dir)
+    return(invisible(save_loc))
+  }
   # save list of plots to html
   plot_list %>%
     htmltools::tagList() %>%
@@ -4048,7 +4609,7 @@ extract_data <- function(model_in, y_name) {
     ) %>%
     dplyr::rename_with(~ stringr::str_replace_all(., "-", "_")) %>%
     dplyr::mutate(
-      time = lubridate::ymd(index),
+      time = lubridate::ymd(.data$index),
       .before = 1,
       .keep = "unused"
     ) %>%
@@ -4178,5 +4739,5 @@ set_udaman_token <- function(key) {
   if (nchar(key) != 44) {
     rlang::warn("`key` does not have a length of 44 characters.")
   }
-  Sys.setenv(udaman_token = key)
+  set_api_key("udaman", key)
 }

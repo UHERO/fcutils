@@ -5,16 +5,19 @@
 \title{Create xts addfactor}
 \usage{
 addf(
-  start = bnk_start,
-  end = bnk_end,
+  start = bank_start(),
+  end = bank_end(),
   from = 0,
   to = 0,
   ser_name = "value",
-  per = "year"
+  per = "year",
+  ...
 )
 }
 \arguments{
-\item{start}{start date of linear interpolation (character: "yyyy-mm-dd", "yyyyqq", "yyyy")}
+\item{start}{start date of linear interpolation (character: "yyyy-mm-dd", "yyyyqq", "yyyy"),
+or a data frame of ramps with columns start, end, from, to (one ramp per
+row; see details)}
 
 \item{end}{end date of linear interpolation (character: "yyyy-mm-dd", "yyyyqq", "yyyy")}
 
@@ -25,10 +28,15 @@ addf(
 \item{ser_name}{name of the xts series (string)}
 
 \item{per}{periodicity of series (character: "year" - default)
-if date format of start is quarterly, automatically set to "quarter"}
+if start is written as a quarter or a month (see \code{to_ymd()}), per is set
+to "quarter" or "month"}
+
+\item{...}{with formulas: further points (see details)}
 }
 \value{
-a single xts series spanning bnk_start-bnk_end
+a single xts series spanning the bank: from
+\code{getOption("fcutils.bnk_start")} to \code{getOption("fcutils.bnk_end")} (see
+\code{make_xts()})
 }
 \description{
 Create xts addfactor
@@ -37,11 +45,43 @@ Create xts addfactor
 this is a wrapper around make_xts with some additional functionality.
 the start and end dates specify the span of the non-zero add-factor value. the
 remaining period between start and end is filled with zeros.
+
+Given a data frame of ramps, addf() builds one add-factor per row and
+returns their sum, so overlapping ramps add up. A data frame with no rows
+gives zeros over the bank.
+The dates take any form \code{to_ymd()} reads, decimal years included, but a
+column must be all numbers or all strings.
+
+Given formulas, \code{addf(2026.3 ~ 0, 2027.4 ~ -0.3, 2030.4 ~ 0)}, the
+add-factor runs through the points in straight lines, one equal step per
+period, and is zero before the first point and after the last. Each
+formula has a date on the left and a value on the right. The frequency
+follows the first date (2026.3 is a quarter), unless \code{per} is given by
+name; \code{ser_name} and \code{per} must be named. Decimal dates are quarters, so
+monthly points need strings (\code{"2026M10" ~ 1}).
 }
 \examples{
+options(fcutils.bnk_start = as.Date("1970-01-01"), fcutils.bnk_end = as.Date("2070-12-31"))
 addf()
 addf(201002, 201504, 1, 2)
 addf(20100101, 20601201, 1, 2, per = "month")
 addf(20100101, from = 1, to = 2, per = "quarter")
 addf(2010.2, 2015.4, 1, 2, "ECT_HI")
+# several ramps at once
+ramps <- tibble::tribble(
+  ~start,   ~end,     ~from, ~to,
+  "2026Q3", "2027Q4", 0,     -0.3,
+  "2028Q1", "2030Q4", -0.3,  0
+)
+addf(ramps)
+# the same with decimal dates
+ramps <- tibble::tribble(
+  ~start, ~end,   ~from, ~to,
+  2026.3, 2027.4, 0,     -0.3,
+  2028.1, 2030.4, -0.3,  0
+)
+addf(ramps)
+# the same as points, with decimal or quoted dates
+addf(2026.3 ~ 0, 2027.4 ~ -0.3, 2028.1 ~ -0.3, 2030.4 ~ 0)
+addf("2026Q3" ~ 0, "2027Q4" ~ -0.3, "2028Q1" ~ -0.3, "2030Q4" ~ 0)
 }

@@ -2133,6 +2133,11 @@
       "Maintainer": "Jeroen Ooms <jeroenooms@gmail.com>",
       "Repository": "CRAN"
     },
+    "stinepack": {
+      "Package": "stinepack",
+      "Version": "1.5",
+      "Source": "Repository"
+    },
     "stringi": {
       "Package": "stringi",
       "Version": "1.8.7",

@@ -13,7 +13,9 @@ AtoQ(ser_in, aggr = "mean")
 \item{aggr}{interpolation method: aggregate via mean (default) or sum}
 }
 \value{
-interpolated xts series (freq = q)
+interpolated xts series (freq = q). A name ending in \code{.A}, \verb{_A},
+\code{.SOLA} or \verb{_SOLA} gets the quarterly ending (\code{.Q}, \verb{_Q}, \code{.SOLQ},
+\verb{_SOLQ}); other names are kept.
 }
 \description{
 Linear interpolation based on AREMOS command reference page 292
