@@ -36,7 +36,9 @@ Imports:
 Suggests: 
     bimets,
     dynlm,
-    gets
+    gets,
+    testthat (>= 3.0.0)
+Config/testthat/edition: 3
 Encoding: UTF-8
 LazyData: true
 Roxygen: list(markdown = TRUE)
