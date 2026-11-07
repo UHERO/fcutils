@@ -2,3 +2,84 @@ url: https://uhero.github.io/fcutils/
 template:
   bootstrap: 5
 
+reference:
+- title: Get data
+  contents:
+  - get_series
+  - get_series_exp
+  - get_series_src
+  - set_api_key
+  - set_udaman_token
+  - get_var
+  - rename_udaman
+  - extract_data
+- title: Create and extend series
+  contents:
+  - make_xts
+  - addf
+  - extend
+  - multi_chain
+- title: Dates and spans
+  contents:
+  - to_ymd
+  - ymd_to_yQq
+  - p
+  - py
+  - pq
+  - pm
+  - span
+  - find_start
+  - find_end
+  - nqtrs
+  - nmons
+  - qtrs
+  - set_tsrange
+- title: Frequency conversion and interpolation
+  contents:
+  - aggr
+  - faggr
+  - disagg
+  - interpol
+  - AtoQ
+  - QtoA
+- title: Growth rates and transformations
+  contents:
+  - pcmp
+  - pc_to_pca
+  - pca_to_pc
+  - cagr
+  - yoy_to_lev
+  - ma
+  - ts_rebase
+  - ends_with("_cum")
+  - ends_with("_gr")
+- title: Formats and conversion
+  contents:
+  - conv_long
+  - conv_wide
+  - conv_xts
+  - conv_tslist
+  - is_wide
+  - copy_tbl
+  - set_attr_tslist
+  - write_tsd
+- title: Plots and tables
+  contents:
+  - starts_with("plot_")
+  - gen_table
+  - save_plot_list
+  - uh_colors
+  - uh_colors_50
+  - uh_colors_light
+- title: Model equations
+  contents:
+  - model_equation
+  - update_eqs
+- title: Example data
+  contents:
+  - ends_with("_data_example")
+- title: Helpers
+  contents:
+  - "%+=%"
+  - "%>%"
+  - fcutils-package

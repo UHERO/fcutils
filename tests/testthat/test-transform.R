@@ -1,11 +1,17 @@
 # Transformations on the package's example data, as they work today.
 
+# the snapshot was recorded with index(), now ts_rebase()
 test_that("index() today", {
   snap(list(
-    index(q_wide, 2010.1),
-    index(q_wide, c(2010.1, 2010.4)),
-    index(q_xts, c("2010-01-01", "2010-12-31"), 1)
+    ts_rebase(q_wide, 2010.1),
+    ts_rebase(q_wide, c(2010.1, 2010.4)),
+    ts_rebase(q_xts, c("2010-01-01", "2010-12-31"), 1)
   ))
+})
+
+test_that("index() still works, with a deprecation warning", {
+  expect_warning(old <- index(q_wide, 2010.1), "ts_rebase")
+  expect_equal(old, ts_rebase(q_wide, 2010.1))
 })
 
 test_that("span() today", {

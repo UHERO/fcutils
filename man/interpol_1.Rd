@@ -17,3 +17,4 @@ numeric vector with NAs filled
 \description{
 Interpolate a single vector containing missing values based on a pattern
 }
+\keyword{internal}

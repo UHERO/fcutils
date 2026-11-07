@@ -65,6 +65,7 @@
 #' ur <- make_xts(2024.1, val = c(3.8, 4.0, 4.2, 4.1, 4.1, 4.2, 4.3))
 #' # the unemployment rate through two anchors, then held
 #' extend(ur, 2026.4 ~ 4.4, 2028.4 ~ 4.0, interp = "stine")
+#' extend(ur, "2026Q4" ~ 4.4, "2028Q4" ~ 4.0, interp = "stine")
 #' # the same with at and val
 #' extend(ur, at = c(2026.4, 2028.4), val = c(4.4, 4.0), interp = "stine")
 #' # the same with the anchors as a named vector

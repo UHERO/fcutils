@@ -5,7 +5,7 @@
 #' @author Peter Fuleky \email{fuleky@hawaii.edu}
 #' @source author
 #' @references \url{uhero.hawaii.edu}
-#' @keywords data
+#' @keywords internal
 # NULL
 "sum_pattern"
 sum_pattern <- stringr::str_flatten(

@@ -541,13 +541,21 @@ make_xts <- function(
 #' addf(2010.2, 2015.4, 1, 2, "ECT_HI")
 #' # several ramps at once
 #' ramps <- tibble::tribble(
+#'   ~start,   ~end,     ~from, ~to,
+#'   "2026Q3", "2027Q4", 0,     -0.3,
+#'   "2028Q1", "2030Q4", -0.3,  0
+#' )
+#' addf(ramps)
+#' # the same with decimal dates
+#' ramps <- tibble::tribble(
 #'   ~start, ~end,   ~from, ~to,
 #'   2026.3, 2027.4, 0,     -0.3,
 #'   2028.1, 2030.4, -0.3,  0
 #' )
 #' addf(ramps)
-#' # the same as points
+#' # the same as points, with decimal or quoted dates
 #' addf(2026.3 ~ 0, 2027.4 ~ -0.3, 2028.1 ~ -0.3, 2030.4 ~ 0)
+#' addf("2026Q3" ~ 0, "2027Q4" ~ -0.3, "2028Q1" ~ -0.3, "2030Q4" ~ 0)
 addf <- function(
   start = bank_start(),
   end = bank_end(),
@@ -1575,6 +1583,7 @@ multi_chain <- function(
 
 #' Interpolate a single vector containing missing values based on a pattern
 #'
+#' @keywords internal
 #' @param vec_incomplete numeric vector with NAs to be filled
 #' @param vec_pattern numeric vector representing the pattern
 #' @return numeric vector with NAs filled
@@ -3083,7 +3092,10 @@ yoy_to_lev <- function(yoy_gr, hist_lev, smooth_span = 0) {
 }
 
 
-#' Get indexed series (wrapper around tsbox::ts_index())
+#' Rebase series to an index (wrapper around tsbox::ts_index())
+#'
+#' Formerly `index()`, renamed because it masked `zoo::index()` and
+#' `xts::index()`.
 #'
 #' @param x ts-boxable object to be indexed
 #' @param base_per base date when the index is set to base_value (see examples).
@@ -3095,12 +3107,12 @@ yoy_to_lev <- function(yoy_gr, hist_lev, smooth_span = 0) {
 #'
 #' @examples
 #' quarterly_data_example |>
-#'   index(2010.1)
+#'   ts_rebase(2010.1)
 #' quarterly_data_example |>
-#'   index(c(2010.1, 2010.4))
+#'   ts_rebase(c(2010.1, 2010.4))
 #' quarterly_data_example |>
-#'   index(c("2010-01-01", "2010-12-31"), 1)
-index <- function(x, base_per = as.character(Sys.Date()), base_value = 100) {
+#'   ts_rebase(c("2010-01-01", "2010-12-31"), 1)
+ts_rebase <- function(x, base_per = as.character(Sys.Date()), base_value = 100) {
   # convert to long format and return additional details
   x_mod <- conv_long(x, ser_info = TRUE)
 
@@ -3128,6 +3140,25 @@ index <- function(x, base_per = as.character(Sys.Date()), base_value = 100) {
   }
 
   return(ans)
+}
+
+
+#' Deprecated functions
+#'
+#' `index()` is now `ts_rebase()`. It still works in fcutils 0.1.0, with a
+#' warning, and will be removed in the next version.
+#'
+#' @param ... arguments passed to `ts_rebase()`
+#' @return see `ts_rebase()`
+#' @name fcutils-deprecated
+#' @keywords internal
+NULL
+
+#' @rdname fcutils-deprecated
+#' @export
+index <- function(...) {
+  .Deprecated("ts_rebase", package = "fcutils")
+  ts_rebase(...)
 }
 
 
