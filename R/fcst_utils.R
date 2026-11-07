@@ -4650,5 +4650,5 @@ set_udaman_token <- function(key) {
   if (nchar(key) != 44) {
     rlang::warn("`key` does not have a length of 44 characters.")
   }
-  Sys.setenv(udaman_token = key)
+  set_api_key("udaman", key)
 }
