@@ -86,3 +86,12 @@ test_that("AtoQ() and QtoA() today, including the renamed columns", {
     names(quiet(QtoA(named(one, "GDP_R_AT_US_SOLQ"))))
   ))
 })
+
+test_that("multi_chain() keeps names that contain a lowercase x", {
+  q <- q_wide[, c("time", "E_NF_HI", "ECT_HI")]
+  names(q)[3] <- "Ex_HI"
+  early <- dplyr::filter(q, time < as.Date("2000-01-01"))
+  out <- quiet(multi_chain(early, q))
+  expect_named(out, c("time", "E_NF_HI", "Ex_HI"))
+  expect_equal(out$Ex_HI, q$Ex_HI)
+})

@@ -1281,7 +1281,7 @@ multi_chain <- function(x, y, ids = NULL) {
     ) %>%
     dplyr::arrange(.data$time) %>%
     dplyr::mutate(dplyr::across(
-      .cols = dplyr::contains(".x"),
+      .cols = dplyr::ends_with(".x"),
       .fns = ~ dplyr::left_join(
         dplyr::pick("time"),
         tsbox::ts_chain(
@@ -1293,10 +1293,10 @@ multi_chain <- function(x, y, ids = NULL) {
           ) %>%
             tidyr::drop_na(),
           tibble::tibble(
-            id = dplyr::cur_column() %>% stringr::str_replace(".x", ".y"),
+            id = dplyr::cur_column() %>% stringr::str_replace("\\.x$", ".y"),
             time = dplyr::pick("time"),
             value = dplyr::pick(
-              dplyr::cur_column() %>% stringr::str_replace(".x", ".y")
+              dplyr::cur_column() %>% stringr::str_replace("\\.x$", ".y")
             ) %>%
               dplyr::pull()
           ) %>%
@@ -1307,10 +1307,10 @@ multi_chain <- function(x, y, ids = NULL) {
         dplyr::pull(.data$value)
     )) %>%
     dplyr::rename_with(
-      ~ stringr::str_replace(.x, ".x", ""),
-      .cols = dplyr::contains(".x")
+      ~ stringr::str_remove(.x, "\\.x$"),
+      .cols = dplyr::ends_with(".x")
     ) %>%
-    dplyr::select(-dplyr::contains(".y"))
+    dplyr::select(-dplyr::ends_with(".y"))
 
   # insert the chained columns into the original x_wide
   chained_x <- x_wide %>%
