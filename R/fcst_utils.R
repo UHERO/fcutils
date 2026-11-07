@@ -1752,11 +1752,11 @@ disagg_1 <- function(x, x_name, conv_type, target_freq, pattern) {
 #' @param pattern a single high-frequency pattern that the interpolation should follow
 #' @param extend_with NULL (default), "hold", or a ts-boxable object. Without
 #'   a pattern the interpolation has nothing to follow at the end of a series
-#'   and bends toward zero growth over the last periods. "hold" first
-#'   continues each series at its last growth rate for three periods; a
-#'   series (one per series in x, with the same names, or a single one for a
-#'   single x) continues x with its growth. The result is cut back to x's
-#'   own periods.
+#'   and bends toward zero growth over the last periods (and the first).
+#'   "hold" first continues each series at its last growth rate for three
+#'   periods; a series (one per series in x, with the same names, or a single
+#'   one for a single x) continues x with its growth at both ends, wherever
+#'   it reaches beyond x. The result is cut back to x's own periods.
 #'
 #' @return interpolated object of the same type as the input
 #' @export
@@ -1898,6 +1898,7 @@ disagg <- function(
 #' @param n_hold number of periods added by "hold"
 #'
 #' @return long tibble, each series continued after its last observation
+#'   ("hold"), or at both ends as far as extend_with reaches (a series)
 #' @noRd
 extend_low <- function(x_long, extend_with, n_hold = 3) {
   ids <- unique(x_long$id)
@@ -1934,7 +1935,7 @@ extend_low <- function(x_long, extend_with, n_hold = 3) {
     if (nrow(b) == 0) {
       stop("disagg(): extend_with has no series ", i, call. = FALSE)
     }
-    chain_1(a, b, method = "ratio", direction = "forward")
+    chain_1(a, b, method = "ratio", direction = "both")
   }) %>%
     dplyr::bind_rows()
 }

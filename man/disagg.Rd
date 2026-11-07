@@ -26,11 +26,11 @@ the interpolation is based on "sum"; for all others it is based on "mean."}
 
 \item{extend_with}{NULL (default), "hold", or a ts-boxable object. Without
 a pattern the interpolation has nothing to follow at the end of a series
-and bends toward zero growth over the last periods. "hold" first
-continues each series at its last growth rate for three periods; a
-series (one per series in x, with the same names, or a single one for a
-single x) continues x with its growth. The result is cut back to x's
-own periods.}
+and bends toward zero growth over the last periods (and the first).
+"hold" first continues each series at its last growth rate for three
+periods; a series (one per series in x, with the same names, or a single
+one for a single x) continues x with its growth at both ends, wherever
+it reaches beyond x. The result is cut back to x's own periods.}
 }
 \value{
 interpolated object of the same type as the input

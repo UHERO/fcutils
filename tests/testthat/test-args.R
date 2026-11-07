@@ -123,3 +123,16 @@ test_that("addf() with a ramp table is addf_ramps()", {
   expect_equal(max(zoo::index(none)), as.Date("2070-10-01"))
   expect_error(addf(ramps[, 1:3], per = "quarter"), "lacks the column")
 })
+
+test_that("disagg(extend_with = <series>) extends at both ends, as to_quarterly()", {
+  ref_bank()
+  fx <- extsol_fx()
+  x <- fx$gdppc_jp_a
+  # a series that starts well before x and ends after it
+  longer <- make_xts(1985, val = as.numeric(x[1]) * 0.98 * 1.015^(0:45))
+  out <- disagg(x, extend_with = longer)
+  same_values(out, ref_to_quarterly(x, extend_with = longer))
+  # the start differs from the plain interpolation, the span is x's
+  expect_equal(range(zoo::index(out)), as.Date(c("1994-01-01", "2025-10-01")))
+  expect_false(isTRUE(all.equal(as.numeric(out[1]), as.numeric(disagg(x)[1]))))
+})
