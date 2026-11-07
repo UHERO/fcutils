@@ -31,7 +31,9 @@ if start is written as a quarter or a month (see \code{to_ymd()}), per is set
 to "quarter" or "month"}
 }
 \value{
-a single xts series spanning the bank (see \code{make_xts()})
+a single xts series spanning the bank: from
+\code{getOption("fcutils.bnk_start")} to \code{getOption("fcutils.bnk_end")} (see
+\code{make_xts()})
 }
 \description{
 Create xts addfactor
@@ -46,6 +48,7 @@ returns their sum, so overlapping ramps add up. A data frame with no rows
 gives zeros over the bank.
 }
 \examples{
+options(fcutils.bnk_start = as.Date("1970-01-01"), fcutils.bnk_end = as.Date("2070-12-31"))
 addf()
 addf(201002, 201504, 1, 2)
 addf(20100101, 20601201, 1, 2, per = "month")

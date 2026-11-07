@@ -26,14 +26,15 @@ Create xts and fill with values
 \details{
 when end is missing, but val is a vector of more than one element,
 the end date is automatically determined by the length of the val vector.
-if end is missing and val is a scalar, the end date is set to the bank end:
-\code{getOption("fcutils.bnk_end")} if set, otherwise the package's \code{bnk_end}.
-The default start is \code{getOption("fcutils.bnk_start")} if set, otherwise
-the package's \code{bnk_start}.
+if end is missing and val is a scalar, the end date is set to the bank end,
+\code{getOption("fcutils.bnk_end")}. The default start is the bank start,
+\code{getOption("fcutils.bnk_start")}. Set both once per session, e.g. in
+setup.R: \code{options(fcutils.bnk_start = as.Date("1970-01-01"), fcutils.bnk_end = as.Date("2070-12-31"))}.
 if end is missing the remaining arguments have to be named. if val is a tibble,
 the end date is automatically determined by the number of rows in the tibble.
 }
 \examples{
+options(fcutils.bnk_start = as.Date("1970-01-01"), fcutils.bnk_end = as.Date("2070-12-31"))
 make_xts()
 make_xts(val = 0, per = "m")
 make_xts(start = 20100101, per = "quarter", val = 0)

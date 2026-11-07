@@ -51,11 +51,11 @@ test_that("multi_chain() defaults are unchanged (ts_chain)", {
   same_values(quiet(multi_chain(x, y)), tsbox::ts_chain(x, y))
 })
 
-test_that("disagg(extend_with = 'hold') is to_quarterly()", {
+test_that("disagg(extend_with = 'last_growth') is to_quarterly()", {
   ref_bank()
   fx <- extsol_fx()
   x <- fx$gdppc_jp_a
-  same_values(disagg(x, extend_with = "hold"), ref_to_quarterly(x))
+  same_values(disagg(x, extend_with = "last_growth"), ref_to_quarterly(x))
 })
 
 test_that("disagg(extend_with = <series>) is to_quarterly(extend_with = <series>)", {
@@ -78,10 +78,10 @@ test_that("disagg(extend_with = NULL) is unchanged", {
   same_values(disagg(x), ref_to_quarterly(x, extend_with = NULL))
 })
 
-test_that("disagg(extend_with = 'hold') works on several series", {
+test_that("disagg(extend_with = 'last_growth') works on several series", {
   ref_bank()
   a <- make_xts(2015, val = tibble::tibble(A = 100 * 1.02^(0:10), B = 50 * 1.05^(0:10)))
-  out <- disagg(a, extend_with = "hold")
+  out <- disagg(a, extend_with = "last_growth")
   expect_equal(range(zoo::index(out)), as.Date(c("2015-01-01", "2025-10-01")))
   for (s in c("A", "B")) {
     same_values(
@@ -135,4 +135,36 @@ test_that("disagg(extend_with = <series>) extends at both ends, as to_quarterly(
   # the start differs from the plain interpolation, the span is x's
   expect_equal(range(zoo::index(out)), as.Date(c("1994-01-01", "2025-10-01")))
   expect_false(isTRUE(all.equal(as.numeric(out[1]), as.numeric(disagg(x)[1]))))
+})
+
+test_that("multi_chain(match = 'stem') pairs series by name stem", {
+  ref_bank()
+  fx <- extsol_fx()
+  hist <- tsbox::ts_c(
+    UR_AT_US_A = fx$ur_a_hist,
+    LF_AT_US_A = fx$lf_a_hist
+  )
+  sol_a <- tsbox::ts_c(
+    UR_AT_US_SOLA = aggr(fx$ur_q),
+    LF_AT_US_SOLA = aggr(fx$lf_q),
+    OTHER_SOLA = aggr(fx$lf_q)
+  )
+  out <- quiet(multi_chain(hist, sol_a, match = "stem", direction = "forward"))
+  expect_named(out, c("UR_AT_US_A", "LF_AT_US_A"))
+  same_values(out$LF_AT_US_A, ref_annual_solution(fx$lf_q, fx$lf_a_hist))
+  # by name, nothing pairs and x comes back unchanged
+  expect_equal(quiet(multi_chain(hist, sol_a, direction = "forward")), hist)
+  # two series in y with the same stem
+  dup <- tsbox::ts_c(UR_AT_US_SOLA = aggr(fx$ur_q), UR_AT_US_Q = fx$ur_q)
+  expect_error(quiet(multi_chain(hist, dup, match = "stem")), "share the stem UR_AT_US")
+})
+
+test_that("multi_chain() pairs one series with one series whatever the names", {
+  ref_bank()
+  fx <- extsol_fx()
+  hist <- magrittr::set_colnames(fx$ur_a_hist, "UR_AT_US_A")
+  sol <- magrittr::set_colnames(aggr(fx$ur_q), "UR_AT_US_SOLA")
+  out <- quiet(multi_chain(hist, sol, method = "diff", direction = "forward"))
+  expect_named(out, "UR_AT_US_A")
+  same_values(out, ref_annual_solution(fx$ur_q, fx$ur_a_hist, rate = TRUE))
 })

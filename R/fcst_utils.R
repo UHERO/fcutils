@@ -388,19 +388,32 @@ get_series_exp <- function(
 }
 
 
-#' Bank start and end: the options `fcutils.bnk_start` and `fcutils.bnk_end`
-#' if set, otherwise the package's `bnk_start` and `bnk_end`
+#' Bank start and end, from the options `fcutils.bnk_start` and
+#' `fcutils.bnk_end`
 #'
-#' @return a Date
+#' @return a Date; an error if the option is not set
 #' @noRd
 bank_start <- function() {
-  to_ymd(getOption("fcutils.bnk_start", bnk_start))
+  bank_option("fcutils.bnk_start")
 }
 
 #' @rdname bank_start
 #' @noRd
 bank_end <- function() {
-  to_ymd(getOption("fcutils.bnk_end", bnk_end))
+  bank_option("fcutils.bnk_end")
+}
+
+bank_option <- function(name) {
+  x <- getOption(name)
+  if (is.null(x)) {
+    stop(
+      "No bank set (", name, "). Set it once, for example in setup.R:\n",
+      "  options(fcutils.bnk_start = as.Date(\"1970-01-01\"), ",
+      "fcutils.bnk_end = as.Date(\"2070-12-31\"))",
+      call. = FALSE
+    )
+  }
+  to_ymd(x)
 }
 
 
@@ -418,14 +431,16 @@ bank_end <- function() {
 #'
 #' @details when end is missing, but val is a vector of more than one element,
 #' the end date is automatically determined by the length of the val vector.
-#' if end is missing and val is a scalar, the end date is set to the bank end:
-#' `getOption("fcutils.bnk_end")` if set, otherwise the package's `bnk_end`.
-#' The default start is `getOption("fcutils.bnk_start")` if set, otherwise
-#' the package's `bnk_start`.
+#' if end is missing and val is a scalar, the end date is set to the bank end,
+#' `getOption("fcutils.bnk_end")`. The default start is the bank start,
+#' `getOption("fcutils.bnk_start")`. Set both once per session, e.g. in
+#' setup.R: `options(fcutils.bnk_start = as.Date("1970-01-01"),
+#' fcutils.bnk_end = as.Date("2070-12-31"))`.
 #' if end is missing the remaining arguments have to be named. if val is a tibble,
 #' the end date is automatically determined by the number of rows in the tibble.
 #'
 #' @examples
+#' options(fcutils.bnk_start = as.Date("1970-01-01"), fcutils.bnk_end = as.Date("2070-12-31"))
 #' make_xts()
 #' make_xts(val = 0, per = "m")
 #' make_xts(start = 20100101, per = "quarter", val = 0)
@@ -493,7 +508,9 @@ make_xts <- function(
 #'   if start is written as a quarter or a month (see `to_ymd()`), per is set
 #'   to "quarter" or "month"
 #'
-#' @return a single xts series spanning the bank (see `make_xts()`)
+#' @return a single xts series spanning the bank: from
+#'   `getOption("fcutils.bnk_start")` to `getOption("fcutils.bnk_end")` (see
+#'   `make_xts()`)
 #' @export
 #'
 #' @details this is a wrapper around make_xts with some additional functionality.
@@ -505,6 +522,7 @@ make_xts <- function(
 #' gives zeros over the bank.
 #'
 #' @examples
+#' options(fcutils.bnk_start = as.Date("1970-01-01"), fcutils.bnk_end = as.Date("2070-12-31"))
 #' addf()
 #' addf(201002, 201504, 1, 2)
 #' addf(20100101, 20601201, 1, 2, per = "month")
@@ -1265,6 +1283,44 @@ conv_tslist <- function(x) {
 # time series utility functions ----
 # **************************
 
+#' Rename y's series after their partners in x (used by `multi_chain()`)
+#'
+#' @param x_wide,y_wide wide tibbles with a time column
+#' @param how "name" or "stem"
+#'
+#' @return y_wide, with partner series renamed to x's names
+#' @noRd
+match_names <- function(x_wide, y_wide, how) {
+  x_names <- setdiff(colnames(x_wide), "time")
+  y_names <- setdiff(colnames(y_wide), "time")
+  # one series each: they are partners whatever their names
+  if (length(x_names) == 1 && length(y_names) == 1) {
+    return(dplyr::rename(y_wide, !!x_names := dplyr::all_of(y_names)))
+  }
+  if (how == "name") {
+    return(y_wide)
+  }
+  stem <- function(nm) stringr::str_remove(nm, "[._](SOL)?[AQM]$")
+  for (side in list(list(x_names, "x"), list(y_names, "y"))) {
+    dup <- unique(stem(side[[1]])[duplicated(stem(side[[1]]))])
+    if (length(dup) > 0) {
+      stop(
+        "multi_chain(): several series in ", side[[2]], " share the stem ",
+        stringr::str_flatten(dup, collapse = ", "),
+        call. = FALSE
+      )
+    }
+  }
+  partner <- x_names[match(stem(y_names), stem(x_names))]
+  has <- !is.na(partner)
+  # keep y's unmatched series under their own names
+  new_names <- y_names
+  new_names[has] <- partner[has]
+  colnames(y_wide) <- c("time", new_names)[match(colnames(y_wide), c("time", y_names))]
+  y_wide
+}
+
+
 #' Chain one series with another (used by `multi_chain()`)
 #'
 #' @param a,b tibbles with columns id, time, value and no missing values
@@ -1312,6 +1368,11 @@ chain_1 <- function(a, b, method, direction) {
 #' y's changes (for rates such as the unemployment rate)
 #' @param direction "both" (default) extends x at both ends, "forward" only
 #' after its last observation, "backward" only before its first
+#' @param match how series in x find their partner in y: "name" (default)
+#' needs the same name; "stem" compares names without a final frequency or
+#' solution ending (`_A`, `_Q`, `_M`, `_SOLA`, `_SOLQ`, `_SOLM`, or the same
+#' with `.`), so `UR_AT_US_A` pairs with `UR_AT_US_SOLQ`. A single series in
+#' x always pairs with a single series in y. The result keeps x's names.
 #'
 #' @return object of the same type as the input with extended series
 #' @export
@@ -1332,17 +1393,24 @@ chain_1 <- function(a, b, method, direction) {
 #' hist <- make_xts(2020, val = c(8.1, 5.4, 3.6, 3.6))
 #' fcst <- make_xts(2022, val = c(3.5, 3.7, 4.0, 4.2, 4.3))
 #' multi_chain(hist, fcst, method = "diff", direction = "forward")
+#' # pair series by name stem: UR_A with UR_SOLA, LF_A with LF_SOLA
+#' hist <- make_xts(2020, val = tibble::tibble(UR_A = c(8.1, 5.4, 3.6), LF_A = c(160, 161, 164)))
+#' fcst <- make_xts(2022, val = tibble::tibble(UR_SOLA = c(3.6, 3.8, 4.1), LF_SOLA = c(165, 166, 168)))
+#' multi_chain(hist, fcst, match = "stem", direction = "forward")
 multi_chain <- function(
   x,
   y,
   ids = NULL,
   method = c("ratio", "diff"),
-  direction = c("both", "forward", "backward")
+  direction = c("both", "forward", "backward"),
+  match = c("name", "stem")
 ) {
   method <- match.arg(method)
   direction <- match.arg(direction)
+  match <- match.arg(match)
   x_wide <- conv_wide(x)
   y_wide <- conv_wide(y)
+  y_wide <- match_names(x_wide, y_wide, match)
 
   # identify series to be extended
   if (is.null(ids)) {
@@ -1750,10 +1818,10 @@ disagg_1 <- function(x, x_name, conv_type, target_freq, pattern) {
 #' the interpolation is based on "sum"; for all others it is based on "mean."
 #' @param target_freq target frequency "quarter" or "month"
 #' @param pattern a single high-frequency pattern that the interpolation should follow
-#' @param extend_with NULL (default), "hold", or a ts-boxable object. Without
+#' @param extend_with NULL (default), "last_growth", or a ts-boxable object. Without
 #'   a pattern the interpolation has nothing to follow at the end of a series
 #'   and bends toward zero growth over the last periods (and the first).
-#'   "hold" first continues each series at its last growth rate for three
+#'   "last_growth" first continues each series at its last growth rate for three
 #'   periods; a series (one per series in x, with the same names, or a single
 #'   one for a single x) continues x with its growth at both ends, wherever
 #'   it reaches beyond x. The result is cut back to x's own periods.
@@ -1805,7 +1873,7 @@ disagg_1 <- function(x, x_name, conv_type, target_freq, pattern) {
 #' # the last year without and with an extension
 #' a <- make_xts(2015, val = 100 * 1.02^(0:10))
 #' disagg(a) |> tsbox::ts_pc() |> tail(4)
-#' disagg(a, extend_with = "hold") |> tsbox::ts_pc() |> tail(4)
+#' disagg(a, extend_with = "last_growth") |> tsbox::ts_pc() |> tail(4)
 disagg <- function(
   x,
   conv_type = "mean",
@@ -1894,15 +1962,15 @@ disagg <- function(
 #' Continue low-frequency series before interpolation (used by `disagg()`)
 #'
 #' @param x_long long tibble (id, time, value) without missing values
-#' @param extend_with "hold" or a ts-boxable object (see `disagg()`)
-#' @param n_hold number of periods added by "hold"
+#' @param extend_with "last_growth" or a ts-boxable object (see `disagg()`)
+#' @param n_hold number of periods added by "last_growth"
 #'
 #' @return long tibble, each series continued after its last observation
-#'   ("hold"), or at both ends as far as extend_with reaches (a series)
+#'   ("last_growth"), or at both ends as far as extend_with reaches (a series)
 #' @noRd
 extend_low <- function(x_long, extend_with, n_hold = 3) {
   ids <- unique(x_long$id)
-  if (identical(extend_with, "hold")) {
+  if (identical(extend_with, "last_growth")) {
     ext <- purrr::map(ids, function(i) {
       s <- dplyr::filter(x_long, .data$id == i) %>% dplyr::arrange(.data$time)
       n <- nrow(s)
@@ -1920,7 +1988,7 @@ extend_low <- function(x_long, extend_with, n_hold = 3) {
     return(dplyr::bind_rows(ext))
   }
   if (is.character(extend_with)) {
-    stop("disagg(): extend_with must be NULL, \"hold\" or a series", call. = FALSE)
+    stop("disagg(): extend_with must be NULL, \"last_growth\" or a series", call. = FALSE)
   }
   ew <- conv_long(extend_with) %>% tidyr::drop_na("value")
   if (!"id" %in% names(ew)) {
