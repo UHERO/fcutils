@@ -17,6 +17,12 @@ nothing (silently save the html to a user defined location)
 \description{
 Save a list of interactive plots to html
 }
+\details{
+The page embeds its scripts with pandoc. When rmarkdown finds no
+pandoc (as under Rscript or VS Code, where RStudio's copy is not known),
+the function looks for the copy that ships with Quarto. Without either, it
+saves the page with its scripts in a folder next to it and says so.
+}
 \examples{
 # hold the plots in a list
 plot_out <- list()
