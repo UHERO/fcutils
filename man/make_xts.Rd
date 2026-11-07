@@ -4,12 +4,7 @@
 \alias{make_xts}
 \title{Create xts and fill with values}
 \usage{
-make_xts(
-  start = getOption("fcutils.bnk_start", bnk_start),
-  end = NULL,
-  per = "year",
-  val = NA_real_
-)
+make_xts(start = bank_start(), end = NULL, per = "year", val = NA_real_)
 }
 \arguments{
 \item{start}{date of series start (character: "yyyy-mm-dd", "yyyyqq", "yyyy")}

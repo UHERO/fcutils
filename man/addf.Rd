@@ -5,8 +5,8 @@
 \title{Create xts addfactor}
 \usage{
 addf(
-  start = getOption("fcutils.bnk_start", bnk_start),
-  end = getOption("fcutils.bnk_end", bnk_end),
+  start = bank_start(),
+  end = bank_end(),
   from = 0,
   to = 0,
   ser_name = "value",

@@ -388,10 +388,16 @@ get_series_exp <- function(
 }
 
 
-#' Bank end used when a function needs one: the option `fcutils.bnk_end` if
-#' set, otherwise the package's `bnk_end`
+#' Bank start and end: the options `fcutils.bnk_start` and `fcutils.bnk_end`
+#' if set, otherwise the package's `bnk_start` and `bnk_end`
 #'
 #' @return a Date
+#' @noRd
+bank_start <- function() {
+  to_ymd(getOption("fcutils.bnk_start", bnk_start))
+}
+
+#' @rdname bank_start
 #' @noRd
 bank_end <- function() {
   to_ymd(getOption("fcutils.bnk_end", bnk_end))
@@ -429,7 +435,7 @@ bank_end <- function() {
 #' make_xts(start = 201001, per = "q",
 #'          val = tibble::tibble(E_NF_HON = c(1:10), ECT_HI = c(11:20)))
 make_xts <- function(
-  start = getOption("fcutils.bnk_start", bnk_start),
+  start = bank_start(),
   end = NULL,
   per = "year",
   val = NA_real_
@@ -499,8 +505,8 @@ make_xts <- function(
 #' addf(20100101, from = 1, to = 2, per = "quarter")
 #' addf(2010.2, 2015.4, 1, 2, "ECT_HI")
 addf <- function(
-  start = getOption("fcutils.bnk_start", bnk_start),
-  end = getOption("fcutils.bnk_end", bnk_end),
+  start = bank_start(),
+  end = bank_end(),
   from = 0,
   to = 0,
   ser_name = "value",
