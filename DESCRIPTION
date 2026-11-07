@@ -27,19 +27,20 @@ Imports:
     rlang,
     rmarkdown,
     slider,
+    stinepack,
     stringr,
     tempdisagg,
     tibble,
     tidyr,
     tsbox,
-    xts
+    xts,
+    zoo
 Suggests: 
     bimets,
     dynlm,
     gets,
     testthat (>= 3.0.0),
-    withr,
-    zoo
+    withr
 Config/testthat/edition: 3
 Encoding: UTF-8
 LazyData: true
