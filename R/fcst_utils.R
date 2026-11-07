@@ -1709,7 +1709,9 @@ disagg <- function(
 #' @param ser_in the xts series to be interpolated (freq = a)
 #' @param aggr interpolation method: aggregate via mean (default) or sum
 #'
-#' @return interpolated xts series (freq = q)
+#' @return interpolated xts series (freq = q). A name ending in `.A`, `_A`,
+#'   `.SOLA` or `_SOLA` gets the quarterly ending (`.Q`, `_Q`, `.SOLQ`,
+#'   `_SOLQ`); other names are kept.
 #' @export
 #'
 #' @examples
@@ -1762,8 +1764,8 @@ AtoQ <- function(ser_in, aggr = "mean") {
     ser_out <- ser_out / 4
   }
   colnames(ser_out) <- colnames(ser_in) %>%
-    stringr::str_replace_all(".SOLA", ".SOLQ") %>%
-    stringr::str_replace_all(".A", ".Q")
+    stringr::str_replace("([._])SOLA$", "\\1SOLQ") %>%
+    stringr::str_replace("([._])A$", "\\1Q")
   return(ser_out)
 }
 
@@ -1774,7 +1776,8 @@ AtoQ <- function(ser_in, aggr = "mean") {
 #' @param ser_in the xts series to be converted (freq = q)
 #' @param	aggr aggregate via mean (default) or sum
 #'
-#' @return converted xts series (freq = a)
+#' @return converted xts series (freq = a). A name ending in `.Q`, `_Q`,
+#'   `.SOLQ` or `_SOLQ` gets the annual ending; other names are kept.
 #' @export
 #'
 #' @examples
@@ -1789,8 +1792,8 @@ AtoQ <- function(ser_in, aggr = "mean") {
 QtoA <- function(ser_in, aggr = "mean") {
   ser_out <- tsbox::ts_frequency(ser_in, to = "year", aggregate = aggr)
   colnames(ser_out) <- colnames(ser_in) %>%
-    stringr::str_replace_all(".SOLQ", ".SOLA") %>%
-    stringr::str_replace_all(".Q", ".A")
+    stringr::str_replace("([._])SOLQ$", "\\1SOLA") %>%
+    stringr::str_replace("([._])Q$", "\\1A")
   return(ser_out)
 }
 

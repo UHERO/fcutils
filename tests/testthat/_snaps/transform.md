@@ -3137,5 +3137,5 @@
     Code
       print(x)
     Output
-      [1] "N.QT_JP.Q"        "N.QT_JP.SOLQ"     "GDP_R_AT_US.A"    "GDP_R_AT_US.SOLA"
+      [1] "N_AT_JP_Q"        "N_AT_JP_SOLQ"     "GDP_R_AT_US_A"    "GDP_R_AT_US_SOLA"
 
