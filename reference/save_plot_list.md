@@ -22,6 +22,13 @@ save_plot_list(plot_list, save_loc)
 
 nothing (silently save the html to a user defined location)
 
+## Details
+
+The page embeds its scripts with pandoc. When rmarkdown finds no pandoc
+(as under Rscript or VS Code, where RStudio's copy is not known), the
+function looks for the copy that ships with Quarto. Without either, it
+saves the page with its scripts in a folder next to it and says so.
+
 ## Examples
 
 ``` r

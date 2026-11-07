@@ -5,7 +5,7 @@ Create xts and fill with values
 ## Usage
 
 ``` r
-make_xts(start = bnk_start, end = NULL, per = "year", val = NA_real_)
+make_xts(start = bank_start(), end = NULL, per = "year", val = NA_real_)
 ```
 
 ## Arguments
@@ -20,8 +20,10 @@ make_xts(start = bnk_start, end = NULL, per = "year", val = NA_real_)
 
 - per:
 
-  periodicity of series (character: "year" - default) if date format of
-  start is quarterly, automatically set to "quarter"
+  periodicity of series (character: "year" - default) if start is
+  written as a quarter or a month (see
+  [`to_ymd()`](https://uhero.github.io/fcutils/reference/to_ymd.md)),
+  per is set to "quarter" or "month"
 
 - val:
 
@@ -35,14 +37,19 @@ an xts series
 
 when end is missing, but val is a vector of more than one element, the
 end date is automatically determined by the length of the val vector. if
-end is missing and val is a scalar, the end date is set to bnk_end. if
-end is missing the remaining arguments have to be named. if val is a
+end is missing and val is a scalar, the end date is set to the bank end,
+`getOption("fcutils.bnk_end")`. The default start is the bank start,
+`getOption("fcutils.bnk_start")`. Set both once per session, e.g. in
+setup.R:
+`options(fcutils.bnk_start = as.Date("1970-01-01"), fcutils.bnk_end = as.Date("2070-12-31"))`.
+if end is missing the remaining arguments have to be named. if val is a
 tibble, the end date is automatically determined by the number of rows
 in the tibble.
 
 ## Examples
 
 ``` r
+options(fcutils.bnk_start = as.Date("1970-01-01"), fcutils.bnk_end = as.Date("2070-12-31"))
 make_xts()
 #>            value
 #> 1970-01-01    NA
@@ -56,16 +63,16 @@ make_xts()
 #> 1978-01-01    NA
 #> 1979-01-01    NA
 #>        ...      
-#> 2091-01-01    NA
-#> 2092-01-01    NA
-#> 2093-01-01    NA
-#> 2094-01-01    NA
-#> 2095-01-01    NA
-#> 2096-01-01    NA
-#> 2097-01-01    NA
-#> 2098-01-01    NA
-#> 2099-01-01    NA
-#> 2100-01-01    NA
+#> 2061-01-01    NA
+#> 2062-01-01    NA
+#> 2063-01-01    NA
+#> 2064-01-01    NA
+#> 2065-01-01    NA
+#> 2066-01-01    NA
+#> 2067-01-01    NA
+#> 2068-01-01    NA
+#> 2069-01-01    NA
+#> 2070-01-01    NA
 make_xts(val = 0, per = "m")
 #>            value
 #> 1970-01-01     0
@@ -79,16 +86,16 @@ make_xts(val = 0, per = "m")
 #> 1970-09-01     0
 #> 1970-10-01     0
 #>        ...      
-#> 2100-03-01     0
-#> 2100-04-01     0
-#> 2100-05-01     0
-#> 2100-06-01     0
-#> 2100-07-01     0
-#> 2100-08-01     0
-#> 2100-09-01     0
-#> 2100-10-01     0
-#> 2100-11-01     0
-#> 2100-12-01     0
+#> 2070-03-01     0
+#> 2070-04-01     0
+#> 2070-05-01     0
+#> 2070-06-01     0
+#> 2070-07-01     0
+#> 2070-08-01     0
+#> 2070-09-01     0
+#> 2070-10-01     0
+#> 2070-11-01     0
+#> 2070-12-01     0
 make_xts(start = 20100101, per = "quarter", val = 0)
 #>            value
 #> 2010-01-01     0
@@ -102,16 +109,16 @@ make_xts(start = 20100101, per = "quarter", val = 0)
 #> 2012-01-01     0
 #> 2012-04-01     0
 #>        ...      
-#> 2098-07-01     0
-#> 2098-10-01     0
-#> 2099-01-01     0
-#> 2099-04-01     0
-#> 2099-07-01     0
-#> 2099-10-01     0
-#> 2100-01-01     0
-#> 2100-04-01     0
-#> 2100-07-01     0
-#> 2100-10-01     0
+#> 2068-07-01     0
+#> 2068-10-01     0
+#> 2069-01-01     0
+#> 2069-04-01     0
+#> 2069-07-01     0
+#> 2069-10-01     0
+#> 2070-01-01     0
+#> 2070-04-01     0
+#> 2070-07-01     0
+#> 2070-10-01     0
 make_xts(start = 2010.1, per = "q", val = 1:10)
 #>            value
 #> 2010-01-01     1
@@ -149,16 +156,16 @@ make_xts(start = "2010-01-01", per = "m", val = 0)
 #> 2010-09-01     0
 #> 2010-10-01     0
 #>        ...      
-#> 2100-03-01     0
-#> 2100-04-01     0
-#> 2100-05-01     0
-#> 2100-06-01     0
-#> 2100-07-01     0
-#> 2100-08-01     0
-#> 2100-09-01     0
-#> 2100-10-01     0
-#> 2100-11-01     0
-#> 2100-12-01     0
+#> 2070-03-01     0
+#> 2070-04-01     0
+#> 2070-05-01     0
+#> 2070-06-01     0
+#> 2070-07-01     0
+#> 2070-08-01     0
+#> 2070-09-01     0
+#> 2070-10-01     0
+#> 2070-11-01     0
+#> 2070-12-01     0
 make_xts(start = 201001, per = "q",
          val = tibble::tibble(E_NF_HON = c(1:10), ECT_HI = c(11:20)))
 #>            E_NF_HON ECT_HI

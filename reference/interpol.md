@@ -5,7 +5,7 @@ Interpolate univariate or multivariate time series with missing values
 ## Usage
 
 ``` r
-interpol(incomplete, pattern, extend_range = FALSE)
+interpol(incomplete, pattern = NULL, extend_range = FALSE)
 ```
 
 ## Arguments
@@ -16,7 +16,8 @@ interpol(incomplete, pattern, extend_range = FALSE)
 
 - pattern:
 
-  a ts-boxable object no missing values
+  a ts-boxable object no missing values, or NULL (default) to fill the
+  gaps inside each series along a straight line
 
 - extend_range:
 
@@ -31,13 +32,26 @@ interpolated object of the same type as the input
 ## Details
 
 the function aligns two sets of time series by date and then
-interpolates the first set using the second set as a pattern. The
-time-span of the pattern has to match or be larger than the time-span of
-the incomplete data.
+interpolates the first set using the second set as a pattern. Without a
+pattern, missing values between a series' first and last observation are
+filled linearly (by position, so each period counts the same); missing
+dates in a regular series are added first, and leading and trailing gaps
+stay empty. extend_range has no effect then. The time-span of the
+pattern has to match or be larger than the time-span of the incomplete
+data.
 
 ## Examples
 
 ``` r
+# straight-line fill of an internal gap
+make_xts("2025M7", val = c(1, 2, NA, 4, 5)) |>
+  interpol()
+#>            value
+#> 2025-07-01     1
+#> 2025-08-01     2
+#> 2025-09-01     3
+#> 2025-10-01     4
+#> 2025-11-01     5
 monthly_data_example |>
   dplyr::filter(time > "2002-01-01") |>
   tsbox::ts_long() |>

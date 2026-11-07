@@ -21,7 +21,9 @@ AtoQ(ser_in, aggr = "mean")
 
 ## Value
 
-interpolated xts series (freq = q)
+interpolated xts series (freq = q). A name ending in `.A`, `_A`, `.SOLA`
+or `_SOLA` gets the quarterly ending (`.Q`, `_Q`, `.SOLQ`, `_SOLQ`);
+other names are kept.
 
 ## Examples
 

@@ -6,7 +6,13 @@ frequency
 ## Usage
 
 ``` r
-disagg(x, conv_type = "mean", target_freq = "quarter", pattern = NULL)
+disagg(
+  x,
+  conv_type = "mean",
+  target_freq = "quarter",
+  pattern = NULL,
+  extend_with = NULL
+)
 ```
 
 ## Arguments
@@ -30,6 +36,17 @@ disagg(x, conv_type = "mean", target_freq = "quarter", pattern = NULL)
 
   a single high-frequency pattern that the interpolation should follow
 
+- extend_with:
+
+  NULL (default), "last_growth", or a ts-boxable object. Without a
+  pattern the interpolation has nothing to follow at the end of a series
+  and bends toward zero growth over the last periods (and the first).
+  "last_growth" first continues each series at its last growth rate for
+  three periods; a series (one per series in x, with the same names, or
+  a single one for a single x) continues x with its growth at both ends,
+  wherever it reaches beyond x. The result is cut back to x's own
+  periods.
+
 ## Value
 
 interpolated object of the same type as the input
@@ -38,7 +55,8 @@ interpolated object of the same type as the input
 
 the time-span of the high-frequency pattern has to match or be larger
 than the time-span of the low frequency series. NA values are not
-allowed.
+allowed, except that with extend_with, leading and trailing NAs of x are
+dropped.
 
 ## Examples
 
@@ -205,4 +223,18 @@ purrr::map2(
 #> 2019 37.55195 37.66041 37.63611 37.71717
 #> 2020                                    
 #> 
+# the last year without and with an extension
+a <- make_xts(2015, val = 100 * 1.02^(0:10))
+disagg(a) |> tsbox::ts_pc() |> tail(4)
+#>                value
+#> 2025-01-01 0.6174512
+#> 2025-04-01 0.4602231
+#> 2025-07-01 0.3053787
+#> 2025-10-01 0.1521779
+disagg(a, extend_with = "last_growth") |> tsbox::ts_pc() |> tail(4)
+#>                value
+#> 2025-01-01 0.4944892
+#> 2025-04-01 0.4968292
+#> 2025-07-01 0.4991225
+#> 2025-10-01 0.5013695
 ```

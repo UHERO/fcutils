@@ -15,6 +15,26 @@ You can install the development version of fcutils from
 devtools::install_github("UHERO/fcutils")
 ```
 
+## Setup
+
+Functions that build series over the whole bank, such as
+[`make_xts()`](https://uhero.github.io/fcutils/reference/make_xts.md),
+[`addf()`](https://uhero.github.io/fcutils/reference/addf.md) and
+[`extend()`](https://uhero.github.io/fcutils/reference/extend.md), need
+its start and end. Set them once per project, for example in setup.R:
+
+``` r
+
+options(
+  fcutils.bnk_start = as.Date("1970-01-01"),
+  fcutils.bnk_end = as.Date("2070-12-31")
+)
+```
+
+Downloads from FRED, e-Stat and EIA need an API key. Add `FRED_API_KEY`,
+`ESTAT_API_KEY` or `EIA_API_KEY` to `.Renviron`, or call
+[`set_api_key()`](https://uhero.github.io/fcutils/reference/set_api_key.md).
+
 ## Example
 
 Illustration of some package features.

@@ -4,12 +4,11 @@
 <url><loc>https://uhero.github.io/fcutils/LICENSE.html</loc></url>
 <url><loc>https://uhero.github.io/fcutils/authors.html</loc></url>
 <url><loc>https://uhero.github.io/fcutils/index.html</loc></url>
+<url><loc>https://uhero.github.io/fcutils/news/index.html</loc></url>
 <url><loc>https://uhero.github.io/fcutils/reference/AtoQ.html</loc></url>
 <url><loc>https://uhero.github.io/fcutils/reference/QtoA.html</loc></url>
 <url><loc>https://uhero.github.io/fcutils/reference/addf.html</loc></url>
 <url><loc>https://uhero.github.io/fcutils/reference/aggr.html</loc></url>
-<url><loc>https://uhero.github.io/fcutils/reference/bnk_end.html</loc></url>
-<url><loc>https://uhero.github.io/fcutils/reference/bnk_start.html</loc></url>
 <url><loc>https://uhero.github.io/fcutils/reference/cagr.html</loc></url>
 <url><loc>https://uhero.github.io/fcutils/reference/conv_long.html</loc></url>
 <url><loc>https://uhero.github.io/fcutils/reference/conv_tslist.html</loc></url>
@@ -18,6 +17,7 @@
 <url><loc>https://uhero.github.io/fcutils/reference/copy_tbl.html</loc></url>
 <url><loc>https://uhero.github.io/fcutils/reference/daily_data_example.html</loc></url>
 <url><loc>https://uhero.github.io/fcutils/reference/disagg.html</loc></url>
+<url><loc>https://uhero.github.io/fcutils/reference/extend.html</loc></url>
 <url><loc>https://uhero.github.io/fcutils/reference/extract_data.html</loc></url>
 <url><loc>https://uhero.github.io/fcutils/reference/faggr.html</loc></url>
 <url><loc>https://uhero.github.io/fcutils/reference/fcutils-package.html</loc></url>
@@ -28,9 +28,9 @@
 <url><loc>https://uhero.github.io/fcutils/reference/gen_table.html</loc></url>
 <url><loc>https://uhero.github.io/fcutils/reference/get_series.html</loc></url>
 <url><loc>https://uhero.github.io/fcutils/reference/get_series_exp.html</loc></url>
+<url><loc>https://uhero.github.io/fcutils/reference/get_series_src.html</loc></url>
 <url><loc>https://uhero.github.io/fcutils/reference/get_var.html</loc></url>
 <url><loc>https://uhero.github.io/fcutils/reference/grapes-plus-equals-grapes.html</loc></url>
-<url><loc>https://uhero.github.io/fcutils/reference/index-topic.html</loc></url>
 <url><loc>https://uhero.github.io/fcutils/reference/index.html</loc></url>
 <url><loc>https://uhero.github.io/fcutils/reference/interpol.html</loc></url>
 <url><loc>https://uhero.github.io/fcutils/reference/interpol_1.html</loc></url>
@@ -63,12 +63,14 @@
 <url><loc>https://uhero.github.io/fcutils/reference/quarterly_data_example.html</loc></url>
 <url><loc>https://uhero.github.io/fcutils/reference/rename_udaman.html</loc></url>
 <url><loc>https://uhero.github.io/fcutils/reference/save_plot_list.html</loc></url>
+<url><loc>https://uhero.github.io/fcutils/reference/set_api_key.html</loc></url>
 <url><loc>https://uhero.github.io/fcutils/reference/set_attr_tslist.html</loc></url>
 <url><loc>https://uhero.github.io/fcutils/reference/set_tsrange.html</loc></url>
 <url><loc>https://uhero.github.io/fcutils/reference/set_udaman_token.html</loc></url>
 <url><loc>https://uhero.github.io/fcutils/reference/span.html</loc></url>
 <url><loc>https://uhero.github.io/fcutils/reference/sum_pattern.html</loc></url>
 <url><loc>https://uhero.github.io/fcutils/reference/to_ymd.html</loc></url>
+<url><loc>https://uhero.github.io/fcutils/reference/ts_rebase.html</loc></url>
 <url><loc>https://uhero.github.io/fcutils/reference/uh_colors.html</loc></url>
 <url><loc>https://uhero.github.io/fcutils/reference/uh_colors_50.html</loc></url>
 <url><loc>https://uhero.github.io/fcutils/reference/uh_colors_light.html</loc></url>

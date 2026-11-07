@@ -1,7 +1,6 @@
-# Calculate number of months between two dates yyyyMm, yyyy.m or yyyy-mm-dd
+# Calculate number of months between two dates yyyyMm or yyyy-mm-dd
 
-Calculate number of months between two dates yyyyMm, yyyy.m or
-yyyy-mm-dd
+Calculate number of months between two dates yyyyMm or yyyy-mm-dd
 
 ## Usage
 
@@ -13,11 +12,13 @@ nmons(dat1 = "", dat2 = "")
 
 - dat1:
 
-  date of period start (string: yyyyMm, yyyy.m, or yyyy-mm-dd)
+  date of period start (string: yyyyMm or yyyy-mm-dd; see
+  [`to_ymd()`](https://uhero.github.io/fcutils/reference/to_ymd.md))
 
 - dat2:
 
-  date of period end (string: yyyyMm, yyyy.m, or yyyy-mm-dd)
+  date of period end (string: yyyyMm or yyyy-mm-dd; see
+  [`to_ymd()`](https://uhero.github.io/fcutils/reference/to_ymd.md))
 
 ## Value
 
@@ -33,9 +34,9 @@ counted. See examples.
 
 ``` r
 nmons("2010M1", "2010M2")
+#> [1] 2
+nmons("2010M1", "2010M4")
 #> [1] 4
-nmons(2010.1, 2010.4)
-#> [1] 10
 nmons("2010-01-15", "2010-04-15")
 #> [1] 4
 nmons("2010-01-15", "2010-04-18")
