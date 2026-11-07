@@ -22,4 +22,4 @@ pattern in series names that should be aggregate as sum
 \author{
 Peter Fuleky \email{fuleky@hawaii.edu}
 }
-\keyword{internal}
+\keyword{data}

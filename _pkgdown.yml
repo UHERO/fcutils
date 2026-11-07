@@ -42,6 +42,7 @@ reference:
   - interpol
   - AtoQ
   - QtoA
+  - sum_pattern
 - title: Growth rates and transformations
   contents:
   - pcmp
