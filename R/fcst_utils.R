@@ -388,6 +388,16 @@ get_series_exp <- function(
 }
 
 
+#' Bank end used when a function needs one: the option `fcutils.bnk_end` if
+#' set, otherwise the package's `bnk_end`
+#'
+#' @return a Date
+#' @noRd
+bank_end <- function() {
+  to_ymd(getOption("fcutils.bnk_end", bnk_end))
+}
+
+
 #' Create xts and fill with values
 #'
 #' @param start date of series start (character: "yyyy-mm-dd", "yyyyqq", "yyyy")
@@ -401,7 +411,10 @@ get_series_exp <- function(
 #'
 #' @details when end is missing, but val is a vector of more than one element,
 #' the end date is automatically determined by the length of the val vector.
-#' if end is missing and val is a scalar, the end date is set to bnk_end.
+#' if end is missing and val is a scalar, the end date is set to the bank end:
+#' `getOption("fcutils.bnk_end")` if set, otherwise the package's `bnk_end`.
+#' The default start is `getOption("fcutils.bnk_start")` if set, otherwise
+#' the package's `bnk_start`.
 #' if end is missing the remaining arguments have to be named. if val is a tibble,
 #' the end date is automatically determined by the number of rows in the tibble.
 #'
@@ -415,7 +428,7 @@ get_series_exp <- function(
 #' make_xts(start = 201001, per = "q",
 #'          val = tibble::tibble(E_NF_HON = c(1:10), ECT_HI = c(11:20)))
 make_xts <- function(
-  start = bnk_start,
+  start = getOption("fcutils.bnk_start", bnk_start),
   end = NULL,
   per = "year",
   val = NA_real_
@@ -436,7 +449,7 @@ make_xts <- function(
       tsbox::ts_xts()
   } else if (is.null(end) & length(val) == 1) {
     tibble::tibble(
-      time = seq.Date(from = start, to = bnk_end, by = per),
+      time = seq.Date(from = start, to = bank_end(), by = per),
       value = val
     ) %>%
       tsbox::ts_long() %>%
@@ -469,7 +482,7 @@ make_xts <- function(
 #' @param per periodicity of series (character: "year" - default)
 #'   if date format of start is quarterly, automatically set to "quarter"
 #'
-#' @return a single xts series spanning bnk_start-bnk_end
+#' @return a single xts series spanning the bank (see `make_xts()`)
 #' @export
 #'
 #' @details this is a wrapper around make_xts with some additional functionality.
@@ -483,8 +496,8 @@ make_xts <- function(
 #' addf(20100101, from = 1, to = 2, per = "quarter")
 #' addf(2010.2, 2015.4, 1, 2, "ECT_HI")
 addf <- function(
-  start = bnk_start,
-  end = bnk_end,
+  start = getOption("fcutils.bnk_start", bnk_start),
+  end = getOption("fcutils.bnk_end", bnk_end),
   from = 0,
   to = 0,
   ser_name = "value",

@@ -5,8 +5,8 @@
 \title{Create xts addfactor}
 \usage{
 addf(
-  start = bnk_start,
-  end = bnk_end,
+  start = getOption("fcutils.bnk_start", bnk_start),
+  end = getOption("fcutils.bnk_end", bnk_end),
   from = 0,
   to = 0,
   ser_name = "value",
@@ -28,7 +28,7 @@ addf(
 if date format of start is quarterly, automatically set to "quarter"}
 }
 \value{
-a single xts series spanning bnk_start-bnk_end
+a single xts series spanning the bank (see \code{make_xts()})
 }
 \description{
 Create xts addfactor

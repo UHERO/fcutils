@@ -4,7 +4,12 @@
 \alias{make_xts}
 \title{Create xts and fill with values}
 \usage{
-make_xts(start = bnk_start, end = NULL, per = "year", val = NA_real_)
+make_xts(
+  start = getOption("fcutils.bnk_start", bnk_start),
+  end = NULL,
+  per = "year",
+  val = NA_real_
+)
 }
 \arguments{
 \item{start}{date of series start (character: "yyyy-mm-dd", "yyyyqq", "yyyy")}
@@ -25,7 +30,10 @@ Create xts and fill with values
 \details{
 when end is missing, but val is a vector of more than one element,
 the end date is automatically determined by the length of the val vector.
-if end is missing and val is a scalar, the end date is set to bnk_end.
+if end is missing and val is a scalar, the end date is set to the bank end:
+\code{getOption("fcutils.bnk_end")} if set, otherwise the package's \code{bnk_end}.
+The default start is \code{getOption("fcutils.bnk_start")} if set, otherwise
+the package's \code{bnk_start}.
 if end is missing the remaining arguments have to be named. if val is a tibble,
 the end date is automatically determined by the number of rows in the tibble.
 }
