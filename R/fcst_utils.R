@@ -1491,8 +1491,10 @@ multi_chain <- function(
   method <- match.arg(method)
   direction <- match.arg(direction)
   match <- match.arg(match)
-  x_wide <- conv_wide(x)
-  y_wide <- conv_wide(y)
+  # doubles throughout: chained values replace x's in place, which fails
+  # for an integer column
+  x_wide <- conv_wide(x) %>% dplyr::mutate(dplyr::across(-"time", as.double))
+  y_wide <- conv_wide(y) %>% dplyr::mutate(dplyr::across(-"time", as.double))
   y_wide <- match_names(x_wide, y_wide, match)
 
   # identify series to be extended

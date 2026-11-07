@@ -62,6 +62,7 @@
   (`_SOLA` to `_SOLQ`), not the same letters elsewhere in it.
 * `multi_chain()` matches the `.x` and `.y` suffixes only at the end of a
   name.
+* `multi_chain()` accepts series stored as integers.
 * `save_plot_list()` finds the pandoc that comes with Quarto.
 
 ## Other

@@ -207,3 +207,11 @@ test_that("a ramp table takes decimal dates", {
   )
   expect_equal(addf(decimal), addf(quoted, per = "quarter"))
 })
+
+test_that("multi_chain() takes integer values", {
+  new <- tibble::tibble(time = seq(as.Date("2020-01-01"), by = "month", length.out = 5), value = 11:15)
+  old <- tibble::tibble(time = seq(as.Date("2019-10-01"), by = "month", length.out = 8), value = 1:8)
+  out <- suppressMessages(multi_chain(new, old, direction = "backward")) %>%
+    dplyr::arrange(.data$time)
+  expect_equal(out$value, c(1:3 * 11 / 4, 11:15))
+})
