@@ -2871,11 +2871,15 @@ find_end <- function(x, last_day = FALSE) {
 
 #' Concatenate dates to obtain period
 #'
-#' @param dat1 date of period start (string: see examples)
-#' @param dat2 date of period end (string: see examples)
+#' @param dat1 date of period start (any form read by `to_ymd()`)
+#' @param dat2 date of period end (any form read by `to_ymd()`)
 #'
-#' @return string containing date range
+#' @return string containing date range, for subsetting xts objects
 #' @export
+#'
+#' @details The range runs from the first day of dat1 to the last day of
+#' dat2: a year, quarter or month given as dat2 is included in full, so
+#' `p(2019.4, 2026)` ends on 2026-12-31. A day given as dat2 is kept as is.
 #'
 #' @examples
 #' p("2010-01-01", "2020-01-01")
@@ -2883,15 +2887,33 @@ find_end <- function(x, last_day = FALSE) {
 #' p(2010.1, 2020.4)
 #' p(,2020.4)
 #' p("2010Q1", "2020Q4")
-#' p(2010, 2020) # for annual period only
+#' p(2010, 2020)
+#' p("2010M1", "2010M6")
 p <- function(dat1 = "", dat2 = "") {
   if (nchar(dat1) != 0) {
     dat1 <- to_ymd(dat1)
   }
   if (nchar(dat2) != 0) {
-    dat2 <- to_ymd(dat2)
+    dat2 <- period_end(dat2)
   }
   stringr::str_c(dat1, dat2, sep = "/")
+}
+
+
+#' Last day of the period a date names
+#'
+#' @param x dates as accepted by `to_ymd()`
+#'
+#' @return Dates: the last day of each year, quarter or month given; days
+#'   are returned unchanged
+#' @noRd
+period_end <- function(x) {
+  pp <- parse_period(x)
+  out <- pp$date
+  step <- c(year = 12L, quarter = 3L, month = 1L)[pp$unit]
+  i <- !is.na(step)
+  out[i] <- lubridate::add_with_rollback(out[i], months(step[i])) - 1
+  out
 }
 
 

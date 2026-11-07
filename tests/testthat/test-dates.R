@@ -62,3 +62,14 @@ test_that("make_xts() and addf() take their frequency from a month or quarter st
   a <- addf("2020M1", "2020M12", 0, 11)
   expect_equal(as.numeric(a["2020-12-01"]), 11)
 })
+
+test_that("p() runs to the end of the period given as its end", {
+  expect_equal(p(2019.4, 2026), "2019-10-01/2026-12-31")
+  expect_equal(p("2010M1", "2010M2"), "2010-01-01/2010-02-28")
+  expect_equal(p(2010.1, 2020.4), "2010-01-01/2020-12-31")
+  expect_equal(p("2010-01-01", "2020-01-01"), "2010-01-01/2020-01-01")
+  expect_equal(p(as.Date("2010-01-01"), as.Date("2020-01-01")), "2010-01-01/2020-01-01")
+  expect_equal(p(2010, ""), "2010-01-01/")
+  # a quarterly series keeps all of the last year
+  expect_equal(nrow(make_xts(2019.1, val = 1:40)[p(2019, 2026)]), 32)
+})
