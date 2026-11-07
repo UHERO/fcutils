@@ -521,6 +521,8 @@ make_xts <- function(
 #' Given a data frame of ramps, addf() builds one add-factor per row and
 #' returns their sum, so overlapping ramps add up. A data frame with no rows
 #' gives zeros over the bank.
+#' The dates take any form `to_ymd()` reads, decimal years included, but a
+#' column must be all numbers or all strings.
 #'
 #' Given formulas, `addf(2026.3 ~ 0, 2027.4 ~ -0.3, 2030.4 ~ 0)`, the
 #' add-factor runs through the points in straight lines, one equal step per
@@ -539,11 +541,11 @@ make_xts <- function(
 #' addf(2010.2, 2015.4, 1, 2, "ECT_HI")
 #' # several ramps at once
 #' ramps <- tibble::tribble(
-#'   ~start,   ~end,     ~from, ~to,
-#'   "2026Q3", "2027Q4", 0,     -0.3,
-#'   "2028Q1", "2030Q4", -0.3,  0
+#'   ~start, ~end,   ~from, ~to,
+#'   2026.3, 2027.4, 0,     -0.3,
+#'   2028.1, 2030.4, -0.3,  0
 #' )
-#' addf(ramps, per = "quarter")
+#' addf(ramps)
 #' # the same as points
 #' addf(2026.3 ~ 0, 2027.4 ~ -0.3, 2028.1 ~ -0.3, 2030.4 ~ 0)
 addf <- function(

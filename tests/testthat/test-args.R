@@ -192,3 +192,18 @@ test_that("addf() points as formulas equal the ramp table", {
   expect_error(addf(2026.1 ~ 0, 2026.4 ~ 1, per = "month"), "monthly")
   expect_error(addf(2026.3, 2027.4, 1, 2, 2028.1 ~ 0), "cannot be mixed")
 })
+
+test_that("a ramp table takes decimal dates", {
+  ref_bank()
+  quoted <- tibble::tribble(
+    ~start, ~end, ~from, ~to,
+    "2026Q3", "2027Q4", 0, -0.3,
+    "2028Q1", "2030Q4", -0.3, 0
+  )
+  decimal <- tibble::tribble(
+    ~start, ~end, ~from, ~to,
+    2026.3, 2027.4, 0, -0.3,
+    2028.1, 2030.4, -0.3, 0
+  )
+  expect_equal(addf(decimal), addf(quoted, per = "quarter"))
+})
