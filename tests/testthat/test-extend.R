@@ -109,3 +109,31 @@ test_that("extend() explains wrong input", {
   expect_error(extend(x, at = c(2026.4, 2027.4), val = 1), "differ in length")
   expect_error(extend(x, val = c(1, 2)), "name the values")
 })
+
+test_that("anchors as formulas equal at and val", {
+  ref_bank()
+  r <- ref()
+  target <- 4.0
+  x <- make_xts(2024.1, val = c(3.8, 4.0, 4.2, 4.1, 4.1, 4.2, 4.3))
+  same_values(
+    extend(x, 2026.4 ~ 4.4, "2028Q4" ~ target, interp = "stine"),
+    extend(x, at = c(2026.4, 2028.4), val = c(4.4, 4.0), interp = "stine")
+  )
+  same_values(
+    extend(r$inputs$cpi, 2026.4 ~ 3, 2028.4 ~ 2, type = "growth"),
+    extend(r$inputs$cpi, val = c("2026Q4" = 3, "2028Q4" = 2), type = "growth")
+  )
+  expect_error(extend(x, 2026.4 ~ 4.4, val = c("2027Q4" = 1)), "not both")
+  expect_error(extend(x, 2026.4), "must be formulas")
+  expect_error(extend(x, ~ 4.4), "needs a date")
+  expect_error(extend(x, 2026.4 ~ 1, 2026.4 ~ 2), "same date")
+})
+
+test_that("a monthly series refuses decimal dates", {
+  ref_bank()
+  m <- make_xts("2025M1", val = 1:12, per = "month")
+  expect_error(extend(m, 2026.10 ~ 1), "monthly")
+  expect_error(extend(m, at = 2026.1, val = 1), "monthly")
+  out <- extend(m, "2026M10" ~ 21)
+  expect_equal(as.numeric(out["2026-10-01"]), 21)
+})

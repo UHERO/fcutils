@@ -8,9 +8,12 @@
 #'
 #' @param x a ts-boxable object holding one series (quarterly, monthly or
 #'   annual)
+#' @param ... anchors as formulas, date on the left and value on the right:
+#'   `2026.4 ~ 4.4, 2028.4 ~ 4.0`. The right side is evaluated, so
+#'   `2027.4 ~ target` works. An alternative to `at` and `val`.
 #' @param at dates of the anchors, in any form `to_ymd()` reads
 #'   (`c(2026.4, 2028.4)`, `c("2026Q4", "2028")`)
-#' @param val anchor values: a numeric vector the length of `at`; a named
+#' @param val anchor values (by name, like `at`): a numeric vector the length of `at`; a named
 #'   numeric vector whose names are the dates (`c("2026Q4" = 4.3)`), with
 #'   `at = NULL`; or a series (e.g. from `make_xts()`), whose observations are
 #'   the anchors
@@ -51,10 +54,18 @@
 #'
 #' Linear interpolation weighs the gaps by time, the spline by position.
 #'
+#' Anchors can be given in four ways: formulas (`2026.4 ~ 4.4`), `at` and
+#' `val`, a named vector (`val = c("2026Q4" = 4.4)`), or a series. Decimal
+#' dates such as `2026.4` are quarters, so a monthly series needs month
+#' strings (`"2026M10" ~ 4.4`); extend() stops if a monthly series gets
+#' decimal dates.
+#'
 #' @examples
 #' options(fcutils.bnk_start = as.Date("2015-01-01"), fcutils.bnk_end = as.Date("2035-12-31"))
 #' ur <- make_xts(2024.1, val = c(3.8, 4.0, 4.2, 4.1, 4.1, 4.2, 4.3))
 #' # the unemployment rate through two anchors, then held
+#' extend(ur, 2026.4 ~ 4.4, 2028.4 ~ 4.0, interp = "stine")
+#' # the same with at and val
 #' extend(ur, at = c(2026.4, 2028.4), val = c(4.4, 4.0), interp = "stine")
 #' # the same with the anchors as a named vector
 #' extend(ur, val = c("2026Q4" = 4.4, "2028Q4" = 4.0), interp = "stine")
@@ -66,6 +77,7 @@
 #' extend(cpi, path = proj, type = "chain")
 extend <- function(
   x,
+  ...,
   at = NULL,
   val = NULL,
   path = NULL,
@@ -94,7 +106,23 @@ extend <- function(
   one_period <- months(12 / nper)
   last <- if (is.null(last)) find_end(xs) else to_ymd(last)
 
-  anchors <- resolve_anchors(at, val)
+  dots <- list(...)
+  if (length(dots) > 0) {
+    if (!is.null(at) || !is.null(val)) {
+      stop("extend(): give anchors as formulas or as at and val, not both", call. = FALSE)
+    }
+    anchors <- formula_points(dots, "extend")
+  } else {
+    anchors <- resolve_anchors(at, val)
+  }
+  if (per == "month" && any(anchors$decimal)) {
+    stop(
+      "extend(): x is monthly, but anchors are dated as decimal years ",
+      "(2026.1 reads as 2026Q1, and 2026.10 is the same number). ",
+      "Write months as \"2026M10\".",
+      call. = FALSE
+    )
+  }
   if (!is.null(anchors) && !is.null(path)) {
     stop("extend(): give anchors (at, val) or a path, not both", call. = FALSE)
   }
@@ -162,7 +190,8 @@ extend <- function(
 
 #' Anchors as dates and values (used by `extend()`)
 #'
-#' @return NULL, or a list with `dates` and `values`
+#' @return NULL, or a list with `dates`, `values` and `decimal` (TRUE for
+#'   dates given as decimal years)
 #' @noRd
 resolve_anchors <- function(at, val) {
   if (is.null(val)) {
@@ -173,7 +202,7 @@ resolve_anchors <- function(at, val) {
   }
   if (!is.numeric(val) || xts::is.xts(val) || stats::is.ts(val)) {
     v <- conv_long(val) %>% tidyr::drop_na("value")
-    return(list(dates = v$time, values = v$value))
+    return(list(dates = v$time, values = v$value, decimal = FALSE))
   }
   if (is.null(at)) {
     if (is.null(names(val))) {
@@ -184,7 +213,64 @@ resolve_anchors <- function(at, val) {
   if (length(at) != length(val)) {
     stop("extend(): at and val differ in length", call. = FALSE)
   }
-  list(dates = to_ymd(at), values = unname(as.numeric(val)))
+  list(
+    dates = to_ymd(at),
+    values = unname(as.numeric(val)),
+    decimal = is_decimal(at)
+  )
+}
+
+
+#' TRUE for dates written as decimal years (2026.4)
+#' @noRd
+is_decimal <- function(x) {
+  if (!is.numeric(x)) {
+    return(rep(FALSE, length(x)))
+  }
+  !is.na(x) & x != round(x) & x < 10000
+}
+
+
+#' Dates and values from formulas such as `2026.4 ~ 4.4`
+#'
+#' The left side is a date in any form `to_ymd()` reads; the right side is
+#' evaluated in the formula's environment and must give one number.
+#'
+#' @param fs list of formulas
+#' @param fn name of the calling function, for messages
+#' @return list with `dates`, `values`, `units` and `decimal`
+#' @noRd
+formula_points <- function(fs, fn) {
+  show <- function(f) paste(deparse(f), collapse = " ")
+  parts <- lapply(fs, function(f) {
+    if (!inherits(f, "formula")) {
+      stop(
+        fn, "(): unnamed arguments must be formulas such as 2026.4 ~ 4.4, not ",
+        paste(format(f), collapse = " "),
+        call. = FALSE
+      )
+    }
+    if (length(f) != 3) {
+      stop(fn, "(): ", show(f), " needs a date left of the ~", call. = FALSE)
+    }
+    lhs <- eval(f[[2]], environment(f))
+    rhs <- eval(f[[3]], environment(f))
+    if (length(lhs) != 1 || length(rhs) != 1 || !is.numeric(rhs)) {
+      stop(fn, "(): ", show(f), " must give one date and one number", call. = FALSE)
+    }
+    pp <- parse_period(lhs)
+    list(date = pp$date, unit = pp$unit, value = as.numeric(rhs), decimal = is_decimal(lhs))
+  })
+  dates <- do.call(c, lapply(parts, `[[`, "date"))
+  if (anyDuplicated(dates)) {
+    stop(fn, "(): two formulas give the same date: ", format(dates[duplicated(dates)][1]), call. = FALSE)
+  }
+  list(
+    dates = dates,
+    values = vapply(parts, `[[`, numeric(1), "value"),
+    units = vapply(parts, `[[`, character(1), "unit"),
+    decimal = vapply(parts, `[[`, logical(1), "decimal")
+  )
 }
 
 

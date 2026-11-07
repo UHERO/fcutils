@@ -10,7 +10,8 @@ addf(
   from = 0,
   to = 0,
   ser_name = "value",
-  per = "year"
+  per = "year",
+  ...
 )
 }
 \arguments{
@@ -29,6 +30,8 @@ row; see details)}
 \item{per}{periodicity of series (character: "year" - default)
 if start is written as a quarter or a month (see \code{to_ymd()}), per is set
 to "quarter" or "month"}
+
+\item{...}{with formulas: further points (see details)}
 }
 \value{
 a single xts series spanning the bank: from
@@ -46,6 +49,14 @@ remaining period between start and end is filled with zeros.
 Given a data frame of ramps, addf() builds one add-factor per row and
 returns their sum, so overlapping ramps add up. A data frame with no rows
 gives zeros over the bank.
+
+Given formulas, \code{addf(2026.3 ~ 0, 2027.4 ~ -0.3, 2030.4 ~ 0)}, the
+add-factor runs through the points in straight lines, one equal step per
+period, and is zero before the first point and after the last. Each
+formula has a date on the left and a value on the right. The frequency
+follows the first date (2026.3 is a quarter), unless \code{per} is given by
+name; \code{ser_name} and \code{per} must be named. Decimal dates are quarters, so
+monthly points need strings (\code{"2026M10" ~ 1}).
 }
 \examples{
 options(fcutils.bnk_start = as.Date("1970-01-01"), fcutils.bnk_end = as.Date("2070-12-31"))
@@ -61,4 +72,6 @@ ramps <- tibble::tribble(
   "2028Q1", "2030Q4", -0.3,  0
 )
 addf(ramps, per = "quarter")
+# the same as points
+addf(2026.3 ~ 0, 2027.4 ~ -0.3, 2028.1 ~ -0.3, 2030.4 ~ 0)
 }

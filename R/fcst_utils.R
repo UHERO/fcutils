@@ -507,6 +507,7 @@ make_xts <- function(
 #' @param per periodicity of series (character: "year" - default)
 #'   if start is written as a quarter or a month (see `to_ymd()`), per is set
 #'   to "quarter" or "month"
+#' @param ... with formulas: further points (see details)
 #'
 #' @return a single xts series spanning the bank: from
 #'   `getOption("fcutils.bnk_start")` to `getOption("fcutils.bnk_end")` (see
@@ -520,6 +521,14 @@ make_xts <- function(
 #' Given a data frame of ramps, addf() builds one add-factor per row and
 #' returns their sum, so overlapping ramps add up. A data frame with no rows
 #' gives zeros over the bank.
+#'
+#' Given formulas, `addf(2026.3 ~ 0, 2027.4 ~ -0.3, 2030.4 ~ 0)`, the
+#' add-factor runs through the points in straight lines, one equal step per
+#' period, and is zero before the first point and after the last. Each
+#' formula has a date on the left and a value on the right. The frequency
+#' follows the first date (2026.3 is a quarter), unless `per` is given by
+#' name; `ser_name` and `per` must be named. Decimal dates are quarters, so
+#' monthly points need strings (`"2026M10" ~ 1`).
 #'
 #' @examples
 #' options(fcutils.bnk_start = as.Date("1970-01-01"), fcutils.bnk_end = as.Date("2070-12-31"))
@@ -535,14 +544,42 @@ make_xts <- function(
 #'   "2028Q1", "2030Q4", -0.3,  0
 #' )
 #' addf(ramps, per = "quarter")
+#' # the same as points
+#' addf(2026.3 ~ 0, 2027.4 ~ -0.3, 2028.1 ~ -0.3, 2030.4 ~ 0)
 addf <- function(
   start = bank_start(),
   end = bank_end(),
   from = 0,
   to = 0,
   ser_name = "value",
-  per = "year"
+  per = "year",
+  ...
 ) {
+  if (inherits(start, "formula")) {
+    # formulas fill the positional slots first; collect them all
+    pts <- list(start)
+    if (!missing(end)) pts <- c(pts, list(end))
+    if (!missing(from)) pts <- c(pts, list(from))
+    if (!missing(to)) pts <- c(pts, list(to))
+    if (!missing(ser_name) && inherits(ser_name, "formula")) {
+      pts <- c(pts, list(ser_name))
+      ser_name <- "value"
+    }
+    per_given <- !missing(per)
+    if (per_given && inherits(per, "formula")) {
+      pts <- c(pts, list(per))
+      per_given <- FALSE
+    }
+    pts <- c(pts, list(...))
+    return(addf_points(pts, ser_name, if (per_given) per else NULL))
+  }
+  slots <- list(end, from, to, ser_name, per)
+  if (length(list(...)) > 0 || any(vapply(slots, inherits, logical(1), "formula"))) {
+    stop(
+      "addf(): formulas (2026.3 ~ 0) cannot be mixed with start, end, from and to",
+      call. = FALSE
+    )
+  }
   if (is.data.frame(start)) {
     ramps <- start
     missing_cols <- setdiff(c("start", "end", "from", "to"), names(ramps))
@@ -598,6 +635,42 @@ addf <- function(
       tsbox::ts_bind(make_xts(val = 0, per = per)) %>%
       magrittr::set_names(ser_name)
   }
+}
+
+
+#' addf() from points given as formulas
+#' @noRd
+addf_points <- function(pts, ser_name, per = NULL) {
+  fp <- formula_points(pts, "addf")
+  if (is.null(per)) {
+    per <- fp$units[1]
+    if (identical(per, "day")) {
+      stop("addf(): with daily dates, give per by name", call. = FALSE)
+    }
+  }
+  if (per == "month" && any(fp$decimal)) {
+    stop(
+      "addf(): monthly points are dated as decimal years ",
+      "(2026.1 reads as 2026Q1). Write months as \"2026M10\".",
+      call. = FALSE
+    )
+  }
+  ord <- order(fp$dates)
+  dates <- fp$dates[ord]
+  values <- fp$values[ord]
+  out <- make_xts(val = 0, per = per)
+  pos <- match(dates, zoo::index(out))
+  if (anyNA(pos)) {
+    stop(
+      "addf(): ", stringr::str_flatten(format(dates[is.na(pos)]), collapse = ", "),
+      " is not the start of a ", per, " within the bank",
+      call. = FALSE
+    )
+  }
+  span <- seq(min(pos), max(pos))
+  out[span] <- stats::approx(pos, values, xout = span)$y
+  colnames(out) <- ser_name
+  out
 }
 
 

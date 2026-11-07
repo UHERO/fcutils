@@ -6,6 +6,7 @@
 \usage{
 extend(
   x,
+  ...,
   at = NULL,
   val = NULL,
   path = NULL,
@@ -21,10 +22,14 @@ extend(
 \item{x}{a ts-boxable object holding one series (quarterly, monthly or
 annual)}
 
+\item{...}{anchors as formulas, date on the left and value on the right:
+\verb{2026.4 ~ 4.4, 2028.4 ~ 4.0}. The right side is evaluated, so
+\code{2027.4 ~ target} works. An alternative to \code{at} and \code{val}.}
+
 \item{at}{dates of the anchors, in any form \code{to_ymd()} reads
 (\code{c(2026.4, 2028.4)}, \code{c("2026Q4", "2028")})}
 
-\item{val}{anchor values: a numeric vector the length of \code{at}; a named
+\item{val}{anchor values (by name, like \code{at}): a numeric vector the length of \code{at}; a named
 numeric vector whose names are the dates (\code{c("2026Q4" = 4.3)}), with
 \code{at = NULL}; or a series (e.g. from \code{make_xts()}), whose observations are
 the anchors}
@@ -80,11 +85,19 @@ annualized at the series' frequency (4 for quarters, 12 for months).
 }
 
 Linear interpolation weighs the gaps by time, the spline by position.
+
+Anchors can be given in four ways: formulas (\code{2026.4 ~ 4.4}), \code{at} and
+\code{val}, a named vector (\code{val = c("2026Q4" = 4.4)}), or a series. Decimal
+dates such as \code{2026.4} are quarters, so a monthly series needs month
+strings (\code{"2026M10" ~ 4.4}); extend() stops if a monthly series gets
+decimal dates.
 }
 \examples{
 options(fcutils.bnk_start = as.Date("2015-01-01"), fcutils.bnk_end = as.Date("2035-12-31"))
 ur <- make_xts(2024.1, val = c(3.8, 4.0, 4.2, 4.1, 4.1, 4.2, 4.3))
 # the unemployment rate through two anchors, then held
+extend(ur, 2026.4 ~ 4.4, 2028.4 ~ 4.0, interp = "stine")
+# the same with at and val
 extend(ur, at = c(2026.4, 2028.4), val = c(4.4, 4.0), interp = "stine")
 # the same with the anchors as a named vector
 extend(ur, val = c("2026Q4" = 4.4, "2028Q4" = 4.0), interp = "stine")

@@ -168,3 +168,27 @@ test_that("multi_chain() pairs one series with one series whatever the names", {
   expect_named(out, "UR_AT_US_A")
   same_values(out, ref_annual_solution(fx$ur_q, fx$ur_a_hist, rate = TRUE))
 })
+
+test_that("addf() points as formulas equal the ramp table", {
+  ref_bank()
+  ramps <- tibble::tribble(
+    ~start,   ~end,     ~from, ~to,
+    "2026Q3", "2027Q4", 0,     -0.3,
+    "2028Q1", "2030Q4", -0.3,  0
+  )
+  expect_equal(
+    addf(2026.3 ~ 0, 2027.4 ~ -0.3, 2028.1 ~ -0.3, 2030.4 ~ 0),
+    addf(ramps, per = "quarter")
+  )
+  # a single ramp, as the old positional call; more than six points
+  expect_equal(addf(2026.3 ~ 1, 2027.4 ~ 2), addf(2026.3, 2027.4, 1, 2))
+  seven <- addf(2026.1 ~ 0, 2026.2 ~ 1, 2026.3 ~ 0, 2026.4 ~ 1, 2027.1 ~ 0,
+                2027.2 ~ 1, 2027.3 ~ 0, ser_name = "ECT_HI")
+  expect_equal(colnames(seven), "ECT_HI")
+  expect_equal(as.numeric(seven["2026/2027"]), c(0, 1, 0, 1, 0, 1, 0, 0))
+  # annual and monthly
+  expect_equal(addf(2026 ~ 0, 2030 ~ 4), addf(2026, 2030, 0, 4))
+  expect_equal(addf("2026M1" ~ 0, "2026M12" ~ 11)["2026"] |> as.numeric(), 0:11)
+  expect_error(addf(2026.1 ~ 0, 2026.4 ~ 1, per = "month"), "monthly")
+  expect_error(addf(2026.3, 2027.4, 1, 2, 2028.1 ~ 0), "cannot be mixed")
+})
