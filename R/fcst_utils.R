@@ -3143,25 +3143,6 @@ ts_rebase <- function(x, base_per = as.character(Sys.Date()), base_value = 100) 
 }
 
 
-#' Deprecated functions
-#'
-#' `index()` is now `ts_rebase()`. It still works in fcutils 0.1.0, with a
-#' warning, and will be removed in the next version.
-#'
-#' @param ... arguments passed to `ts_rebase()`
-#' @return see `ts_rebase()`
-#' @name fcutils-deprecated
-#' @keywords internal
-NULL
-
-#' @rdname fcutils-deprecated
-#' @export
-index <- function(...) {
-  .Deprecated("ts_rebase", package = "fcutils")
-  ts_rebase(...)
-}
-
-
 #' Specify span of time series (wrapper around tsbox::ts_span())
 #'
 #' @param x ts-boxable object to filter by span
@@ -4626,7 +4607,7 @@ extract_data <- function(model_in, y_name) {
     ) %>%
     dplyr::rename_with(~ stringr::str_replace_all(., "-", "_")) %>%
     dplyr::mutate(
-      time = lubridate::ymd(index),
+      time = lubridate::ymd(.data$index),
       .before = 1,
       .keep = "unused"
     ) %>%

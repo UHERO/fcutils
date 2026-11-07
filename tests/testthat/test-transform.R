@@ -9,9 +9,8 @@ test_that("index() today", {
   ))
 })
 
-test_that("index() still works, with a deprecation warning", {
-  expect_warning(old <- index(q_wide, 2010.1), "ts_rebase")
-  expect_equal(old, ts_rebase(q_wide, 2010.1))
+test_that("index() is gone, so zoo::index() is not masked", {
+  expect_false("index" %in% getNamespaceExports("fcutils"))
 })
 
 test_that("span() today", {

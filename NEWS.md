@@ -24,8 +24,9 @@
 * `p()` ends at the last day of the period given as its end: `p(2019.4, 2026)`
   is `"2019-10-01/2026-12-31"`, not `.../2026-01-01`.
 * `index()` is renamed `ts_rebase()`, because it masked `zoo::index()` and
-  `xts::index()`. `index()` still works, with a deprecation warning, and
-  will be removed in the next version.
+  `xts::index()`. There is no deprecated alias: it would keep masking them,
+  and its help page would overwrite the site's reference index. Replace
+  `index(x, ...)` with `ts_rebase(x, ...)`.
 
 ## New functions
 
