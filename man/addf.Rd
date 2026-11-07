@@ -14,7 +14,9 @@ addf(
 )
 }
 \arguments{
-\item{start}{start date of linear interpolation (character: "yyyy-mm-dd", "yyyyqq", "yyyy")}
+\item{start}{start date of linear interpolation (character: "yyyy-mm-dd", "yyyyqq", "yyyy"),
+or a data frame of ramps with columns start, end, from, to (one ramp per
+row; see details)}
 
 \item{end}{end date of linear interpolation (character: "yyyy-mm-dd", "yyyyqq", "yyyy")}
 
@@ -38,6 +40,10 @@ Create xts addfactor
 this is a wrapper around make_xts with some additional functionality.
 the start and end dates specify the span of the non-zero add-factor value. the
 remaining period between start and end is filled with zeros.
+
+Given a data frame of ramps, addf() builds one add-factor per row and
+returns their sum, so overlapping ramps add up. A data frame with no rows
+gives zeros over the bank.
 }
 \examples{
 addf()
@@ -45,4 +51,11 @@ addf(201002, 201504, 1, 2)
 addf(20100101, 20601201, 1, 2, per = "month")
 addf(20100101, from = 1, to = 2, per = "quarter")
 addf(2010.2, 2015.4, 1, 2, "ECT_HI")
+# several ramps at once
+ramps <- tibble::tribble(
+  ~start,   ~end,     ~from, ~to,
+  "2026Q3", "2027Q4", 0,     -0.3,
+  "2028Q1", "2030Q4", -0.3,  0
+)
+addf(ramps, per = "quarter")
 }

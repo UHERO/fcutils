@@ -4,7 +4,13 @@
 \alias{multi_chain}
 \title{Extend "ts-boxable" objects by chaining (extension of \code{tsbox::ts_chain()})}
 \usage{
-multi_chain(x, y, ids = NULL)
+multi_chain(
+  x,
+  y,
+  ids = NULL,
+  method = c("ratio", "diff"),
+  direction = c("both", "forward", "backward")
+)
 }
 \arguments{
 \item{x}{a "ts-boxable" object to be extended}
@@ -13,6 +19,13 @@ multi_chain(x, y, ids = NULL)
 
 \item{ids}{a character vector with series names to be extended (default: NULL,
 in which case all series common to x and y are extended)}
+
+\item{method}{"ratio" (default) scales y so that it meets x, which keeps
+y's growth rates (for levels); "diff" shifts y by a constant, which keeps
+y's changes (for rates such as the unemployment rate)}
+
+\item{direction}{"both" (default) extends x at both ends, "forward" only
+after its last observation, "backward" only before its first}
 }
 \value{
 object of the same type as the input with extended series
@@ -22,7 +35,9 @@ Extend "ts-boxable" objects by chaining (extension of \code{tsbox::ts_chain()})
 }
 \details{
 This function performs a similar operation to \code{tsbox::ts_chain()},
-but for multiple series.
+but for multiple series. x and y are linked at x's first observation (going
+backward) and its last (going forward); y needs a value at those dates.
+The default, method "ratio" with direction "both", is \code{tsbox::ts_chain()}.
 }
 \examples{
 quarterly_data_example |>
@@ -31,4 +46,8 @@ quarterly_data_example |>
 quarterly_data_example |>
   dplyr::filter(time < as.Date("2000-01-01")) |>
   multi_chain(quarterly_data_example)
+# continue an annual history with the changes of a forecast
+hist <- make_xts(2020, val = c(8.1, 5.4, 3.6, 3.6))
+fcst <- make_xts(2022, val = c(3.5, 3.7, 4.0, 4.2, 4.3))
+multi_chain(hist, fcst, method = "diff", direction = "forward")
 }

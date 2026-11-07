@@ -4,7 +4,13 @@
 \alias{disagg}
 \title{Disaggregate univariate or multivariate time series from low to high frequency}
 \usage{
-disagg(x, conv_type = "mean", target_freq = "quarter", pattern = NULL)
+disagg(
+  x,
+  conv_type = "mean",
+  target_freq = "quarter",
+  pattern = NULL,
+  extend_with = NULL
+)
 }
 \arguments{
 \item{x}{a tx-boxable object at a low frequency (e.g. annual or quarterly)}
@@ -17,6 +23,14 @@ the interpolation is based on "sum"; for all others it is based on "mean."}
 \item{target_freq}{target frequency "quarter" or "month"}
 
 \item{pattern}{a single high-frequency pattern that the interpolation should follow}
+
+\item{extend_with}{NULL (default), "hold", or a ts-boxable object. Without
+a pattern the interpolation has nothing to follow at the end of a series
+and bends toward zero growth over the last periods. "hold" first
+continues each series at its last growth rate for three periods; a
+series (one per series in x, with the same names, or a single one for a
+single x) continues x with its growth. The result is cut back to x's
+own periods.}
 }
 \value{
 interpolated object of the same type as the input
@@ -26,7 +40,8 @@ Disaggregate univariate or multivariate time series from low to high frequency
 }
 \details{
 the time-span of the high-frequency pattern has to match or be larger
-than the time-span of the low frequency series. NA values are not allowed.
+than the time-span of the low frequency series. NA values are not allowed,
+except that with extend_with, leading and trailing NAs of x are dropped.
 }
 \examples{
 quarterly_data_example |>
@@ -65,4 +80,8 @@ purrr::map2(
     tsbox::ts_tslist(),
   ~ disagg(.x, conv_type = "mean", target_freq = "month", pattern = .y)
 )
+# the last year without and with an extension
+a <- make_xts(2015, val = 100 * 1.02^(0:10))
+disagg(a) |> tsbox::ts_pc() |> tail(4)
+disagg(a, extend_with = "hold") |> tsbox::ts_pc() |> tail(4)
 }

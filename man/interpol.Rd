@@ -4,12 +4,13 @@
 \alias{interpol}
 \title{Interpolate univariate or multivariate time series with missing values}
 \usage{
-interpol(incomplete, pattern, extend_range = FALSE)
+interpol(incomplete, pattern = NULL, extend_range = FALSE)
 }
 \arguments{
 \item{incomplete}{a ts-boxable object with NAs}
 
-\item{pattern}{a ts-boxable object no missing values}
+\item{pattern}{a ts-boxable object no missing values, or NULL (default)
+to fill the gaps inside each series along a straight line}
 
 \item{extend_range}{logical. If TRUE, uses a full_join to potentially extend
 the date range. If FALSE (default), uses a left_join to only fill NAs
@@ -23,11 +24,18 @@ Interpolate univariate or multivariate time series with missing values
 }
 \details{
 the function aligns two sets of time series by date and then
-interpolates the first set using the second set as a pattern.
+interpolates the first set using the second set as a pattern. Without a
+pattern, missing values between a series' first and last observation are
+filled linearly (by position, so each period counts the same); missing
+dates in a regular series are added first, and leading and trailing gaps
+stay empty. extend_range has no effect then.
 The time-span of the pattern has to match or be larger
 than the time-span of the incomplete data.
 }
 \examples{
+# straight-line fill of an internal gap
+make_xts("2025M7", val = c(1, 2, NA, 4, 5)) |>
+  interpol()
 monthly_data_example |>
   dplyr::filter(time > "2002-01-01") |>
   tsbox::ts_long() |>
