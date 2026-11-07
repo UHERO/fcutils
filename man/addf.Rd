@@ -25,7 +25,8 @@ addf(
 \item{ser_name}{name of the xts series (string)}
 
 \item{per}{periodicity of series (character: "year" - default)
-if date format of start is quarterly, automatically set to "quarter"}
+if start is written as a quarter or a month (see \code{to_ymd()}), per is set
+to "quarter" or "month"}
 }
 \value{
 a single xts series spanning the bank (see \code{make_xts()})

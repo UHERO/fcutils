@@ -403,7 +403,8 @@ bank_end <- function() {
 #' @param start date of series start (character: "yyyy-mm-dd", "yyyyqq", "yyyy")
 #' @param end date of series end (character: "yyyy-mm-dd", "yyyyqq", "yyyy")
 #' @param per periodicity of series (character: "year" - default)
-#'   if date format of start is quarterly, automatically set to "quarter"
+#'   if start is written as a quarter or a month (see `to_ymd()`), per is set
+#'   to "quarter" or "month"
 #' @param val values to fill in (numeric scalar, vector, or tibble)
 #'
 #' @return an xts series
@@ -433,8 +434,9 @@ make_xts <- function(
   per = "year",
   val = NA_real_
 ) {
-  if (nchar(as.character(start)) > 4 & nchar(as.character(start)) < 8) {
-    per <- "quarter"
+  start_unit <- parse_period(start)$unit[1]
+  if (start_unit %in% c("quarter", "month")) {
+    per <- start_unit
   }
   start <- to_ymd(start)
   end <- if (!is.null(end)) to_ymd(end) else NULL
@@ -480,7 +482,8 @@ make_xts <- function(
 #' @param to last value for linear interpolation (numeric)
 #' @param ser_name name of the xts series (string)
 #' @param per periodicity of series (character: "year" - default)
-#'   if date format of start is quarterly, automatically set to "quarter"
+#'   if start is written as a quarter or a month (see `to_ymd()`), per is set
+#'   to "quarter" or "month"
 #'
 #' @return a single xts series spanning the bank (see `make_xts()`)
 #' @export
@@ -503,11 +506,11 @@ addf <- function(
   ser_name = "value",
   per = "year"
 ) {
-  if (
-    nchar(as.character(start)) > 4 &
-      nchar(as.character(start)) < 8 |
-      per == "quarter"
-  ) {
+  start_unit <- parse_period(start)$unit[1]
+  if (identical(start_unit, "month")) {
+    per <- "month"
+  }
+  if (identical(start_unit, "quarter") || per == "quarter") {
     per <- "quarter"
     start <- to_ymd(start) %>% lubridate::quarter(type = "year.quarter")
     end <- to_ymd(end) %>% lubridate::quarter(type = "year.quarter")
@@ -2990,19 +2993,88 @@ ymd_to_yQq <- function(x) {
 }
 
 
-#' Parse strings into dates in yyyy-mm-dd format
+#' Read dates written as years, quarters, months or days
 #'
-#' @param x string (string: yyyymmdd, yyyyqq, yyyy.q, yyyy)
+#' @param x dates as numbers, strings or Dates (see details)
 #'
-#' @return formatted dates (yyyy-mm-dd)
+#' @return Dates, each the first day of the period given
 #' @export
 #'
+#' @details Accepted forms, as numbers or strings:
+#' * year: `2019`
+#' * quarter: `2019.4`, `"2019Q4"`, `"2019q4"`, `201904` (yyyyqq, quarters
+#'   01 to 04)
+#' * month (strings only): `"2019M10"`, `"2019m3"`, `"2019-10"`
+#' * day: `"2019-10-15"`, `20191015`, a Date
+#'
+#' All of `2019.4`, `"2019Q4"` and `201904` give 2019-10-01. Months cannot be
+#' numbers, because `2019.10` and `2019.1` are the same number. Anything else
+#' stops with an error naming the value. `NA` and `""` give `NA`.
+#'
 #' @examples
-#' to_ymd(c("2010.0211", 202002, 2020.2, "2020"))
+#' to_ymd(c(2020, 2020.2, "2020Q2", 202002, "2020M5", "2020-05", "2020-05-15"))
 to_ymd <- function(x) {
-  x %>%
-    lubridate::parse_date_time(orders = c("ymd", "yq", "y")) %>%
-    lubridate::ymd()
+  parse_period(x)$date
+}
+
+
+#' Parse dates and keep the period each one names
+#'
+#' @param x dates as accepted by `to_ymd()`
+#'
+#' @return list with `date` (first day of each period) and `unit` ("year",
+#'   "quarter", "month", "day" or NA)
+#' @noRd
+parse_period <- function(x) {
+  if (inherits(x, "Date")) {
+    return(list(date = x, unit = rep("day", length(x))))
+  }
+  if (inherits(x, "POSIXt")) {
+    return(list(date = as.Date(x), unit = rep("day", length(x))))
+  }
+  s <- trimws(as.character(x))
+  n <- length(s)
+  date <- rep(as.Date(NA), n)
+  unit <- rep(NA_character_, n)
+  ok <- is.na(s) | s == ""
+
+  # each form: pattern, unit, and how to build the date from the matches
+  num <- function(m, i) as.integer(m[, i])
+  forms <- list(
+    list("^(\\d{4})$", "year", function(m) lubridate::make_date(num(m, 2))),
+    list("^(\\d{4})[.Qq]([1-4])$", "quarter",
+         function(m) lubridate::make_date(num(m, 2), 3 * num(m, 3) - 2)),
+    list("^(\\d{4})0([1-4])$", "quarter",
+         function(m) lubridate::make_date(num(m, 2), 3 * num(m, 3) - 2)),
+    list("^(\\d{4})[Mm-](\\d{1,2})$", "month",
+         function(m) lubridate::make_date(num(m, 2), num(m, 3))),
+    list("^(\\d{4})[-/.](\\d{1,2})[-/.](\\d{1,2})$", "day",
+         function(m) lubridate::make_date(num(m, 2), num(m, 3), num(m, 4))),
+    list("^(\\d{4})(\\d{2})(\\d{2})$", "day",
+         function(m) lubridate::make_date(num(m, 2), num(m, 3), num(m, 4)))
+  )
+  for (f in forms) {
+    todo <- !ok & stringr::str_detect(s, f[[1]])
+    if (!any(todo)) next
+    m <- stringr::str_match(s[todo], f[[1]])
+    d <- suppressWarnings(f[[3]](m))
+    # month 13 or day 32 give NA: leave them for the error below
+    good <- !is.na(d)
+    idx <- which(todo)[good]
+    date[idx] <- d[good]
+    unit[idx] <- f[[2]]
+    ok[idx] <- TRUE
+  }
+  if (!all(ok)) {
+    stop(
+      "to_ymd() cannot read ",
+      stringr::str_flatten(unique(s[!ok]), collapse = ", "),
+      ". Use a year (2019), a quarter (2019.4, \"2019Q4\", 201904), ",
+      "a month (\"2019M10\", \"2019-10\") or a day (\"2019-10-15\").",
+      call. = FALSE
+    )
+  }
+  list(date = date, unit = unit)
 }
 
 
@@ -3021,10 +3093,10 @@ qtrs <- function(nr_quarters) {
 }
 
 
-#' Calculate number of months between two dates yyyyMm, yyyy.m or yyyy-mm-dd
+#' Calculate number of months between two dates yyyyMm or yyyy-mm-dd
 #'
-#' @param dat1 date of period start (string: yyyyMm, yyyy.m, or yyyy-mm-dd)
-#' @param dat2 date of period end (string: yyyyMm, yyyy.m, or yyyy-mm-dd)
+#' @param dat1 date of period start (string: yyyyMm or yyyy-mm-dd; see `to_ymd()`)
+#' @param dat2 date of period end (string: yyyyMm or yyyy-mm-dd; see `to_ymd()`)
 #'
 #' @return numeric length of date range in months
 #' @export
@@ -3034,7 +3106,7 @@ qtrs <- function(nr_quarters) {
 #'
 #' @examples
 #' nmons("2010M1", "2010M2")
-#' nmons(2010.1, 2010.4)
+#' nmons("2010M1", "2010M4")
 #' nmons("2010-01-15", "2010-04-15")
 #' nmons("2010-01-15", "2010-04-18")
 #' nmons("2010-01-15", "2010-04-12")

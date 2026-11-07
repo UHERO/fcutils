@@ -17,7 +17,8 @@ make_xts(
 \item{end}{date of series end (character: "yyyy-mm-dd", "yyyyqq", "yyyy")}
 
 \item{per}{periodicity of series (character: "year" - default)
-if date format of start is quarterly, automatically set to "quarter"}
+if start is written as a quarter or a month (see \code{to_ymd()}), per is set
+to "quarter" or "month"}
 
 \item{val}{values to fill in (numeric scalar, vector, or tibble)}
 }

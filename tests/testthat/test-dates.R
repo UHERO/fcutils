@@ -11,7 +11,9 @@ date_inputs <- list(
 test_that("to_ymd() today", {
   out <- vapply(
     date_inputs,
-    function(x) as.character(suppressWarnings(to_ymd(x))),
+    function(x) {
+      tryCatch(as.character(suppressWarnings(to_ymd(x))), error = function(e) "error")
+    },
     character(1)
   )
   names(out) <- vapply(date_inputs, as.character, character(1))
@@ -46,4 +48,17 @@ test_that("nmons() and nqtrs() today", {
     nqtrs(2010.1, 2020.4),
     nqtrs("2010-02-01", "2020-11-01")
   ))
+})
+
+test_that("to_ymd() names the values it cannot read", {
+  expect_error(to_ymd(c(2019.4, 2019.5, "2019M13")), "2019.5, 2019M13")
+  expect_equal(to_ymd(c(NA, "")), as.Date(c(NA, NA)))
+  expect_equal(to_ymd(as.Date("2019-10-15")), as.Date("2019-10-15"))
+})
+
+test_that("make_xts() and addf() take their frequency from a month or quarter start", {
+  expect_equal(xts::periodicity(make_xts("2019M10", val = 1:3))$scale, "monthly")
+  expect_equal(xts::periodicity(make_xts(2019.4, val = 1:3))$scale, "quarterly")
+  a <- addf("2020M1", "2020M12", 0, 11)
+  expect_equal(as.numeric(a["2020-12-01"]), 11)
 })

@@ -2,19 +2,33 @@
 % Please edit documentation in R/fcst_utils.R
 \name{to_ymd}
 \alias{to_ymd}
-\title{Parse strings into dates in yyyy-mm-dd format}
+\title{Read dates written as years, quarters, months or days}
 \usage{
 to_ymd(x)
 }
 \arguments{
-\item{x}{string (string: yyyymmdd, yyyyqq, yyyy.q, yyyy)}
+\item{x}{dates as numbers, strings or Dates (see details)}
 }
 \value{
-formatted dates (yyyy-mm-dd)
+Dates, each the first day of the period given
 }
 \description{
-Parse strings into dates in yyyy-mm-dd format
+Read dates written as years, quarters, months or days
+}
+\details{
+Accepted forms, as numbers or strings:
+\itemize{
+\item year: \code{2019}
+\item quarter: \code{2019.4}, \code{"2019Q4"}, \code{"2019q4"}, \code{201904} (yyyyqq, quarters
+01 to 04)
+\item month (strings only): \code{"2019M10"}, \code{"2019m3"}, \code{"2019-10"}
+\item day: \code{"2019-10-15"}, \code{20191015}, a Date
+}
+
+All of \code{2019.4}, \code{"2019Q4"} and \code{201904} give 2019-10-01. Months cannot be
+numbers, because \code{2019.10} and \code{2019.1} are the same number. Anything else
+stops with an error naming the value. \code{NA} and \code{""} give \code{NA}.
 }
 \examples{
-to_ymd(c("2010.0211", 202002, 2020.2, "2020"))
+to_ymd(c(2020, 2020.2, "2020Q2", 202002, "2020M5", "2020-05", "2020-05-15"))
 }
