@@ -81,12 +81,12 @@ q <- quarterly_data_example[, c("time", "E_NF_HI", "ECT_HI")]
 tail(q, 3)
 ```
 
-`aggr()` averages quarters to years. Given a wide tibble it returns a wide
+`agg()` averages quarters to years. Given a wide tibble it returns a wide
 tibble, and given xts it returns xts:
 
 ```{r}
-aggr(q) |> tail(3)
-aggr(conv_xts(q)) |> tail(3)
+agg(q) |> tail(3)
+agg(conv_xts(q)) |> tail(3)
 ```
 
 `conv_long()`, `conv_wide()`, `conv_xts()` and `conv_tslist()` convert

@@ -30,14 +30,14 @@ test_that("pcmp() today", {
   ))
 })
 
-test_that("aggr() today", {
+test_that("agg() today", {
   # includes a series with a partial last year
   part <- tsbox::ts_span(q_xts, end = "2024-04-01")
   snap(list(
-    aggr(m_wide, conv_type = "sum", target_freq = "quarter"),
-    aggr(m_wide, conv_type = "uhero", target_freq = "year"),
-    aggr(part, target_freq = "year"),
-    aggr(part, target_freq = "year", na_rm = TRUE)
+    agg(m_wide, conv_type = "sum", target_freq = "quarter"),
+    agg(m_wide, conv_type = "uhero", target_freq = "year"),
+    agg(part, target_freq = "year"),
+    agg(part, target_freq = "year", na_rm = TRUE)
   ))
 })
 
@@ -68,12 +68,12 @@ test_that("interpol() today", {
   ))
 })
 
-test_that("multi_chain() today", {
+test_that("chain() today", {
   early <- dplyr::filter(q_wide, time < as.Date("2000-01-01"))
   snap(list(
-    quiet(multi_chain(early, q_wide, ids = c("E_NF_HI", "ECT_HI"))),
-    quiet(multi_chain(early, q_wide)),
-    quiet(multi_chain(tsbox::ts_long(early), q_long))
+    quiet(chain(early, q_wide, ids = c("E_NF_HI", "ECT_HI"))),
+    quiet(chain(early, q_wide)),
+    quiet(chain(tsbox::ts_long(early), q_long))
   ))
 })
 
@@ -92,22 +92,22 @@ test_that("AtoQ() and QtoA() today, including the renamed columns", {
   ))
 })
 
-test_that("multi_chain() keeps names that contain a lowercase x", {
+test_that("chain() keeps names that contain a lowercase x", {
   q <- q_wide[, c("time", "E_NF_HI", "ECT_HI")]
   names(q)[3] <- "Ex_HI"
   early <- dplyr::filter(q, time < as.Date("2000-01-01"))
-  out <- quiet(multi_chain(early, q))
+  out <- quiet(chain(early, q))
   expect_named(out, c("time", "E_NF_HI", "Ex_HI"))
   expect_equal(out$Ex_HI, q$Ex_HI)
 })
 
-test_that("faggr() handles a series that starts with missing values", {
+test_that("fagg() handles a series that starts with missing values", {
   q <- tibble::tibble(
     time = seq(as.Date("2018-01-01"), by = "quarter", length.out = 16),
     A = c(NA, NA, NA, NA, 1:12),
     B = 1:16
   )
-  out <- faggr(q)
+  out <- fagg(q)
   # fiscal years (July to June) labeled by the year they end in; only
   # complete years count
   expect_equal(out$time, as.Date(c("2019-01-01", "2020-01-01", "2021-01-01")))

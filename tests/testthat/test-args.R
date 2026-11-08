@@ -1,11 +1,11 @@
 # Step 3 of the plan: new arguments reproduce the extsol helpers.
 
-test_that("multi_chain(method = 'diff', direction = 'forward') is annual_solution(rate = TRUE)", {
+test_that("chain(method = 'diff', direction = 'forward') is annual_solution(rate = TRUE)", {
   ref_bank()
   fx <- extsol_fx()
   ref <- ref_annual_solution(fx$ur_q, fx$ur_a_hist, rate = TRUE)
-  new <- quiet(multi_chain(
-    fx$ur_a_hist, aggr(fx$ur_q),
+  new <- quiet(chain(
+    fx$ur_a_hist, agg(fx$ur_q),
     method = "diff", direction = "forward"
   ))
   same_values(new, ref)
@@ -13,42 +13,42 @@ test_that("multi_chain(method = 'diff', direction = 'forward') is annual_solutio
   same_values(new, fx$ur_a_sol)
 })
 
-test_that("multi_chain(direction = 'forward') is annual_solution() for levels", {
+test_that("chain(direction = 'forward') is annual_solution() for levels", {
   ref_bank()
   fx <- extsol_fx()
   ref <- ref_annual_solution(fx$lf_q, fx$lf_a_hist)
-  new <- quiet(multi_chain(fx$lf_a_hist, aggr(fx$lf_q), direction = "forward"))
+  new <- quiet(chain(fx$lf_a_hist, agg(fx$lf_q), direction = "forward"))
   same_values(new, ref)
   # no check against the published LF: extsol chains it to the history after
   # the CPS population-break adjustment, which the fixture does not hold
 })
 
-test_that("multi_chain(direction = 'backward') is splice_back()", {
+test_that("chain(direction = 'backward') is splice_back()", {
   ref_bank()
   fx <- extsol_fx()
   cpi <- tsbox::ts_tbl(fx$cpi_jp_m)
   new_part <- dplyr::filter(cpi, time >= as.Date("2010-01-01"))
   old_part <- dplyr::mutate(cpi, value = value * 0.9 + 0.01 * seq_along(value))
   ref <- ref_splice_back(new_part, old_part)
-  new <- quiet(multi_chain(
+  new <- quiet(chain(
     tsbox::ts_xts(new_part), tsbox::ts_xts(old_part),
     direction = "backward"
   ))
   same_values(new, tsbox::ts_xts(ref))
 })
 
-test_that("multi_chain() stops when y has no value at the link", {
+test_that("chain() stops when y has no value at the link", {
   ref_bank()
   x <- make_xts(2020, val = c(1, 2, 3))
   y <- make_xts(2024, val = c(4, 5))
-  expect_error(quiet(multi_chain(x, y, direction = "forward")), "no value at 2022-01-01")
+  expect_error(quiet(chain(x, y, direction = "forward")), "no value at 2022-01-01")
 })
 
-test_that("multi_chain() defaults are unchanged (ts_chain)", {
+test_that("chain() defaults are unchanged (ts_chain)", {
   ref_bank()
   x <- make_xts(2020, val = c(10, 11, 12))
   y <- make_xts(2018, val = c(1, 1.1, 1.2, 1.3, 1.4, 1.5))
-  same_values(quiet(multi_chain(x, y)), tsbox::ts_chain(x, y))
+  same_values(quiet(chain(x, y)), tsbox::ts_chain(x, y))
 })
 
 test_that("disagg(extend_with = 'last_growth') is to_quarterly()", {
@@ -137,7 +137,7 @@ test_that("disagg(extend_with = <series>) extends at both ends, as to_quarterly(
   expect_false(isTRUE(all.equal(as.numeric(out[1]), as.numeric(disagg(x)[1]))))
 })
 
-test_that("multi_chain(match = 'stem') pairs series by name stem", {
+test_that("chain(match = 'stem') pairs series by name stem", {
   ref_bank()
   fx <- extsol_fx()
   hist <- tsbox::ts_c(
@@ -145,26 +145,26 @@ test_that("multi_chain(match = 'stem') pairs series by name stem", {
     LF_AT_US_A = fx$lf_a_hist
   )
   sol_a <- tsbox::ts_c(
-    UR_AT_US_SOLA = aggr(fx$ur_q),
-    LF_AT_US_SOLA = aggr(fx$lf_q),
-    OTHER_SOLA = aggr(fx$lf_q)
+    UR_AT_US_SOLA = agg(fx$ur_q),
+    LF_AT_US_SOLA = agg(fx$lf_q),
+    OTHER_SOLA = agg(fx$lf_q)
   )
-  out <- quiet(multi_chain(hist, sol_a, match = "stem", direction = "forward"))
+  out <- quiet(chain(hist, sol_a, match = "stem", direction = "forward"))
   expect_named(out, c("UR_AT_US_A", "LF_AT_US_A"))
   same_values(out$LF_AT_US_A, ref_annual_solution(fx$lf_q, fx$lf_a_hist))
   # by name, nothing pairs and x comes back unchanged
-  expect_equal(quiet(multi_chain(hist, sol_a, direction = "forward")), hist)
+  expect_equal(quiet(chain(hist, sol_a, direction = "forward")), hist)
   # two series in y with the same stem
-  dup <- tsbox::ts_c(UR_AT_US_SOLA = aggr(fx$ur_q), UR_AT_US_Q = fx$ur_q)
-  expect_error(quiet(multi_chain(hist, dup, match = "stem")), "share the stem UR_AT_US")
+  dup <- tsbox::ts_c(UR_AT_US_SOLA = agg(fx$ur_q), UR_AT_US_Q = fx$ur_q)
+  expect_error(quiet(chain(hist, dup, match = "stem")), "share the stem UR_AT_US")
 })
 
-test_that("multi_chain() pairs one series with one series whatever the names", {
+test_that("chain() pairs one series with one series whatever the names", {
   ref_bank()
   fx <- extsol_fx()
   hist <- magrittr::set_colnames(fx$ur_a_hist, "UR_AT_US_A")
-  sol <- magrittr::set_colnames(aggr(fx$ur_q), "UR_AT_US_SOLA")
-  out <- quiet(multi_chain(hist, sol, method = "diff", direction = "forward"))
+  sol <- magrittr::set_colnames(agg(fx$ur_q), "UR_AT_US_SOLA")
+  out <- quiet(chain(hist, sol, method = "diff", direction = "forward"))
   expect_named(out, "UR_AT_US_A")
   same_values(out, ref_annual_solution(fx$ur_q, fx$ur_a_hist, rate = TRUE))
 })
@@ -208,17 +208,38 @@ test_that("a ramp table takes decimal dates", {
   expect_equal(addf(decimal), addf(quoted, per = "quarter"))
 })
 
-test_that("multi_chain() takes integer values", {
+test_that("chain() takes integer values", {
   new <- tibble::tibble(time = seq(as.Date("2020-01-01"), by = "month", length.out = 5), value = 11:15)
   old <- tibble::tibble(time = seq(as.Date("2019-10-01"), by = "month", length.out = 8), value = 1:8)
-  out <- suppressMessages(multi_chain(new, old, direction = "backward")) %>%
+  out <- suppressMessages(chain(new, old, direction = "backward")) %>%
     dplyr::arrange(.data$time)
   expect_equal(out$value, c(1:3 * 11 / 4, 11:15))
 })
 
-test_that("multi_chain() lists the series unless verbose = FALSE", {
+test_that("chain() lists the series unless verbose = FALSE", {
   new <- tibble::tibble(time = seq(as.Date("2020-01-01"), by = "month", length.out = 5), value = 11:15)
   old <- tibble::tibble(time = seq(as.Date("2019-10-01"), by = "month", length.out = 8), value = 1:8)
-  expect_message(multi_chain(new, old, direction = "backward"), "Extending")
-  expect_no_message(multi_chain(new, old, direction = "backward", verbose = FALSE))
+  expect_message(chain(new, old, direction = "backward"), "Extending")
+  expect_no_message(chain(new, old, direction = "backward", verbose = FALSE))
+})
+
+test_that("the old names warn and give the same result as the new ones", {
+  m <- monthly_data_example
+  q <- quarterly_data_example[, c("time", "E_NF_HI", "ECT_HI")]
+  early <- dplyr::filter(q, time < as.Date("2000-01-01"))
+  d <- daily_data_example
+  expect_warning(old <- aggr(q), "agg")
+  expect_equal(old, agg(q))
+  expect_warning(old <- faggr(q), "fagg")
+  expect_equal(old, fagg(q))
+  expect_warning(old <- multi_chain(early, q, verbose = FALSE), "chain")
+  expect_equal(old, chain(early, q, verbose = FALSE))
+  expect_warning(old <- ytd_cum(m, avg = FALSE), "ytd_agg")
+  expect_equal(old, ytd_agg(m, avg = FALSE))
+  expect_warning(old <- fytd_cum(m), "fytd_agg")
+  expect_equal(old, fytd_agg(m))
+  expect_warning(old <- mtd_cum(d), "mtd_agg")
+  expect_equal(old, mtd_agg(d))
+  expect_warning(old <- ptd_cum(m, "quarter"), "ptd_agg")
+  expect_equal(old, ptd_agg(m, "quarter"))
 })

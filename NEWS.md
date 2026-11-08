@@ -1,3 +1,13 @@
+# fcutils (development version)
+
+* Renamed for consistency: `multi_chain()` is now `chain()`, `aggr()` and
+  `faggr()` are now `agg()` and `fagg()`, and `ytd_cum()`, `fytd_cum()`,
+  `mtd_cum()` and `ptd_cum()` are now `ytd_agg()`, `fytd_agg()`,
+  `mtd_agg()` and `ptd_agg()`. The new functions take the same arguments
+  and give the same results. The old names still work but warn; they will
+  be removed in a later version (see `?"fcutils-deprecated"`). No installed
+  package exports any of the new names.
+
 # fcutils 0.1.2.1
 
 * `rebase()` is renamed `index_to_base()`. It sets a series to a value in a

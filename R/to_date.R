@@ -8,14 +8,14 @@
 #'
 #' @examples
 #' monthly_data_example |>
-#'   ytd_cum()
+#'   ytd_agg()
 #' monthly_data_example |>
 #'   tsbox::ts_long() |>
 #'   tsbox::ts_pick("VISNS_HI") |>
 #'   tsbox::ts_xts() |>
-#'   ytd_cum(avg = FALSE) |>
+#'   ytd_agg(avg = FALSE) |>
 #'   tsbox::ts_plot()
-ytd_cum <- function(x, avg = TRUE) {
+ytd_agg <- function(x, avg = TRUE) {
   to_date(x, "year", avg = avg)
 }
 
@@ -47,21 +47,21 @@ ytd_gr <- function(x) {
 #' @return object of the same type as the input containing year to date sum or average
 #' @export
 #'
-#' @details this function operates similarly to ytd_cum() but assumes that the
+#' @details this function operates similarly to ytd_agg() but assumes that the
 #' fiscal year starts in July and accumulates the values from that month onward.
 #'
 #' @examples
 #' monthly_data_example |>
-#'   fytd_cum()
+#'   fytd_agg()
 #' quarterly_data_example |>
-#'   fytd_cum()
+#'   fytd_agg()
 #' monthly_data_example |>
 #'   tsbox::ts_long() |>
 #'   tsbox::ts_pick("VISNS_HI") |>
 #'   tsbox::ts_xts() |>
-#'   fytd_cum(avg = FALSE) |>
+#'   fytd_agg(avg = FALSE) |>
 #'   tsbox::ts_plot()
-fytd_cum <- function(x, avg = TRUE) {
+fytd_agg <- function(x, avg = TRUE) {
   to_date(x, "year", avg = avg, fiscal = TRUE)
 }
 
@@ -100,13 +100,13 @@ fytd_gr <- function(x) {
 #'
 #' @examples
 #' daily_data_example |>
-#'   mtd_cum()
+#'   mtd_agg()
 #' test <- daily_data_example |>
 #'   tsbox::ts_long() |>
 #'   tsbox::ts_pick("VAPNS_HI") |>
-#'   mtd_cum()
+#'   mtd_agg()
 #' tsbox::`%ts/%`(test, tsbox::ts_lag(test, "6 months")) |> tail()
-mtd_cum <- function(x, avg = TRUE) {
+mtd_agg <- function(x, avg = TRUE) {
   to_date(x, "month", avg = avg)
 }
 
@@ -140,16 +140,16 @@ mtd_gr <- function(x) {
 #'
 #' @examples
 #' daily_data_example |>
-#'   ptd_cum("week")
+#'   ptd_agg("week")
 #' test <- daily_data_example |>
 #'   tsbox::ts_long() |>
 #'   tsbox::ts_pick("VAPNS_HI") |>
-#'   ptd_cum("week")
+#'   ptd_agg("week")
 #' tsbox::`%ts/%`(test, tsbox::ts_lag(test, "4 weeks")) |>
 #'   tsbox::`%ts-%`(1) |>
 #'   tsbox::`%ts*%`(100) |>
 #'   tail()
-ptd_cum <- function(x, per = "year", avg = TRUE) {
+ptd_agg <- function(x, per = "year", avg = TRUE) {
   to_date(x, per, avg = avg)
 }
 

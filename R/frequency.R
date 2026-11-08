@@ -613,9 +613,9 @@ QtoA <- function(ser_in, aggr = "mean") {
 # #'
 # #' @examples
 # #' monthly_data_example |>
-# #'   aggr(conv_type = "uhero", target_freq = "quarter")
+# #'   agg(conv_type = "uhero", target_freq = "quarter")
 # #' monthly_data_example |>
-# #'   aggr(conv_type = "uhero", target_freq = "quarter") |>
+# #'   agg(conv_type = "uhero", target_freq = "quarter") |>
 # #'   tsbox::ts_long() |>
 # #'   disagg(conv_type = "uhero", target_freq = "month") |>
 # #'   tsbox::ts_wide() # this is close to original data
@@ -623,7 +623,7 @@ QtoA <- function(ser_in, aggr = "mean") {
 # #' monthly_data_example |>
 # #'   tsbox::ts_long() |>
 # #'   tsbox::ts_pick("VISNS_HI") |>
-# #'   aggr(conv_type = "uhero", target_freq = "year") |>
+# #'   agg(conv_type = "uhero", target_freq = "year") |>
 # #'   tsbox::ts_plot()
 # aggr <- function(
 #   x,
@@ -697,11 +697,11 @@ QtoA <- function(ser_in, aggr = "mean") {
 #'
 #' @examples
 #' monthly_data_example |>
-#'   aggr(conv_type = "sum", target_freq = "quarter")
+#'   agg(conv_type = "sum", target_freq = "quarter")
 #' monthly_data_example |>
-#'   aggr(conv_type = "uhero", target_freq = "quarter")
+#'   agg(conv_type = "uhero", target_freq = "quarter")
 #' monthly_data_example |>
-#'   aggr(conv_type = "uhero", target_freq = "quarter") |>
+#'   agg(conv_type = "uhero", target_freq = "quarter") |>
 #'   tsbox::ts_long() |>
 #'   disagg(conv_type = "uhero", target_freq = "month") |>
 #'   tsbox::ts_wide() # this is close to original data
@@ -709,9 +709,9 @@ QtoA <- function(ser_in, aggr = "mean") {
 #' monthly_data_example |>
 #'   tsbox::ts_long() |>
 #'   tsbox::ts_pick("VISNS_HI") |>
-#'   aggr(conv_type = "uhero", target_freq = "year") |>
+#'   agg(conv_type = "uhero", target_freq = "year") |>
 #'   tsbox::ts_plot()
-aggr <- function(
+agg <- function(
   x,
   conv_type = "mean",
   target_freq = "year",
@@ -782,16 +782,16 @@ aggr <- function(
 #'
 #' @examples
 #' monthly_data_example |>
-#'   faggr(conv_type = "sum", target_freq = "quarter")
+#'   fagg(conv_type = "sum", target_freq = "quarter")
 #' monthly_data_example |>
-#'   faggr(conv_type = "uhero", target_freq = "quarter")
+#'   fagg(conv_type = "uhero", target_freq = "quarter")
 #' # works with a single series too
 #' monthly_data_example |>
 #'   tsbox::ts_long() |>
 #'   tsbox::ts_pick("VISNS_HI") |>
-#'   faggr(conv_type = "uhero", target_freq = "year") |>
+#'   fagg(conv_type = "uhero", target_freq = "year") |>
 #'   tsbox::ts_plot()
-faggr <- function(
+fagg <- function(
   x,
   conv_type = "mean",
   target_freq = "year",
@@ -801,7 +801,7 @@ faggr <- function(
   x_mod <- conv_long(x, ser_info = TRUE)
 
   # shift by six months, so that each fiscal year (July to June) falls in
-  # the calendar year it ends in, then aggregate as aggr() does
+  # the calendar year it ends in, then aggregate as agg() does
   x_mod_agg <- x_mod %>%
     tsbox::ts_lag("6 months") %>%
     aggr_long(conv_type, target_freq, na_rm)
