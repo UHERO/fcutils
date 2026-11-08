@@ -1,11 +1,11 @@
 # Transformations on the package's example data, as they work today.
 
-# the snapshot was recorded with index(), now ts_rebase()
+# the snapshot was recorded with index(), now rebase()
 test_that("index() today", {
   snap(list(
-    ts_rebase(q_wide, 2010.1),
-    ts_rebase(q_wide, c(2010.1, 2010.4)),
-    ts_rebase(q_xts, c("2010-01-01", "2010-12-31"), 1)
+    rebase(q_wide, 2010.1),
+    rebase(q_wide, c(2010.1, 2010.4)),
+    rebase(q_xts, c("2010-01-01", "2010-12-31"), 1)
   ))
 })
 
@@ -99,4 +99,18 @@ test_that("multi_chain() keeps names that contain a lowercase x", {
   out <- quiet(multi_chain(early, q))
   expect_named(out, c("time", "E_NF_HI", "Ex_HI"))
   expect_equal(out$Ex_HI, q$Ex_HI)
+})
+
+test_that("faggr() handles a series that starts with missing values", {
+  q <- tibble::tibble(
+    time = seq(as.Date("2018-01-01"), by = "quarter", length.out = 16),
+    A = c(NA, NA, NA, NA, 1:12),
+    B = 1:16
+  )
+  out <- faggr(q)
+  # fiscal years (July to June) labeled by the year they end in; only
+  # complete years count
+  expect_equal(out$time, as.Date(c("2019-01-01", "2020-01-01", "2021-01-01")))
+  expect_equal(out$B, c(mean(3:6), mean(7:10), mean(11:14)))
+  expect_equal(out$A, c(NA, mean(3:6), mean(7:10)))
 })

@@ -51,7 +51,7 @@ reference:
   - cagr
   - yoy_to_lev
   - ma
-  - ts_rebase
+  - rebase
   - ends_with("_cum")
   - ends_with("_gr")
 - title: Formats and conversion
@@ -84,3 +84,11 @@ reference:
   - "%+=%"
   - "%>%"
   - fcutils-package
+
+articles:
+- title: Articles
+  navbar: ~
+  contents:
+  - articles/getting-started
+  - articles/forecasting
+  - articles/growth-and-reporting

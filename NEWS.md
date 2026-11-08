@@ -1,3 +1,60 @@
+# fcutils 0.1.2
+
+Results are unchanged.
+
+* `multi_chain(verbose = FALSE)` does not print the series it extends.
+* Faster growth rates and aggregation, with identical results. For monthly,
+  quarterly and annual data with no missing dates, `pcmp()`, the to-date
+  growth functions and `ptd_gr()` take a lag by position within each series
+  instead of through `tsbox::ts_lag()`, and `aggr()` and `faggr()` take grouped
+  means or sums instead of `tsbox::ts_frequency()` (when missing values sit
+  only at the start or end of each series). Anything else goes through tsbox
+  as before. On 200 quarterly series over a century: `aggr()` 0.4 s
+  (4.5 s in 0.1.0), `pcmp()` 0.14 s (3.4 s), `ytd_gr()` 0.3 s (3.3 s),
+  `ptd_gr()` 0.4 s (3.6 s). A test compares each fast path with tsbox on
+  random series.
+* Faster on large banks, with identical results: `conv_long()`, which most
+  functions call first, skips `tsbox::ts_regular()`'s checks when no date is
+  missing (0.9 s to 0.07 s on 200 quarterly series over a century), and
+  `multi_chain()` places each chained series back by date instead of a join
+  per series. On that bank `multi_chain()` takes 0.7 s instead of 3 s,
+  `aggr()` 2.7 s instead of 4.5 s and `pcmp()` 1.5 s instead of 3.5 s.
+* Less fixed cost per call, with identical results. `conv_long()` no longer
+  asks `tsbox::ts_summary()` for the name of a single series that already
+  has one, and `find_start()` and `find_end()` take the first and last date
+  with a value directly. On one quarterly series `conv_long()` takes 4 ms
+  instead of 9 ms and `find_end()` 5 ms instead of 13 ms; every function
+  that starts with `conv_long()` gains about 4 ms.
+* `get_series_exp()` combines the downloaded series in one step instead of
+  one pair at a time (200 series: 0.02 s instead of 2 s).
+* `ytd_cum()`, `ytd_gr()`, `fytd_cum()`, `fytd_gr()`, `mtd_cum()`,
+  `mtd_gr()`, `ptd_cum()` and `ptd_gr()` share one implementation. Old and
+  new give identical results on monthly, quarterly and daily data in every
+  format.
+* `plot_comp_2()` and `plot_comp_3()` share one implementation; the index
+  panel is the only difference.
+
+# fcutils 0.1.1
+
+Results are unchanged, except where `faggr()` used to fail.
+
+* `ts_rebase()` is renamed `rebase()`, because the `ts_` prefix marks tsbox
+  functions. No other installed package exports a `rebase()`.
+
+* `faggr()` aggregates all series at once instead of each series and year
+  separately: 0.4 s instead of 33 s for 20 quarterly series over a century.
+  It no longer stops on a fiscal year with no values (a series that starts
+  or ends with missing values).
+* `aggr()` and `pcmp()` aggregate or compute all series at once, and
+  `conv_long()` reads series names from the id column instead of
+  `ts_summary()`. On a bank of 200 quarterly series over a century, `aggr()`
+  takes 3.5 s instead of 4.5 s and `pcmp()` 2.0 s instead of 3.5 s; most of
+  what remains is `tsbox::ts_frequency()` and `tsbox::ts_regular()`.
+* `get_series()` and `get_series_exp()` share their request, naming and
+  format code. An unknown `rename` or `format` now stops with a message.
+* The code is split into files by topic, and an internal helper replaces the
+  block that returned results in the input's class in 19 functions.
+
 # fcutils 0.1.0
 
 ## Breaking changes
