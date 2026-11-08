@@ -29,11 +29,7 @@ ytd_cum <- function(x, avg = TRUE) {
     dplyr::select(-"yr")
 
   # reclass the output to match the input
-  ans <- if (attr(x_mod, "was_wide")) {
-    tsbox::ts_wide(x_mod_ytd)
-  } else {
-    tsbox::copy_class(x_mod_ytd, x)
-  }
+  ans <- reclass(x_mod_ytd, x_mod, x)
 
   return(ans)
 }
@@ -62,11 +58,7 @@ ytd_gr <- function(x) {
     tsbox::ts_pcy()
 
   # reclass the output to match the input
-  ans <- if (attr(x_mod, "was_wide")) {
-    tsbox::ts_wide(x_mod_ytd_gr)
-  } else {
-    tsbox::copy_class(x_mod_ytd_gr, x)
-  }
+  ans <- reclass(x_mod_ytd_gr, x_mod, x)
 
   return(ans)
 }
@@ -110,11 +102,7 @@ fytd_cum <- function(x, avg = TRUE) {
     tsbox::ts_lag("-6 months")
 
   # reclass the output to match the input
-  ans <- if (attr(x_mod, "was_wide")) {
-    tsbox::ts_wide(x_mod_fytd)
-  } else {
-    tsbox::copy_class(x_mod_fytd, x)
-  }
+  ans <- reclass(x_mod_fytd, x_mod, x)
 
   return(ans)
 }
@@ -148,11 +136,7 @@ fytd_gr <- function(x) {
     tsbox::ts_pcy()
 
   # reclass the output to match the input
-  ans <- if (attr(x_mod, "was_wide")) {
-    tsbox::ts_wide(x_mod_fytd_gr)
-  } else {
-    tsbox::copy_class(x_mod_fytd_gr, x)
-  }
+  ans <- reclass(x_mod_fytd_gr, x_mod, x)
 
   return(ans)
 }
@@ -188,11 +172,7 @@ mtd_cum <- function(x, avg = TRUE) {
     dplyr::select(-"yrmo")
 
   # reclass the output to match the input
-  ans <- if (attr(x_mod, "was_wide")) {
-    tsbox::ts_wide(x_mod_mtd)
-  } else {
-    tsbox::copy_class(x_mod_mtd, x)
-  }
+  ans <- reclass(x_mod_mtd, x_mod, x)
 
   return(ans)
 }
@@ -218,11 +198,7 @@ mtd_gr <- function(x) {
     tsbox::ts_pcy()
 
   # reclass the output to match the input
-  ans <- if (attr(x_mod, "was_wide")) {
-    tsbox::ts_wide(x_mod_mtd_gr)
-  } else {
-    tsbox::copy_class(x_mod_mtd_gr, x)
-  }
+  ans <- reclass(x_mod_mtd_gr, x_mod, x)
 
   return(ans)
 }
@@ -264,11 +240,7 @@ ptd_cum <- function(x, per = "year", avg = TRUE) {
     dplyr::select(-"time_per")
 
   # reclass the output to match the input
-  ans <- if (attr(x_mod, "was_wide")) {
-    tsbox::ts_wide(x_mod_ptd)
-  } else {
-    tsbox::copy_class(x_mod_ptd, x)
-  }
+  ans <- reclass(x_mod_ptd, x_mod, x)
 
   return(ans)
 }
@@ -319,11 +291,7 @@ ptd_gr <- function(x, per = "year", lag_length = "1 year") {
     }
 
   # reclass the output to match the input
-  ans <- if (attr(x_mod, "was_wide")) {
-    tsbox::ts_wide(x_mod_ptd_gr)
-  } else {
-    tsbox::copy_class(x_mod_ptd_gr, x)
-  }
+  ans <- reclass(x_mod_ptd_gr, x_mod, x)
 
   return(ans)
 }

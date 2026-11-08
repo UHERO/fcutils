@@ -44,11 +44,7 @@ span <- function(x, start = NULL, end = NULL, template = NULL, extend = FALSE) {
     tsbox::ts_tbl()
 
   # reclass the output to match the input
-  ans <- if (attr(x_mod, "was_wide")) {
-    tsbox::ts_wide(x_mod_span)
-  } else {
-    tsbox::copy_class(x_mod_span, x)
-  }
+  ans <- reclass(x_mod_span, x_mod, x)
 
   return(ans)
 }

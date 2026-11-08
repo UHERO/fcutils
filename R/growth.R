@@ -31,11 +31,7 @@ pca_to_pc <- function(x, freq = 4) {
     dplyr::mutate(value = ((1 + .data$value / 100)^(1 / freq) - 1) * 100)
 
   # reclass the output to match the input
-  ans <- if (attr(x_mod, "was_wide")) {
-    tsbox::ts_wide(x_mod_pc)
-  } else {
-    tsbox::copy_class(x_mod_pc, x)
-  }
+  ans <- reclass(x_mod_pc, x_mod, x)
 
   return(ans)
 }
@@ -74,11 +70,7 @@ pc_to_pca <- function(x, freq = 4) {
     dplyr::mutate(value = ((1 + .data$value / 100)^freq - 1) * 100)
 
   # reclass the output to match the input
-  ans <- if (attr(x_mod, "was_wide")) {
-    tsbox::ts_wide(x_mod_pc)
-  } else {
-    tsbox::copy_class(x_mod_pc, x)
-  }
+  ans <- reclass(x_mod_pc, x_mod, x)
 
   return(ans)
 }
@@ -139,11 +131,7 @@ pcmp <- function(x, lag = 4, comp_freq = 1) {
     dplyr::mutate(value = ((.data$value^(comp_freq / lag)) - 1) * 100)
 
   # reclass the output to match the input
-  ans <- if (attr(x_mod, "was_wide")) {
-    tsbox::ts_wide(x_mod_pcmp)
-  } else {
-    tsbox::copy_class(x_mod_pcmp, x)
-  }
+  ans <- reclass(x_mod_pcmp, x_mod, x)
 
   return(ans)
 }
@@ -313,11 +301,7 @@ yoy_to_lev <- function(yoy_gr, hist_lev, smooth_span = 0) {
   }
 
   # reclass the output to match the input
-  ans <- if (attr(hist_lev_mod, "was_wide")) {
-    tsbox::ts_wide(ext_lev_mod)
-  } else {
-    tsbox::copy_class(ext_lev_mod, hist_lev)
-  }
+  ans <- reclass(ext_lev_mod, hist_lev_mod, hist_lev)
 
   return(ans)
 }
@@ -364,11 +348,7 @@ ts_rebase <- function(x, base_per = as.character(Sys.Date()), base_value = 100) 
     tsbox::ts_tbl()
 
   # reclass the output to match the input
-  ans <- if (attr(x_mod, "was_wide")) {
-    tsbox::ts_wide(x_mod_index)
-  } else {
-    tsbox::copy_class(x_mod_index, x)
-  }
+  ans <- reclass(x_mod_index, x_mod, x)
 
   return(ans)
 }
@@ -402,11 +382,7 @@ ma <- function(x, order) {
     )
 
   # reclass the output to match the input
-  ans <- if (attr(x_mod, "was_wide")) {
-    tsbox::ts_wide(x_mod_ma)
-  } else {
-    tsbox::copy_class(x_mod_ma, x)
-  }
+  ans <- reclass(x_mod_ma, x_mod, x)
 
   return(ans)
 }

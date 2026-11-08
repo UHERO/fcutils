@@ -255,11 +255,7 @@ interpol_linear <- function(x) {
       }
     }) %>%
     dplyr::ungroup()
-  if (attr(x_mod, "was_wide")) {
-    tsbox::ts_wide(filled)
-  } else {
-    tsbox::copy_class(filled, x)
-  }
+  reclass(filled, x_mod, x)
 }
 
 
@@ -450,11 +446,7 @@ disagg <- function(
   }
 
   # reclass the output to match the input
-  ans <- if (attr(x_mod, "was_wide")) {
-    tsbox::ts_wide(x_mod_int)
-  } else {
-    tsbox::copy_class(x_mod_int, x)
-  }
+  ans <- reclass(x_mod_int, x_mod, x)
 
   return(ans)
 }
@@ -760,11 +752,7 @@ aggr <- function(
     tidyr::unnest("aggd")
 
   # reclass the output to match the input
-  ans <- if (attr(x_mod, "was_wide")) {
-    tsbox::ts_wide(x_mod_agg)
-  } else {
-    tsbox::copy_class(x_mod_agg, x)
-  }
+  ans <- reclass(x_mod_agg, x_mod, x)
 
   return(ans)
 }
@@ -843,11 +831,7 @@ faggr <- function(
   # tsbox::ts_lag("-6 months")
 
   # reclass the output to match the input
-  ans <- if (attr(x_mod, "was_wide")) {
-    tsbox::ts_wide(x_mod_agg)
-  } else {
-    tsbox::copy_class(x_mod_agg, x)
-  }
+  ans <- reclass(x_mod_agg, x_mod, x)
 
   return(ans)
 }

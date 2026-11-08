@@ -174,6 +174,24 @@ is_wide <- function(x) {
 }
 
 
+#' Return a long result in the class of the input
+#'
+#' The other half of `conv_long(x, ser_info = TRUE)`: wide if x was wide,
+#' otherwise x's own class.
+#'
+#' @param out long tibble (id, time, value)
+#' @param x_mod x as returned by `conv_long(x, ser_info = TRUE)`
+#' @param x the original input
+#' @noRd
+reclass <- function(out, x_mod, x) {
+  if (attr(x_mod, "was_wide")) {
+    tsbox::ts_wide(out)
+  } else {
+    tsbox::copy_class(out, x)
+  }
+}
+
+
 #' Convert "ts-boxable" objects to long format (extension of `tsbox::ts_long()`)
 #'
 #' @param x a "ts-boxable" object to be converted
