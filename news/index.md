@@ -1,5 +1,13 @@
 # Changelog
 
+## fcutils 0.1.4
+
+- [`write_tsd()`](https://uhero.github.io/fcutils/reference/write_tsd.md)
+  takes `descriptions`, a named vector of labels written in columns
+  17-80 of each series’ header line. Without it the output is unchanged.
+  The function body is rewritten more simply, with byte-identical
+  output.
+
 ## fcutils 0.1.3
 
 - Renamed for consistency:
