@@ -3,6 +3,16 @@
 Results are unchanged.
 
 * `multi_chain(verbose = FALSE)` does not print the series it extends.
+* Faster growth rates and aggregation, with identical results. For monthly,
+  quarterly and annual data with no missing dates, `pcmp()`, the to-date
+  growth functions and `ptd_gr()` take a lag by position within each series
+  instead of through `tsbox::ts_lag()`, and `aggr()` and `faggr()` take grouped
+  means or sums instead of `tsbox::ts_frequency()` (when missing values sit
+  only at the start or end of each series). Anything else goes through tsbox
+  as before. On 200 quarterly series over a century: `aggr()` 0.4 s
+  (4.5 s in 0.1.0), `pcmp()` 0.14 s (3.4 s), `ytd_gr()` 0.3 s (3.3 s),
+  `ptd_gr()` 0.4 s (3.6 s). A test compares each fast path with tsbox on
+  random series.
 * Faster on large banks, with identical results: `conv_long()`, which most
   functions call first, skips `tsbox::ts_regular()`'s checks when no date is
   missing (0.9 s to 0.07 s on 200 quarterly series over a century), and

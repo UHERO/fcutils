@@ -116,8 +116,8 @@ pcmp <- function(x, lag = 4, comp_freq = 1) {
   #     }
   #   }
 
-  # tsbox's lag and division work on all series at once
-  x_mod_pcmp <- (x_mod %ts/% tsbox::ts_lag(x_mod, lag)) %>%
+  # x_mod %ts/% tsbox::ts_lag(x_mod, lag), by position when no date is missing
+  x_mod_pcmp <- lag_ratio(x_mod, lag) %>%
     dplyr::mutate(value = ((.data$value^(comp_freq / lag)) - 1) * 100)
 
   # the per-series version it replaces:

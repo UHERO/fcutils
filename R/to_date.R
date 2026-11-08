@@ -221,10 +221,16 @@ to_date <- function(x, per, avg = TRUE, fiscal = FALSE, growth = NULL) {
   if (fiscal) {
     out <- tsbox::ts_lag(out, "-6 months")
   }
+  # pcy() and lag_ratio() give tsbox::ts_pcy() and
+  # out %ts/% tsbox::ts_lag(out, growth), faster when no date is missing
   if (identical(growth, "pcy")) {
-    out <- tsbox::ts_pcy(out)
+    out <- pcy(out)
   } else if (!is.null(growth)) {
-    out <- (out %ts/% tsbox::ts_lag(out, growth) %ts-% 1) %ts*% 100
+    out <- if (is.na(lag_periods(out, growth))) {
+      (out %ts/% tsbox::ts_lag(out, growth) %ts-% 1) %ts*% 100
+    } else {
+      dplyr::mutate(lag_ratio(out, growth), value = (.data$value - 1) * 100)
+    }
   }
   reclass(out, x_mod, x)
 }

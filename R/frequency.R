@@ -866,7 +866,7 @@ aggr_long <- function(x_mod, conv_type, target_freq, na_rm) {
   purrr::map(unique(agg_type), function(type) {
     x_mod %>%
       dplyr::filter(.data$id %in% ids[agg_type == type]) %>%
-      tsbox::ts_frequency(to = target_freq, aggregate = type, na.rm = na_rm)
+      frequency_fast(to = target_freq, aggregate = type, na.rm = na_rm)
   }) %>%
     dplyr::bind_rows() %>%
     dplyr::arrange(match(.data$id, ids), .data$time)
