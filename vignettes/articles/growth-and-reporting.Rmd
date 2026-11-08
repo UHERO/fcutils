@@ -48,13 +48,13 @@ cagr(jobs[p(2015, 2024)])
 ```
 
 `ma(x, order)` is a trailing moving average that includes the current
-period. `rebase(x, base_per)` turns levels into an index that equals 100 in
+period. `index_to_base(x, base_per)` turns levels into an index that equals 100 in
 the base period. A year or two dates as the base set the period's average
 to 100, which makes series of different size comparable. Here total jobs
 and jobs in accommodation and food services, against 2019:
 
 ```{r}
-idx <- rebase(q[, c("E_NF_HI", "EAF_HI")], 2019)
+idx <- index_to_base(q[, c("E_NF_HI", "EAF_HI")], 2019)
 round(idx[p(2019.4, 2020.3)], 1)
 ```
 

@@ -1,3 +1,10 @@
+# fcutils 0.1.2.1
+
+* `rebase()` is renamed `index_to_base()`. It sets a series to a value in a
+  base period, which is indexing. Rebasing is a different operation: it
+  re-expresses a real series, such as real GDP, in the prices of another
+  year. Replace `rebase(x, ...)` with `index_to_base(x, ...)`.
+
 # fcutils 0.1.2
 
 Results are unchanged.

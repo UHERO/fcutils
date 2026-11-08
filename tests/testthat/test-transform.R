@@ -1,11 +1,11 @@
 # Transformations on the package's example data, as they work today.
 
-# the snapshot was recorded with index(), now rebase()
+# the snapshot was recorded with index(), now index_to_base()
 test_that("index() today", {
   snap(list(
-    rebase(q_wide, 2010.1),
-    rebase(q_wide, c(2010.1, 2010.4)),
-    rebase(q_xts, c("2010-01-01", "2010-12-31"), 1)
+    index_to_base(q_wide, 2010.1),
+    index_to_base(q_wide, c(2010.1, 2010.4)),
+    index_to_base(q_xts, c("2010-01-01", "2010-12-31"), 1)
   ))
 })
 
