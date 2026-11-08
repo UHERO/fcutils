@@ -1,3 +1,10 @@
+# fcutils 0.1.4
+
+* `write_tsd()` takes `descriptions`, a named vector of labels written in
+  columns 17-80 of each series' header line. Without it the output is
+  unchanged. The function body is rewritten more simply, with byte-identical
+  output.
+
 # fcutils 0.1.3
 
 * Renamed for consistency: `multi_chain()` is now `chain()`, `aggr()` and
