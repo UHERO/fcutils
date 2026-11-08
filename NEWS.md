@@ -2,8 +2,7 @@
 
 Results are unchanged.
 
-* `multi_chain()` no longer prints the series it extends; `verbose = TRUE`
-  lists them as before.
+* `multi_chain(verbose = FALSE)` does not print the series it extends.
 * `ytd_cum()`, `ytd_gr()`, `fytd_cum()`, `fytd_gr()`, `mtd_cum()`,
   `mtd_gr()`, `ptd_cum()` and `ptd_gr()` share one implementation. Old and
   new give identical results on monthly, quarterly and daily data in every

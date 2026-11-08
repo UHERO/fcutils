@@ -11,7 +11,7 @@ multi_chain(
   method = c("ratio", "diff"),
   direction = c("both", "forward", "backward"),
   match = c("name", "stem"),
-  verbose = FALSE
+  verbose = TRUE
 )
 }
 \arguments{
@@ -35,7 +35,7 @@ solution ending (\verb{_A}, \verb{_Q}, \verb{_M}, \verb{_SOLA}, \verb{_SOLQ}, \v
 with \code{.}), so \code{UR_AT_US_A} pairs with \code{UR_AT_US_SOLQ}. A single series in
 x always pairs with a single series in y. The result keeps x's names.}
 
-\item{verbose}{if TRUE, list the series being extended (default: FALSE)}
+\item{verbose}{if TRUE (default), list the series being extended}
 }
 \value{
 object of the same type as the input with extended series
