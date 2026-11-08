@@ -7,11 +7,13 @@ knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
 requireNamespace("xts", quietly = TRUE)
 ```
 
-This article covers the functions that transform a series for reading
-(growth rates, period-to-date totals, indexes) and those that show it
-(tables and interactive plots). The examples use the package's Hawaii
-data: payroll jobs (quarterly), visitor arrivals (monthly) and visitors
-present (daily).
+A forecast is a set of levels, such as thousands of jobs in each quarter.
+Readers mostly want to know how fast things change, so reports show growth
+rates, comparisons with a year earlier and indexes alongside the levels.
+This article covers the functions that compute those (growth rates,
+period-to-date totals, indexes) and those that show them (tables and
+interactive plots). The examples use the package's Hawaii data: payroll
+jobs (quarterly), visitor arrivals (monthly) and visitors present (daily).
 
 ```{r, message = FALSE}
 library(fcutils)
@@ -25,16 +27,17 @@ jobs <- q$E_NF_HI
 
 ## Growth rates
 
-`pcmp(x, lag, comp_freq)` is the percent change over `lag` periods,
-compounded `comp_freq` times a year. One function covers the usual
-measures for a quarterly series:
+`pcmp(x, lag, comp_freq)` (percent change, compounded) is the percent
+change over `lag` periods. With `comp_freq = 4`, the change is compounded
+four times, which turns a quarterly change into an annual pace. One
+function covers the usual measures for a quarterly series:
 
 ```{r}
 gr <- tsbox::ts_c(
   q_q = pcmp(jobs, lag = 1),                     # quarter on quarter
   q_q_ann = pcmp(jobs, lag = 1, comp_freq = 4),  # annualized
   y_y = pcmp(jobs, lag = 4),                     # year on year
-  ten_yr_ann = pcmp(jobs, lag = 40, comp_freq = 4)
+  ten_yr_ann = pcmp(jobs, lag = 40, comp_freq = 4)  # average over 10 years
 )
 round(tail(gr, 2), 2)
 ```
@@ -48,10 +51,15 @@ cagr(jobs[p(2015, 2024)])
 ```
 
 `ma(x, order)` is a trailing moving average that includes the current
-period. `index_to_base(x, base_per)` turns levels into an index that equals 100 in
-the base period. A year or two dates as the base set the period's average
-to 100, which makes series of different size comparable. Here total jobs
-and jobs in accommodation and food services, against 2019:
+period: `ma(x, 4)` averages each quarter with the three before it.
+
+Series of different size are hard to compare as levels. Total jobs are
+about six times accommodation and food services jobs.
+`index_to_base(x, base_per)` divides each series by its value in a base
+period and multiplies by 100. Both series then start from 100, and the
+index shows the percent above or below the base. A year or two dates as
+the base set the average over that period to 100. Here the two series
+against 2019, through the 2020 pandemic:
 
 ```{r}
 idx <- index_to_base(q[, c("E_NF_HI", "EAF_HI")], 2019)
@@ -60,9 +68,13 @@ round(idx[p(2019.4, 2020.3)], 1)
 
 ## Period to date
 
-For monthly and daily data, the *to-date* functions accumulate within a
-year, fiscal year (July to June), quarter or month, and compare with the
-same span a year earlier.
+Monthly and daily data that are not seasonally adjusted, such as visitor
+arrivals, rise and fall with the seasons. Comparing March with February
+mixes seasonal swings with real change. A common fix is to compare the
+months of this year so far with the same months a year earlier. The
+*to-date* functions do this. They accumulate within a year, fiscal year
+(July to June), quarter or month, and compare with the same span a year
+earlier.
 
 | Function | Period | Returns |
 |---|---|---|
@@ -95,8 +107,8 @@ July 2023 to March 2024.
 `gen_table()` lays out series with their growth rates. By default the
 dates run across and each series and growth rate has a row;
 `time_across = FALSE` turns that around, which suits a short page.
-`percent` picks the growth rate: `"pc"` (period on period), `"pcy"` (year
-on year), `"pca"` (annualized) or `"none"`.
+`percent` picks the growth rate shown with each series: `"pc"` (period
+on period), `"pcy"` (year on year), `"pca"` (annualized) or `"none"`.
 
 ```{r}
 gen_table(q[, c("E_NF_HI", "EAF_HI")],
