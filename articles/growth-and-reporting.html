@@ -66,10 +66,13 @@
 
     
     
-<p>This article covers the functions that transform a series for reading
-(growth rates, period-to-date totals, indexes) and those that show it
-(tables and interactive plots). The examples use the package’s Hawaii
-data: payroll jobs (quarterly), visitor arrivals (monthly) and visitors
+<p>A forecast is a set of levels, such as thousands of jobs in each
+quarter. Readers mostly want to know how fast things change, so reports
+show growth rates, comparisons with a year earlier and indexes alongside
+the levels. This article covers the functions that compute those (growth
+rates, period-to-date totals, indexes) and those that show them (tables
+and interactive plots). The examples use the package’s Hawaii data:
+payroll jobs (quarterly), visitor arrivals (monthly) and visitors
 present (daily).</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://uhero.github.io/fcutils/">fcutils</a></span><span class="op">)</span></span>
@@ -82,15 +85,17 @@ present (daily).</p>
 <div class="section level2">
 <h2 id="growth-rates">Growth rates<a class="anchor" aria-label="anchor" href="#growth-rates"></a>
 </h2>
-<p><code>pcmp(x, lag, comp_freq)</code> is the percent change over
-<code>lag</code> periods, compounded <code>comp_freq</code> times a
-year. One function covers the usual measures for a quarterly series:</p>
+<p><code>pcmp(x, lag, comp_freq)</code> (percent change, compounded) is
+the percent change over <code>lag</code> periods. With
+<code>comp_freq = 4</code>, the change is compounded four times, which
+turns a quarterly change into an annual pace. One function covers the
+usual measures for a quarterly series:</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">gr</span> <span class="op">&lt;-</span> <span class="fu">tsbox</span><span class="fu">::</span><span class="fu"><a href="https://docs.ropensci.org/tsbox/reference/ts_c.html" class="external-link">ts_c</a></span><span class="op">(</span></span>
 <span>  q_q <span class="op">=</span> <span class="fu"><a href="../reference/pcmp.html">pcmp</a></span><span class="op">(</span><span class="va">jobs</span>, lag <span class="op">=</span> <span class="fl">1</span><span class="op">)</span>,                     <span class="co"># quarter on quarter</span></span>
 <span>  q_q_ann <span class="op">=</span> <span class="fu"><a href="../reference/pcmp.html">pcmp</a></span><span class="op">(</span><span class="va">jobs</span>, lag <span class="op">=</span> <span class="fl">1</span>, comp_freq <span class="op">=</span> <span class="fl">4</span><span class="op">)</span>,  <span class="co"># annualized</span></span>
 <span>  y_y <span class="op">=</span> <span class="fu"><a href="../reference/pcmp.html">pcmp</a></span><span class="op">(</span><span class="va">jobs</span>, lag <span class="op">=</span> <span class="fl">4</span><span class="op">)</span>,                     <span class="co"># year on year</span></span>
-<span>  ten_yr_ann <span class="op">=</span> <span class="fu"><a href="../reference/pcmp.html">pcmp</a></span><span class="op">(</span><span class="va">jobs</span>, lag <span class="op">=</span> <span class="fl">40</span>, comp_freq <span class="op">=</span> <span class="fl">4</span><span class="op">)</span></span>
+<span>  ten_yr_ann <span class="op">=</span> <span class="fu"><a href="../reference/pcmp.html">pcmp</a></span><span class="op">(</span><span class="va">jobs</span>, lag <span class="op">=</span> <span class="fl">40</span>, comp_freq <span class="op">=</span> <span class="fl">4</span><span class="op">)</span>  <span class="co"># average over 10 years</span></span>
 <span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">round</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">tail</a></span><span class="op">(</span><span class="va">gr</span>, <span class="fl">2</span><span class="op">)</span>, <span class="fl">2</span><span class="op">)</span></span>
 <span><span class="co">#&gt;             q_q q_q_ann  y_y ten_yr_ann</span></span>
@@ -107,11 +112,15 @@ with the years elapsed:</p>
 <span><span class="co">#&gt;           <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>          9.75   0.142</span></span></code></pre></div>
 <p><code>ma(x, order)</code> is a trailing moving average that includes
-the current period. <code>index_to_base(x, base_per)</code> turns levels
-into an index that equals 100 in the base period. A year or two dates as
-the base set the period’s average to 100, which makes series of
-different size comparable. Here total jobs and jobs in accommodation and
-food services, against 2019:</p>
+the current period: <code>ma(x, 4)</code> averages each quarter with the
+three before it.</p>
+<p>Series of different size are hard to compare as levels. Total jobs
+are about six times accommodation and food services jobs.
+<code>index_to_base(x, base_per)</code> divides each series by its value
+in a base period and multiplies by 100. Both series then start from 100,
+and the index shows the percent above or below the base. A year or two
+dates as the base set the average over that period to 100. Here the two
+series against 2019, through the 2020 pandemic:</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">idx</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/index_to_base.html">index_to_base</a></span><span class="op">(</span><span class="va">q</span><span class="op">[</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"E_NF_HI"</span>, <span class="st">"EAF_HI"</span><span class="op">)</span><span class="op">]</span>, <span class="fl">2019</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">round</a></span><span class="op">(</span><span class="va">idx</span><span class="op">[</span><span class="fu"><a href="../reference/p.html">p</a></span><span class="op">(</span><span class="fl">2019.4</span>, <span class="fl">2020.3</span><span class="op">)</span><span class="op">]</span>, <span class="fl">1</span><span class="op">)</span></span>
@@ -124,9 +133,13 @@ food services, against 2019:</p>
 <div class="section level2">
 <h2 id="period-to-date">Period to date<a class="anchor" aria-label="anchor" href="#period-to-date"></a>
 </h2>
-<p>For monthly and daily data, the <em>to-date</em> functions accumulate
-within a year, fiscal year (July to June), quarter or month, and compare
-with the same span a year earlier.</p>
+<p>Monthly and daily data that are not seasonally adjusted, such as
+visitor arrivals, rise and fall with the seasons. Comparing March with
+February mixes seasonal swings with real change. A common fix is to
+compare the months of this year so far with the same months a year
+earlier. The <em>to-date</em> functions do this. They accumulate within
+a year, fiscal year (July to June), quarter or month, and compare with
+the same span a year earlier.</p>
 <table class="table">
 <colgroup>
 <col width="33%">
@@ -198,8 +211,8 @@ fiscal year to March, which started in July 2024, is 3.7% above July
 <p><code><a href="../reference/gen_table.html">gen_table()</a></code> lays out series with their growth rates. By
 default the dates run across and each series and growth rate has a row;
 <code>time_across = FALSE</code> turns that around, which suits a short
-page. <code>percent</code> picks the growth rate: <code>"pc"</code>
-(period on period), <code>"pcy"</code> (year on year),
+page. <code>percent</code> picks the growth rate shown with each series:
+<code>"pc"</code> (period on period), <code>"pcy"</code> (year on year),
 <code>"pca"</code> (annualized) or <code>"none"</code>.</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/gen_table.html">gen_table</a></span><span class="op">(</span><span class="va">q</span><span class="op">[</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"E_NF_HI"</span>, <span class="st">"EAF_HI"</span><span class="op">)</span><span class="op">]</span>,</span>

@@ -1,10 +1,21 @@
 # Getting started
 
 fcutils is a set of functions for the time series work behind UHERO’s
-forecasts: getting data, converting between formats and frequencies,
-extending series into the forecast period, and showing the results. This
-article covers what every script needs first: the bank options, the data
-formats the functions accept, and how to write dates.
+forecasts. A forecast at UHERO starts from the history of many series,
+such as payroll jobs or visitor arrivals. Each series is then extended
+to a date some years ahead, using assumptions about growth or levels.
+The results are summarised as annual averages, growth rates, tables and
+plots. fcutils covers each of those steps: getting data, converting
+between formats and frequencies, extending series into the forecast
+period, and showing the results.
+
+This article covers what every script needs first: the bank options, the
+data formats the functions accept, series names and how to write dates.
+[Building a
+forecast](https://uhero.github.io/fcutils/articles/forecasting.md) and
+[Growth rates, tables and
+plots](https://uhero.github.io/fcutils/articles/growth-and-reporting.md)
+follow on from it.
 
 Install the package from GitHub:
 
@@ -20,13 +31,16 @@ library(fcutils)
 
 ## The bank
 
-Many functions return a series that spans the *bank*, a fixed date range
-shared by all series in a forecast.
+A forecast holds many series, and they need to share the same dates so
+that they can be added, divided and compared. fcutils calls that common
+date range the *bank*: it runs from the start of the history to the end
+of the forecast period.
 [`make_xts()`](https://uhero.github.io/fcutils/reference/make_xts.md),
 [`addf()`](https://uhero.github.io/fcutils/reference/addf.md),
 [`extend()`](https://uhero.github.io/fcutils/reference/extend.md) and
-`span(extend = TRUE)` all read it from two options. Set them once at the
-top of a script, before calling any of these functions:
+`span(extend = TRUE)` return series that cover the whole bank, and they
+read its first and last date from two options. Set them once at the top
+of a script, before calling any of these functions:
 
 ``` r
 
@@ -57,15 +71,22 @@ make_xts(2024.1, per = "quarter", val = c(1.5, 1.7, 1.6))
 
 ## Data formats
 
-The functions accept any object that the
-[tsbox](https://docs.ropensci.org/tsbox/) package reads (xts, ts, long
-data frames with `id`, `time` and `value` columns) and also wide data
-frames with a `time` column and one column per series. They return the
-result in the format of the input.
+R holds time series in several ways, and fcutils takes most of them. A
+*wide* data frame has a `time` column and one column per series. A
+*long* data frame stacks the series in three columns, `id` (the series
+name), `time` and `value`. An xts object is a matrix of values with
+dates attached to the rows, from the
+[xts](https://joshuaulrich.github.io/xts/) package; it is convenient for
+arithmetic and for subsetting by date. The functions accept all of
+these, along with anything else that the
+[tsbox](https://docs.ropensci.org/tsbox/) package reads, such as base
+R’s ts. They return the result in the format of the input.
 
-The package ships three wide tibbles of Hawaii data:
-`quarterly_data_example` (payroll jobs by industry),
-`monthly_data_example` (visitor arrivals) and `daily_data_example`.
+The package ships three wide tibbles of Hawaii data from UDAMAN, UHERO’s
+data system: `quarterly_data_example` (payroll jobs by industry,
+1998–2025, in thousands), `monthly_data_example` (visitor arrivals and
+related series, in thousands) and `daily_data_example` (visitors
+present).
 
 ``` r
 
@@ -126,6 +147,22 @@ conv_long(conv_xts(q)$E_NF_HI) |> head(3)
 #> 2 E_NF_HI 1998-04-01  531.
 #> 3 E_NF_HI 1998-07-01  533.
 ```
+
+## Series names
+
+The examples use UHERO’s series names. A name is a mnemonic for the
+concept, an `@`, the geography and a frequency: `E_NF@HI.Q` is nonfarm
+payroll jobs (`E_NF`) in Hawaii (`HI`), quarterly (`Q`). When fcutils
+downloads a series it drops the frequency and replaces `@` with `_`, so
+the column is called `E_NF_HI`. The series used below are:
+
+| Name       | Series                                           |
+|------------|--------------------------------------------------|
+| `E_NF_HI`  | nonfarm payroll jobs, all industries             |
+| `ECT_HI`   | construction jobs                                |
+| `EAF_HI`   | accommodation and food services jobs             |
+| `EGV_HI`   | government jobs                                  |
+| `VISNS_HI` | visitor arrivals, not seasonally adjusted (`NS`) |
 
 ## Dates
 
@@ -214,8 +251,6 @@ get_series_src("UNRATE", "fred")
 get_series_src(c("PAYEMS", "CPIAUCSL"), "fred", format = "xts")
 ```
 
-[Building a
+Next, [Building a
 forecast](https://uhero.github.io/fcutils/articles/forecasting.md)
-extends series into the forecast period, and [Growth rates, tables and
-plots](https://uhero.github.io/fcutils/articles/growth-and-reporting.md)
-covers the transformations and the output.
+extends series into the forecast period.

@@ -1,14 +1,22 @@
 # Building a forecast
 
+A series’ *history* ends at its last observation. Forecasting it means
+filling in the values from there to the end of the bank, from
+assumptions about how it will grow or where it will be at certain dates.
+fcutils calls this *extending* the series.
+
 This article takes the Hawaii payroll jobs in `quarterly_data_example`,
-whose history ends in 2025Q1, and builds a forecast to 2035 with the
-functions that extend series:
+whose history ends in 2025Q1, and extends them to 2035 with
 [`extend()`](https://uhero.github.io/fcutils/reference/extend.md),
 [`addf()`](https://uhero.github.io/fcutils/reference/addf.md),
-[`disagg()`](https://uhero.github.io/fcutils/reference/disagg.md),
-[`multi_chain()`](https://uhero.github.io/fcutils/reference/multi_chain.md)
-and [`aggr()`](https://uhero.github.io/fcutils/reference/aggr.md). The
-assumptions are made up for the example.
+[`disagg()`](https://uhero.github.io/fcutils/reference/disagg.md) and
+[`multi_chain()`](https://uhero.github.io/fcutils/reference/multi_chain.md),
+then averages the result to years with
+[`aggr()`](https://uhero.github.io/fcutils/reference/aggr.md). The
+assumptions are made up for the example. If the bank or the series names
+are new to you, read [Getting
+started](https://uhero.github.io/fcutils/articles/getting-started.md)
+first.
 
 ``` r
 
@@ -25,15 +33,20 @@ Every series that
 [`extend()`](https://uhero.github.io/fcutils/reference/extend.md) and
 [`addf()`](https://uhero.github.io/fcutils/reference/addf.md) return
 runs from the bank start to the bank end, so results line up with each
-other and with the bank.
+other and with the bank. Before the last observation they hold the
+history; after it, the forecast.
 
 ## Growth through anchors
 
-An *anchor* is a target value at a date. With `type = "growth"`,
+An *anchor* is a target value at a date. With `type = "growth"`, the
+anchors are growth rates, and they are *annualized*: the growth over one
+quarter, compounded over four quarters, so that 1.2 means a pace of 1.2%
+a year.
 [`extend()`](https://uhero.github.io/fcutils/reference/extend.md) draws
-the annualized growth rate of the series through the anchors in straight
-lines, holds the last anchor to the end of the bank, and compounds the
-level from the last observation.
+a straight line between the last observed growth rate and the first
+anchor, and between each anchor and the next. It holds the last anchor
+to the end of the bank. The level then grows from the last observation
+at those rates.
 
 Total jobs grew at an annualized 2.9% in 2025Q1. Here growth slows to
 1.2% by 2025Q4 and to 0.8% by 2027Q4:
@@ -150,17 +163,21 @@ round(ct_fc[p(2025.1, 2026.4)], 2)
 
 ## Following a projection
 
-With `type = "chain"`,
-[`extend()`](https://uhero.github.io/fcutils/reference/extend.md)
-continues the series with the growth of another series, `path`. This
-suits a projection made elsewhere whose level differs from the history.
-Suppose an annual projection of government jobs for 2025–2035:
+Sometimes the forecast for a series comes from elsewhere, such as a
+projection by another agency. Its level may not match UHERO’s history,
+for example because it uses a different definition. With
+`type = "chain"`,
+[`extend()`](https://uhero.github.io/fcutils/reference/extend.md) takes
+only the growth of the projection, `path`, and applies it to the series
+from its last observation. Suppose an annual projection of government
+jobs for 2025–2035:
 
 ``` r
 
 gv_a <- make_xts(2025, val = seq(128.5, by = 0.8, length.out = 11))
 ```
 
+The history is quarterly, so the projection must be quarterly too.
 [`disagg()`](https://uhero.github.io/fcutils/reference/disagg.md)
 interpolates it to quarters whose averages equal the annual values.
 Without anything to follow at the end of the series, the interpolation
@@ -201,10 +218,14 @@ history and uses the growth of the shifted series.
 ## Updating a forecast bank
 
 [`multi_chain()`](https://uhero.github.io/fcutils/reference/multi_chain.md)
-works on many series at once. A common use is a new quarter of history:
-continue each series in the new history with the growth of the previous
-forecast. The previous forecast here is made up (history to 2023Q4, then
-1% annualized growth):
+does the same for many series at once. A common use is updating a
+forecast when new data arrive. Suppose last time’s forecast was built on
+history to 2023Q4, and the data now run to 2025Q1. Rather than set every
+assumption again, keep the growth that the old forecast had for each
+series, and apply it from the new last observation.
+
+The old forecast here is made up: each series extended from 2023Q4 at 1%
+annualized growth.
 
 ``` r
 
@@ -223,20 +244,24 @@ round(new_fc[p(2024.4, 2025.3), 1:3], 2)
 #> 2025-07-01  651.13  39.59  13.23
 ```
 
-All 30 series keep their history to 2025Q1 and then grow at 1%, from the
-new levels. Series pair up by name; `match = "stem"` pairs names that
-differ only in a frequency or solution ending, such as `UR_AT_US_A` and
-`UR_AT_US_SOLQ`. For rates such as the unemployment rate,
-`method = "diff"` continues with the change in points instead of the
-growth rate. `direction = "backward"` extends a short history back in
-time with the growth of a longer series.
+All 30 series keep their new history to 2025Q1 and then grow at 1%, from
+the new levels. Each series in the history is paired with the series of
+the same name in the old forecast. If the names differ in their endings,
+such as `UR_AT_US_A` (annual) and `UR_AT_US_SOLQ` (quarterly model
+output), `match = "stem"` pairs them on the part before the ending. For
+rates such as the unemployment rate, `method = "diff"` continues with
+the change in points instead of the growth rate.
+`direction = "backward"` extends a short history back in time with the
+growth of a longer series.
 
 ## Annual results
 
+Forecasts are usually reported as annual figures.
 [`aggr()`](https://uhero.github.io/fcutils/reference/aggr.md) averages
 the quarters of each complete year. Only complete years count, so a year
-with three quarters of data has no value. For flows that add up, use
-`conv_type = "sum"`:
+with three quarters of data has no value. Jobs are a count at a point in
+time, so the average is right. For flows, such as visitor arrivals, the
+annual figure is the total, so use `conv_type = "sum"`:
 
 ``` r
 

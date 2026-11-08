@@ -66,10 +66,17 @@
     
     
 <p>fcutils is a set of functions for the time series work behind UHERO’s
-forecasts: getting data, converting between formats and frequencies,
-extending series into the forecast period, and showing the results. This
-article covers what every script needs first: the bank options, the data
-formats the functions accept, and how to write dates.</p>
+forecasts. A forecast at UHERO starts from the history of many series,
+such as payroll jobs or visitor arrivals. Each series is then extended
+to a date some years ahead, using assumptions about growth or levels.
+The results are summarised as annual averages, growth rates, tables and
+plots. fcutils covers each of those steps: getting data, converting
+between formats and frequencies, extending series into the forecast
+period, and showing the results.</p>
+<p>This article covers what every script needs first: the bank options,
+the data formats the functions accept, series names and how to write
+dates. <a href="forecasting.html">Building a forecast</a> and <a href="growth-and-reporting.html">Growth rates, tables and plots</a>
+follow on from it.</p>
 <p>Install the package from GitHub:</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">remotes</span><span class="fu">::</span><span class="fu">install_github</span><span class="op">(</span><span class="st">"UHERO/fcutils"</span><span class="op">)</span></span></code></pre></div>
@@ -78,10 +85,13 @@ formats the functions accept, and how to write dates.</p>
 <div class="section level2">
 <h2 id="the-bank">The bank<a class="anchor" aria-label="anchor" href="#the-bank"></a>
 </h2>
-<p>Many functions return a series that spans the <em>bank</em>, a fixed
-date range shared by all series in a forecast. <code><a href="../reference/make_xts.html">make_xts()</a></code>,
+<p>A forecast holds many series, and they need to share the same dates
+so that they can be added, divided and compared. fcutils calls that
+common date range the <em>bank</em>: it runs from the start of the
+history to the end of the forecast period. <code><a href="../reference/make_xts.html">make_xts()</a></code>,
 <code><a href="../reference/addf.html">addf()</a></code>, <code><a href="../reference/extend.html">extend()</a></code> and
-<code>span(extend = TRUE)</code> all read it from two options. Set them
+<code>span(extend = TRUE)</code> return series that cover the whole
+bank, and they read its first and last date from two options. Set them
 once at the top of a script, before calling any of these functions:</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/options.html" class="external-link">options</a></span><span class="op">(</span></span>
@@ -106,15 +116,20 @@ or a series from a vector of values:</p>
 <div class="section level2">
 <h2 id="data-formats">Data formats<a class="anchor" aria-label="anchor" href="#data-formats"></a>
 </h2>
-<p>The functions accept any object that the <a href="https://docs.ropensci.org/tsbox/" class="external-link">tsbox</a> package reads (xts,
-ts, long data frames with <code>id</code>, <code>time</code> and
-<code>value</code> columns) and also wide data frames with a
-<code>time</code> column and one column per series. They return the
-result in the format of the input.</p>
-<p>The package ships three wide tibbles of Hawaii data:
-<code>quarterly_data_example</code> (payroll jobs by industry),
-<code>monthly_data_example</code> (visitor arrivals) and
-<code>daily_data_example</code>.</p>
+<p>R holds time series in several ways, and fcutils takes most of them.
+A <em>wide</em> data frame has a <code>time</code> column and one column
+per series. A <em>long</em> data frame stacks the series in three
+columns, <code>id</code> (the series name), <code>time</code> and
+<code>value</code>. An xts object is a matrix of values with dates
+attached to the rows, from the <a href="https://joshuaulrich.github.io/xts/" class="external-link">xts</a> package; it is
+convenient for arithmetic and for subsetting by date. The functions
+accept all of these, along with anything else that the <a href="https://docs.ropensci.org/tsbox/" class="external-link">tsbox</a> package reads, such as
+base R’s ts. They return the result in the format of the input.</p>
+<p>The package ships three wide tibbles of Hawaii data from UDAMAN,
+UHERO’s data system: <code>quarterly_data_example</code> (payroll jobs
+by industry, 1998–2025, in thousands), <code>monthly_data_example</code>
+(visitor arrivals and related series, in thousands) and
+<code>daily_data_example</code> (visitors present).</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">q</span> <span class="op">&lt;-</span> <span class="va">quarterly_data_example</span><span class="op">[</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"time"</span>, <span class="st">"E_NF_HI"</span>, <span class="st">"ECT_HI"</span><span class="op">)</span><span class="op">]</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">tail</a></span><span class="op">(</span><span class="va">q</span>, <span class="fl">3</span><span class="op">)</span></span>
@@ -159,6 +174,45 @@ column:</p>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> E_NF_HI 1998-01-01  531.</span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> E_NF_HI 1998-04-01  531.</span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> E_NF_HI 1998-07-01  533.</span></span></code></pre></div>
+</div>
+<div class="section level2">
+<h2 id="series-names">Series names<a class="anchor" aria-label="anchor" href="#series-names"></a>
+</h2>
+<p>The examples use UHERO’s series names. A name is a mnemonic for the
+concept, an <code>@</code>, the geography and a frequency:
+<code>E_NF@HI.Q</code> is nonfarm payroll jobs (<code>E_NF</code>) in
+Hawaii (<code>HI</code>), quarterly (<code>Q</code>). When fcutils
+downloads a series it drops the frequency and replaces <code>@</code>
+with <code>_</code>, so the column is called <code>E_NF_HI</code>. The
+series used below are:</p>
+<table class="table">
+<thead><tr class="header">
+<th>Name</th>
+<th>Series</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td><code>E_NF_HI</code></td>
+<td>nonfarm payroll jobs, all industries</td>
+</tr>
+<tr class="even">
+<td><code>ECT_HI</code></td>
+<td>construction jobs</td>
+</tr>
+<tr class="odd">
+<td><code>EAF_HI</code></td>
+<td>accommodation and food services jobs</td>
+</tr>
+<tr class="even">
+<td><code>EGV_HI</code></td>
+<td>government jobs</td>
+</tr>
+<tr class="odd">
+<td><code>VISNS_HI</code></td>
+<td>visitor arrivals, not seasonally adjusted (<code>NS</code>)</td>
+</tr>
+</tbody>
+</table>
 </div>
 <div class="section level2">
 <h2 id="dates">Dates<a class="anchor" aria-label="anchor" href="#dates"></a>
@@ -223,10 +277,8 @@ need a key, stored with <code><a href="../reference/set_api_key.html">set_api_ke
 <div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/get_series_src.html">get_series_src</a></span><span class="op">(</span><span class="st">"UNRATE"</span>, <span class="st">"fred"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/get_series_src.html">get_series_src</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"PAYEMS"</span>, <span class="st">"CPIAUCSL"</span><span class="op">)</span>, <span class="st">"fred"</span>, format <span class="op">=</span> <span class="st">"xts"</span><span class="op">)</span></span></code></pre></div>
-<p><a href="forecasting.html">Building a forecast</a> extends series
-into the forecast period, and <a href="growth-and-reporting.html">Growth
-rates, tables and plots</a> covers the transformations and the
-output.</p>
+<p>Next, <a href="forecasting.html">Building a forecast</a> extends
+series into the forecast period.</p>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside>

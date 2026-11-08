@@ -65,12 +65,16 @@
 
     
     
+<p>A series’ <em>history</em> ends at its last observation. Forecasting
+it means filling in the values from there to the end of the bank, from
+assumptions about how it will grow or where it will be at certain dates.
+fcutils calls this <em>extending</em> the series.</p>
 <p>This article takes the Hawaii payroll jobs in
 <code>quarterly_data_example</code>, whose history ends in 2025Q1, and
-builds a forecast to 2035 with the functions that extend series:
-<code><a href="../reference/extend.html">extend()</a></code>, <code><a href="../reference/addf.html">addf()</a></code>, <code><a href="../reference/disagg.html">disagg()</a></code>,
-<code><a href="../reference/multi_chain.html">multi_chain()</a></code> and <code><a href="../reference/aggr.html">aggr()</a></code>. The assumptions are
-made up for the example.</p>
+extends them to 2035 with <code><a href="../reference/extend.html">extend()</a></code>, <code><a href="../reference/addf.html">addf()</a></code>,
+<code><a href="../reference/disagg.html">disagg()</a></code> and <code><a href="../reference/multi_chain.html">multi_chain()</a></code>, then averages the
+result to years with <code><a href="../reference/aggr.html">aggr()</a></code>. The assumptions are made up
+for the example. If the bank or the series names are new to you, read <a href="getting-started.html">Getting started</a> first.</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://uhero.github.io/fcutils/">fcutils</a></span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/options.html" class="external-link">options</a></span><span class="op">(</span></span>
@@ -81,15 +85,19 @@ made up for the example.</p>
 <span><span class="va">jobs</span> <span class="op">&lt;-</span> <span class="va">q</span><span class="op">$</span><span class="va">E_NF_HI</span></span></code></pre></div>
 <p>Every series that <code><a href="../reference/extend.html">extend()</a></code> and <code><a href="../reference/addf.html">addf()</a></code>
 return runs from the bank start to the bank end, so results line up with
-each other and with the bank.</p>
+each other and with the bank. Before the last observation they hold the
+history; after it, the forecast.</p>
 <div class="section level2">
 <h2 id="growth-through-anchors">Growth through anchors<a class="anchor" aria-label="anchor" href="#growth-through-anchors"></a>
 </h2>
 <p>An <em>anchor</em> is a target value at a date. With
-<code>type = "growth"</code>, <code><a href="../reference/extend.html">extend()</a></code> draws the annualized
-growth rate of the series through the anchors in straight lines, holds
-the last anchor to the end of the bank, and compounds the level from the
-last observation.</p>
+<code>type = "growth"</code>, the anchors are growth rates, and they are
+<em>annualized</em>: the growth over one quarter, compounded over four
+quarters, so that 1.2 means a pace of 1.2% a year. <code><a href="../reference/extend.html">extend()</a></code>
+draws a straight line between the last observed growth rate and the
+first anchor, and between each anchor and the next. It holds the last
+anchor to the end of the bank. The level then grows from the last
+observation at those rates.</p>
 <p>Total jobs grew at an annualized 2.9% in 2025Q1. Here growth slows to
 1.2% by 2025Q4 and to 0.8% by 2027Q4:</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
@@ -186,15 +194,19 @@ up:</p>
 <div class="section level2">
 <h2 id="following-a-projection">Following a projection<a class="anchor" aria-label="anchor" href="#following-a-projection"></a>
 </h2>
-<p>With <code>type = "chain"</code>, <code><a href="../reference/extend.html">extend()</a></code> continues the
-series with the growth of another series, <code>path</code>. This suits
-a projection made elsewhere whose level differs from the history.
-Suppose an annual projection of government jobs for 2025–2035:</p>
+<p>Sometimes the forecast for a series comes from elsewhere, such as a
+projection by another agency. Its level may not match UHERO’s history,
+for example because it uses a different definition. With
+<code>type = "chain"</code>, <code><a href="../reference/extend.html">extend()</a></code> takes only the growth
+of the projection, <code>path</code>, and applies it to the series from
+its last observation. Suppose an annual projection of government jobs
+for 2025–2035:</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">gv_a</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/make_xts.html">make_xts</a></span><span class="op">(</span><span class="fl">2025</span>, val <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="fl">128.5</span>, by <span class="op">=</span> <span class="fl">0.8</span>, length.out <span class="op">=</span> <span class="fl">11</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
-<p><code><a href="../reference/disagg.html">disagg()</a></code> interpolates it to quarters whose averages
-equal the annual values. Without anything to follow at the end of the
-series, the interpolation bends toward zero growth over the last year;
+<p>The history is quarterly, so the projection must be quarterly too.
+<code><a href="../reference/disagg.html">disagg()</a></code> interpolates it to quarters whose averages equal
+the annual values. Without anything to follow at the end of the series,
+the interpolation bends toward zero growth over the last year;
 <code>extend_with = "last_growth"</code> prevents that by continuing the
 series at its last growth rate before interpolating.</p>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
@@ -223,10 +235,14 @@ series.</p>
 <div class="section level2">
 <h2 id="updating-a-forecast-bank">Updating a forecast bank<a class="anchor" aria-label="anchor" href="#updating-a-forecast-bank"></a>
 </h2>
-<p><code><a href="../reference/multi_chain.html">multi_chain()</a></code> works on many series at once. A common use
-is a new quarter of history: continue each series in the new history
-with the growth of the previous forecast. The previous forecast here is
-made up (history to 2023Q4, then 1% annualized growth):</p>
+<p><code><a href="../reference/multi_chain.html">multi_chain()</a></code> does the same for many series at once. A
+common use is updating a forecast when new data arrive. Suppose last
+time’s forecast was built on history to 2023Q4, and the data now run to
+2025Q1. Rather than set every assumption again, keep the growth that the
+old forecast had for each series, and apply it from the new last
+observation.</p>
+<p>The old forecast here is made up: each series extended from 2023Q4 at
+1% annualized growth.</p>
 <div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">old_hist</span> <span class="op">&lt;-</span> <span class="va">q</span><span class="op">[</span><span class="fu"><a href="../reference/p.html">p</a></span><span class="op">(</span><span class="st">""</span>, <span class="fl">2023.4</span><span class="op">)</span><span class="op">]</span></span>
 <span><span class="va">old_fc</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/do.call.html" class="external-link">do.call</a></span><span class="op">(</span><span class="va">cbind</span>, <span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">lapply</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">old_hist</span><span class="op">)</span>, <span class="kw">function</span><span class="op">(</span><span class="va">n</span><span class="op">)</span> <span class="op">{</span></span>
@@ -241,21 +257,26 @@ made up (history to 2023Q4, then 1% annualized growth):</p>
 <span><span class="co">#&gt; 2025-01-01  647.90  39.40  13.16</span></span>
 <span><span class="co">#&gt; 2025-04-01  649.52  39.50  13.20</span></span>
 <span><span class="co">#&gt; 2025-07-01  651.13  39.59  13.23</span></span></code></pre></div>
-<p>All 30 series keep their history to 2025Q1 and then grow at 1%, from
-the new levels. Series pair up by name; <code>match = "stem"</code>
-pairs names that differ only in a frequency or solution ending, such as
-<code>UR_AT_US_A</code> and <code>UR_AT_US_SOLQ</code>. For rates such
-as the unemployment rate, <code>method = "diff"</code> continues with
-the change in points instead of the growth rate.
+<p>All 30 series keep their new history to 2025Q1 and then grow at 1%,
+from the new levels. Each series in the history is paired with the
+series of the same name in the old forecast. If the names differ in
+their endings, such as <code>UR_AT_US_A</code> (annual) and
+<code>UR_AT_US_SOLQ</code> (quarterly model output),
+<code>match = "stem"</code> pairs them on the part before the ending.
+For rates such as the unemployment rate, <code>method = "diff"</code>
+continues with the change in points instead of the growth rate.
 <code>direction = "backward"</code> extends a short history back in time
 with the growth of a longer series.</p>
 </div>
 <div class="section level2">
 <h2 id="annual-results">Annual results<a class="anchor" aria-label="anchor" href="#annual-results"></a>
 </h2>
-<p><code><a href="../reference/aggr.html">aggr()</a></code> averages the quarters of each complete year. Only
-complete years count, so a year with three quarters of data has no
-value. For flows that add up, use <code>conv_type = "sum"</code>:</p>
+<p>Forecasts are usually reported as annual figures. <code><a href="../reference/aggr.html">aggr()</a></code>
+averages the quarters of each complete year. Only complete years count,
+so a year with three quarters of data has no value. Jobs are a count at
+a point in time, so the average is right. For flows, such as visitor
+arrivals, the annual figure is the total, so use
+<code>conv_type = "sum"</code>:</p>
 <div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">fc</span> <span class="op">&lt;-</span> <span class="fu">tsbox</span><span class="fu">::</span><span class="fu"><a href="https://docs.ropensci.org/tsbox/reference/ts_c.html" class="external-link">ts_c</a></span><span class="op">(</span>E_NF_HI <span class="op">=</span> <span class="va">jobs_fc</span>, ECT_HI <span class="op">=</span> <span class="va">ct_fc</span>, EGV_HI <span class="op">=</span> <span class="va">gv_fc</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">round</a></span><span class="op">(</span><span class="fu"><a href="../reference/aggr.html">aggr</a></span><span class="op">(</span><span class="va">fc</span><span class="op">)</span><span class="op">[</span><span class="fu"><a href="../reference/p.html">p</a></span><span class="op">(</span><span class="fl">2024</span>, <span class="fl">2028</span><span class="op">)</span><span class="op">]</span>, <span class="fl">1</span><span class="op">)</span></span>
