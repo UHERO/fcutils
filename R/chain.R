@@ -2,7 +2,7 @@
 # time series utility functions ----
 # **************************
 
-#' Rename y's series after their partners in x (used by `multi_chain()`)
+#' Rename y's series after their partners in x (used by `chain()`)
 #'
 #' @param x_wide,y_wide wide tibbles with a time column
 #' @param how "name" or "stem"
@@ -24,7 +24,7 @@ match_names <- function(x_wide, y_wide, how) {
     dup <- unique(stem(side[[1]])[duplicated(stem(side[[1]]))])
     if (length(dup) > 0) {
       stop(
-        "multi_chain(): several series in ", side[[2]], " share the stem ",
+        "chain(): several series in ", side[[2]], " share the stem ",
         stringr::str_flatten(dup, collapse = ", "),
         call. = FALSE
       )
@@ -40,7 +40,7 @@ match_names <- function(x_wide, y_wide, how) {
 }
 
 
-#' Chain one series with another (used by `multi_chain()`)
+#' Chain one series with another (used by `chain()`)
 #'
 #' @param a,b tibbles with columns id, time, value and no missing values
 #' @param method "ratio" or "diff"
@@ -55,7 +55,7 @@ chain_1 <- function(a, b, method, direction) {
   link <- function(t) {
     vb <- b$value[b$time == t]
     if (length(vb) != 1) {
-      stop("multi_chain(): y has no value at ", t, call. = FALSE)
+      stop("chain(): y has no value at ", t, call. = FALSE)
     }
     va <- a$value[a$time == t]
     function(v) if (method == "ratio") v * va / vb else v + va - vb
@@ -105,19 +105,19 @@ chain_1 <- function(a, b, method, direction) {
 #' @examples
 #' quarterly_data_example |>
 #'   dplyr::filter(time < as.Date("2000-01-01")) |>
-#'   multi_chain(quarterly_data_example, ids = c("E_NF_HI", "ECT_HI"))
+#'   chain(quarterly_data_example, ids = c("E_NF_HI", "ECT_HI"))
 #' quarterly_data_example |>
 #'   dplyr::filter(time < as.Date("2000-01-01")) |>
-#'   multi_chain(quarterly_data_example)
+#'   chain(quarterly_data_example)
 #' # continue an annual history with the changes of a forecast
 #' hist <- make_xts(2020, val = c(8.1, 5.4, 3.6, 3.6))
 #' fcst <- make_xts(2022, val = c(3.5, 3.7, 4.0, 4.2, 4.3))
-#' multi_chain(hist, fcst, method = "diff", direction = "forward")
+#' chain(hist, fcst, method = "diff", direction = "forward")
 #' # pair series by name stem: UR_A with UR_SOLA, LF_A with LF_SOLA
 #' hist <- make_xts(2020, val = tibble::tibble(UR_A = c(8.1, 5.4, 3.6), LF_A = c(160, 161, 164)))
 #' fcst <- make_xts(2022, val = tibble::tibble(UR_SOLA = c(3.6, 3.8, 4.1), LF_SOLA = c(165, 166, 168)))
-#' multi_chain(hist, fcst, match = "stem", direction = "forward")
-multi_chain <- function(
+#' chain(hist, fcst, match = "stem", direction = "forward")
+chain <- function(
   x,
   y,
   ids = NULL,
