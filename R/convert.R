@@ -174,6 +174,49 @@ is_wide <- function(x) {
 }
 
 
+#' TRUE if no series in a long table misses a date
+#'
+#' Each series must be one sorted run of Dates, equally spaced in days (daily,
+#' weekly) or in months on the same day of the month (monthly, quarterly,
+#' annual). Then `tsbox::ts_regular()` would return the rows unchanged.
+#'
+#' @param x long tibble with columns (id,) time, value
+#' @noRd
+dates_complete <- function(x) {
+  if (!(identical(names(x), c("id", "time", "value")) ||
+    identical(names(x), c("time", "value")))) {
+    return(FALSE)
+  }
+  t <- x$time
+  if (!inherits(t, "Date") || anyNA(t)) {
+    return(FALSE)
+  }
+  id <- if ("id" %in% names(x)) as.character(x$id) else rep("", length(t))
+  runs <- rle(id)
+  # each series must be one contiguous block
+  if (anyDuplicated(runs$values)) {
+    return(FALSE)
+  }
+  ends <- cumsum(runs$lengths)
+  starts <- ends - runs$lengths + 1L
+  days <- as.numeric(t)
+  months <- lubridate::year(t) * 12L + lubridate::month(t)
+  mday <- lubridate::mday(t)
+  all(purrr::map2_lgl(starts, ends, function(s, e) {
+    if (e - s < 1L) {
+      return(TRUE)
+    }
+    i <- s:e
+    dd <- diff(days[i])
+    if (all(dd > 0) && max(dd) - min(dd) < 1) {
+      return(TRUE)
+    }
+    dm <- diff(months[i])
+    all(dm > 0) && all(dm == dm[1]) && all(mday[i] == mday[s])
+  }))
+}
+
+
 #' Return a long result in the class of the input
 #'
 #' The other half of `conv_long(x, ser_info = TRUE)`: wide if x was wide,
@@ -266,8 +309,16 @@ conv_long <- function(x, ser_info = FALSE) {
         .
       }
     } %>%
-    tsbox::ts_default() %>%
-    tsbox::ts_regular()
+    tsbox::ts_default()
+  # ts_regular() fills missing dates; it is slow on large banks even when no
+  # date is missing, because it converts monthly and quarterly data back and
+  # forth to check them
+  x_mod <- if (dates_complete(x_mod)) {
+    # what ts_regular() returns for complete dates, without its checks
+    tsbox::copy_class(tsbox::ts_dts(x_mod), x_mod)
+  } else {
+    tsbox::ts_regular(x_mod)
+  }
 
   if (ser_info) {
     attr(x_mod, "was_wide") <- was_wide
