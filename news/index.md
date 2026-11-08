@@ -1,5 +1,122 @@
 # Changelog
 
+## fcutils 0.1.2
+
+Results are unchanged.
+
+- `multi_chain(verbose = FALSE)` does not print the series it extends.
+- Faster growth rates and aggregation, with identical results. For
+  monthly, quarterly and annual data with no missing dates,
+  [`pcmp()`](https://uhero.github.io/fcutils/reference/pcmp.md), the
+  to-date growth functions and
+  [`ptd_gr()`](https://uhero.github.io/fcutils/reference/ptd_gr.md) take
+  a lag by position within each series instead of through
+  [`tsbox::ts_lag()`](https://docs.ropensci.org/tsbox/reference/ts_lag.html),
+  and [`aggr()`](https://uhero.github.io/fcutils/reference/aggr.md) and
+  [`faggr()`](https://uhero.github.io/fcutils/reference/faggr.md) take
+  grouped means or sums instead of
+  [`tsbox::ts_frequency()`](https://docs.ropensci.org/tsbox/reference/ts_frequency.html)
+  (when missing values sit only at the start or end of each series).
+  Anything else goes through tsbox as before. On 200 quarterly series
+  over a century:
+  [`aggr()`](https://uhero.github.io/fcutils/reference/aggr.md) 0.4 s
+  (4.5 s in 0.1.0),
+  [`pcmp()`](https://uhero.github.io/fcutils/reference/pcmp.md) 0.14 s
+  (3.4 s),
+  [`ytd_gr()`](https://uhero.github.io/fcutils/reference/ytd_gr.md) 0.3
+  s (3.3 s),
+  [`ptd_gr()`](https://uhero.github.io/fcutils/reference/ptd_gr.md) 0.4
+  s (3.6 s). A test compares each fast path with tsbox on random series.
+- Faster on large banks, with identical results:
+  [`conv_long()`](https://uhero.github.io/fcutils/reference/conv_long.md),
+  which most functions call first, skips
+  [`tsbox::ts_regular()`](https://docs.ropensci.org/tsbox/reference/ts_regular.html)’s
+  checks when no date is missing (0.9 s to 0.07 s on 200 quarterly
+  series over a century), and
+  [`multi_chain()`](https://uhero.github.io/fcutils/reference/multi_chain.md)
+  places each chained series back by date instead of a join per series.
+  On that bank
+  [`multi_chain()`](https://uhero.github.io/fcutils/reference/multi_chain.md)
+  takes 0.7 s instead of 3 s,
+  [`aggr()`](https://uhero.github.io/fcutils/reference/aggr.md) 2.7 s
+  instead of 4.5 s and
+  [`pcmp()`](https://uhero.github.io/fcutils/reference/pcmp.md) 1.5 s
+  instead of 3.5 s.
+- Less fixed cost per call, with identical results.
+  [`conv_long()`](https://uhero.github.io/fcutils/reference/conv_long.md)
+  no longer asks
+  [`tsbox::ts_summary()`](https://docs.ropensci.org/tsbox/reference/ts_summary.html)
+  for the name of a single series that already has one, and
+  [`find_start()`](https://uhero.github.io/fcutils/reference/find_start.md)
+  and
+  [`find_end()`](https://uhero.github.io/fcutils/reference/find_end.md)
+  take the first and last date with a value directly. On one quarterly
+  series
+  [`conv_long()`](https://uhero.github.io/fcutils/reference/conv_long.md)
+  takes 4 ms instead of 9 ms and
+  [`find_end()`](https://uhero.github.io/fcutils/reference/find_end.md)
+  5 ms instead of 13 ms; every function that starts with
+  [`conv_long()`](https://uhero.github.io/fcutils/reference/conv_long.md)
+  gains about 4 ms.
+- [`get_series_exp()`](https://uhero.github.io/fcutils/reference/get_series_exp.md)
+  combines the downloaded series in one step instead of one pair at a
+  time (200 series: 0.02 s instead of 2 s).
+- [`ytd_cum()`](https://uhero.github.io/fcutils/reference/ytd_cum.md),
+  [`ytd_gr()`](https://uhero.github.io/fcutils/reference/ytd_gr.md),
+  [`fytd_cum()`](https://uhero.github.io/fcutils/reference/fytd_cum.md),
+  [`fytd_gr()`](https://uhero.github.io/fcutils/reference/fytd_gr.md),
+  [`mtd_cum()`](https://uhero.github.io/fcutils/reference/mtd_cum.md),
+  [`mtd_gr()`](https://uhero.github.io/fcutils/reference/mtd_gr.md),
+  [`ptd_cum()`](https://uhero.github.io/fcutils/reference/ptd_cum.md)
+  and [`ptd_gr()`](https://uhero.github.io/fcutils/reference/ptd_gr.md)
+  share one implementation. Old and new give identical results on
+  monthly, quarterly and daily data in every format.
+- [`plot_comp_2()`](https://uhero.github.io/fcutils/reference/plot_comp_2.md)
+  and
+  [`plot_comp_3()`](https://uhero.github.io/fcutils/reference/plot_comp_3.md)
+  share one implementation; the index panel is the only difference.
+
+## fcutils 0.1.1
+
+Results are unchanged, except where
+[`faggr()`](https://uhero.github.io/fcutils/reference/faggr.md) used to
+fail.
+
+- `ts_rebase()` is renamed
+  [`rebase()`](https://uhero.github.io/fcutils/reference/rebase.md),
+  because the `ts_` prefix marks tsbox functions. No other installed
+  package exports a
+  [`rebase()`](https://uhero.github.io/fcutils/reference/rebase.md).
+
+- [`faggr()`](https://uhero.github.io/fcutils/reference/faggr.md)
+  aggregates all series at once instead of each series and year
+  separately: 0.4 s instead of 33 s for 20 quarterly series over a
+  century. It no longer stops on a fiscal year with no values (a series
+  that starts or ends with missing values).
+
+- [`aggr()`](https://uhero.github.io/fcutils/reference/aggr.md) and
+  [`pcmp()`](https://uhero.github.io/fcutils/reference/pcmp.md)
+  aggregate or compute all series at once, and
+  [`conv_long()`](https://uhero.github.io/fcutils/reference/conv_long.md)
+  reads series names from the id column instead of `ts_summary()`. On a
+  bank of 200 quarterly series over a century,
+  [`aggr()`](https://uhero.github.io/fcutils/reference/aggr.md) takes
+  3.5 s instead of 4.5 s and
+  [`pcmp()`](https://uhero.github.io/fcutils/reference/pcmp.md) 2.0 s
+  instead of 3.5 s; most of what remains is
+  [`tsbox::ts_frequency()`](https://docs.ropensci.org/tsbox/reference/ts_frequency.html)
+  and
+  [`tsbox::ts_regular()`](https://docs.ropensci.org/tsbox/reference/ts_regular.html).
+
+- [`get_series()`](https://uhero.github.io/fcutils/reference/get_series.md)
+  and
+  [`get_series_exp()`](https://uhero.github.io/fcutils/reference/get_series_exp.md)
+  share their request, naming and format code. An unknown `rename` or
+  `format` now stops with a message.
+
+- The code is split into files by topic, and an internal helper replaces
+  the block that returned results in the input’s class in 19 functions.
+
 ## fcutils 0.1.0
 
 ### Breaking changes
@@ -32,9 +149,7 @@
   last day of the period given as its end: `p(2019.4, 2026)` is
   `"2019-10-01/2026-12-31"`, not `.../2026-01-01`.
 
-- `index()` is renamed
-  [`ts_rebase()`](https://uhero.github.io/fcutils/reference/ts_rebase.md),
-  because it masked
+- `index()` is renamed `ts_rebase()`, because it masked
   [`zoo::index()`](https://rdrr.io/pkg/zoo/man/index.html) and
   `xts::index()`. There is no deprecated alias: it would keep masking
   them, and its help page would overwrite the site’s reference index.

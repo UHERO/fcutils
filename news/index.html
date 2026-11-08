@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">fcutils</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.2</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -16,6 +16,12 @@
 
     <div id="navbar" class="collapse navbar-collapse ms-3">
       <ul class="navbar-nav me-auto"><li class="nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
+<li class="nav-item dropdown">
+  <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
+  <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/getting-started.html">Getting started</a></li>
+    <li><a class="dropdown-item" href="../articles/forecasting.html">Building a forecast</a></li>
+    <li><a class="dropdown-item" href="../articles/growth-and-reporting.html">Growth rates, tables and plots</a></li>
+  </ul></li>
 <li class="active nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
       </ul><ul class="navbar-nav"><li class="nav-item"><form class="form-inline" role="search">
  <input class="form-control" type="search" name="search-input" id="search-input" autocomplete="off" aria-label="Search site" placeholder="Search for" data-search-index="../search.json"></form></li>
@@ -32,6 +38,30 @@
     </div>
 
     <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.1.2" id="fcutils-012">fcutils 0.1.2<a class="anchor" aria-label="anchor" href="#fcutils-012"></a></h2>
+<p>Results are unchanged.</p>
+<ul><li>
+<code>multi_chain(verbose = FALSE)</code> does not print the series it extends.</li>
+<li>Faster growth rates and aggregation, with identical results. For monthly, quarterly and annual data with no missing dates, <code><a href="../reference/pcmp.html">pcmp()</a></code>, the to-date growth functions and <code><a href="../reference/ptd_gr.html">ptd_gr()</a></code> take a lag by position within each series instead of through <code><a href="https://docs.ropensci.org/tsbox/reference/ts_lag.html" class="external-link">tsbox::ts_lag()</a></code>, and <code><a href="../reference/aggr.html">aggr()</a></code> and <code><a href="../reference/faggr.html">faggr()</a></code> take grouped means or sums instead of <code><a href="https://docs.ropensci.org/tsbox/reference/ts_frequency.html" class="external-link">tsbox::ts_frequency()</a></code> (when missing values sit only at the start or end of each series). Anything else goes through tsbox as before. On 200 quarterly series over a century: <code><a href="../reference/aggr.html">aggr()</a></code> 0.4 s (4.5 s in 0.1.0), <code><a href="../reference/pcmp.html">pcmp()</a></code> 0.14 s (3.4 s), <code><a href="../reference/ytd_gr.html">ytd_gr()</a></code> 0.3 s (3.3 s), <code><a href="../reference/ptd_gr.html">ptd_gr()</a></code> 0.4 s (3.6 s). A test compares each fast path with tsbox on random series.</li>
+<li>Faster on large banks, with identical results: <code><a href="../reference/conv_long.html">conv_long()</a></code>, which most functions call first, skips <code><a href="https://docs.ropensci.org/tsbox/reference/ts_regular.html" class="external-link">tsbox::ts_regular()</a></code>’s checks when no date is missing (0.9 s to 0.07 s on 200 quarterly series over a century), and <code><a href="../reference/multi_chain.html">multi_chain()</a></code> places each chained series back by date instead of a join per series. On that bank <code><a href="../reference/multi_chain.html">multi_chain()</a></code> takes 0.7 s instead of 3 s, <code><a href="../reference/aggr.html">aggr()</a></code> 2.7 s instead of 4.5 s and <code><a href="../reference/pcmp.html">pcmp()</a></code> 1.5 s instead of 3.5 s.</li>
+<li>Less fixed cost per call, with identical results. <code><a href="../reference/conv_long.html">conv_long()</a></code> no longer asks <code><a href="https://docs.ropensci.org/tsbox/reference/ts_summary.html" class="external-link">tsbox::ts_summary()</a></code> for the name of a single series that already has one, and <code><a href="../reference/find_start.html">find_start()</a></code> and <code><a href="../reference/find_end.html">find_end()</a></code> take the first and last date with a value directly. On one quarterly series <code><a href="../reference/conv_long.html">conv_long()</a></code> takes 4 ms instead of 9 ms and <code><a href="../reference/find_end.html">find_end()</a></code> 5 ms instead of 13 ms; every function that starts with <code><a href="../reference/conv_long.html">conv_long()</a></code> gains about 4 ms.</li>
+<li>
+<code><a href="../reference/get_series_exp.html">get_series_exp()</a></code> combines the downloaded series in one step instead of one pair at a time (200 series: 0.02 s instead of 2 s).</li>
+<li>
+<code><a href="../reference/ytd_cum.html">ytd_cum()</a></code>, <code><a href="../reference/ytd_gr.html">ytd_gr()</a></code>, <code><a href="../reference/fytd_cum.html">fytd_cum()</a></code>, <code><a href="../reference/fytd_gr.html">fytd_gr()</a></code>, <code><a href="../reference/mtd_cum.html">mtd_cum()</a></code>, <code><a href="../reference/mtd_gr.html">mtd_gr()</a></code>, <code><a href="../reference/ptd_cum.html">ptd_cum()</a></code> and <code><a href="../reference/ptd_gr.html">ptd_gr()</a></code> share one implementation. Old and new give identical results on monthly, quarterly and daily data in every format.</li>
+<li>
+<code><a href="../reference/plot_comp_2.html">plot_comp_2()</a></code> and <code><a href="../reference/plot_comp_3.html">plot_comp_3()</a></code> share one implementation; the index panel is the only difference.</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.1.1" id="fcutils-011">fcutils 0.1.1<a class="anchor" aria-label="anchor" href="#fcutils-011"></a></h2>
+<p>Results are unchanged, except where <code><a href="../reference/faggr.html">faggr()</a></code> used to fail.</p>
+<ul><li><p><code>ts_rebase()</code> is renamed <code><a href="../reference/rebase.html">rebase()</a></code>, because the <code>ts_</code> prefix marks tsbox functions. No other installed package exports a <code><a href="../reference/rebase.html">rebase()</a></code>.</p></li>
+<li><p><code><a href="../reference/faggr.html">faggr()</a></code> aggregates all series at once instead of each series and year separately: 0.4 s instead of 33 s for 20 quarterly series over a century. It no longer stops on a fiscal year with no values (a series that starts or ends with missing values).</p></li>
+<li><p><code><a href="../reference/aggr.html">aggr()</a></code> and <code><a href="../reference/pcmp.html">pcmp()</a></code> aggregate or compute all series at once, and <code><a href="../reference/conv_long.html">conv_long()</a></code> reads series names from the id column instead of <code>ts_summary()</code>. On a bank of 200 quarterly series over a century, <code><a href="../reference/aggr.html">aggr()</a></code> takes 3.5 s instead of 4.5 s and <code><a href="../reference/pcmp.html">pcmp()</a></code> 2.0 s instead of 3.5 s; most of what remains is <code><a href="https://docs.ropensci.org/tsbox/reference/ts_frequency.html" class="external-link">tsbox::ts_frequency()</a></code> and <code><a href="https://docs.ropensci.org/tsbox/reference/ts_regular.html" class="external-link">tsbox::ts_regular()</a></code>.</p></li>
+<li><p><code><a href="../reference/get_series.html">get_series()</a></code> and <code><a href="../reference/get_series_exp.html">get_series_exp()</a></code> share their request, naming and format code. An unknown <code>rename</code> or <code>format</code> now stops with a message.</p></li>
+<li><p>The code is split into files by topic, and an internal helper replaces the block that returned results in the input’s class in 19 functions.</p></li>
+</ul></div>
+    <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.1.0" id="fcutils-010">fcutils 0.1.0<a class="anchor" aria-label="anchor" href="#fcutils-010"></a></h2>
 <div class="section level3">
 <h3 id="breaking-changes-0-1-0">Breaking changes<a class="anchor" aria-label="anchor" href="#breaking-changes-0-1-0"></a></h3>
@@ -46,7 +76,7 @@
 </li>
 <li><p><code><a href="../reference/to_ymd.html">to_ymd()</a></code> reads a fixed set of forms and stops with an error naming any value it cannot read, where it used to return <code>NA</code> or guess. Accepted: years (<code>2019</code>), quarters (<code>2019.4</code>, <code>"2019Q4"</code>, <code>201904</code>), months (<code>"2019M10"</code>, <code>"2019-10"</code>) and days (<code>"2019-10-15"</code>, <code>20191015</code>, Dates). Months cannot be numbers, because <code>2019.10</code> equals <code>2019.1</code>.</p></li>
 <li><p><code><a href="../reference/p.html">p()</a></code> ends at the last day of the period given as its end: <code>p(2019.4, 2026)</code> is <code>"2019-10-01/2026-12-31"</code>, not <code>.../2026-01-01</code>.</p></li>
-<li><p><code>index()</code> is renamed <code><a href="../reference/ts_rebase.html">ts_rebase()</a></code>, because it masked <code><a href="https://rdrr.io/pkg/zoo/man/index.html" class="external-link">zoo::index()</a></code> and <code>xts::index()</code>. There is no deprecated alias: it would keep masking them, and its help page would overwrite the site’s reference index. Replace <code>index(x, ...)</code> with <code>ts_rebase(x, ...)</code>.</p></li>
+<li><p><code>index()</code> is renamed <code>ts_rebase()</code>, because it masked <code><a href="https://rdrr.io/pkg/zoo/man/index.html" class="external-link">zoo::index()</a></code> and <code>xts::index()</code>. There is no deprecated alias: it would keep masking them, and its help page would overwrite the site’s reference index. Replace <code>index(x, ...)</code> with <code>ts_rebase(x, ...)</code>.</p></li>
 </ul></div>
 <div class="section level3">
 <h3 id="new-functions-0-1-0">New functions<a class="anchor" aria-label="anchor" href="#new-functions-0-1-0"></a></h3>

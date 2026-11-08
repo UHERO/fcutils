@@ -163,8 +163,8 @@ get_series(c("VADCNS@HI.Q", "EAFNS@HI.Q", "YLAF@HI.Q", "PRM@HI.Q"), raw  = TRUE,
   : Extend a series using year over year growth
 - [`ma()`](https://uhero.github.io/fcutils/reference/ma.md) : Backward
   looking moving average
-- [`ts_rebase()`](https://uhero.github.io/fcutils/reference/ts_rebase.md)
-  : Rebase series to an index (wrapper around tsbox::ts_index())
+- [`rebase()`](https://uhero.github.io/fcutils/reference/rebase.md) :
+  Rebase series to an index (wrapper around tsbox::ts_index())
 - [`fytd_cum()`](https://uhero.github.io/fcutils/reference/fytd_cum.md)
   : Fiscal year to date sum or average
 - [`mtd_cum()`](https://uhero.github.io/fcutils/reference/mtd_cum.md) :
@@ -270,3 +270,13 @@ get_series(c("VADCNS@HI.Q", "EAFNS@HI.Q", "YLAF@HI.Q", "PRM@HI.Q"), raw  = TRUE,
   [`fcutils-package`](https://uhero.github.io/fcutils/reference/fcutils-package.md)
   : fcutils: Time Series and Forecast Utilities
 
+# Articles
+
+### Articles
+
+- [Getting
+  started](https://uhero.github.io/fcutils/articles/getting-started.md):
+- [Building a
+  forecast](https://uhero.github.io/fcutils/articles/forecasting.md):
+- [Growth rates, tables and
+  plots](https://uhero.github.io/fcutils/articles/growth-and-reporting.md):

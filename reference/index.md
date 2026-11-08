@@ -105,8 +105,8 @@
   : Extend a series using year over year growth
 - [`ma()`](https://uhero.github.io/fcutils/reference/ma.md) : Backward
   looking moving average
-- [`ts_rebase()`](https://uhero.github.io/fcutils/reference/ts_rebase.md)
-  : Rebase series to an index (wrapper around tsbox::ts_index())
+- [`rebase()`](https://uhero.github.io/fcutils/reference/rebase.md) :
+  Rebase series to an index (wrapper around tsbox::ts_index())
 - [`fytd_cum()`](https://uhero.github.io/fcutils/reference/fytd_cum.md)
   : Fiscal year to date sum or average
 - [`mtd_cum()`](https://uhero.github.io/fcutils/reference/mtd_cum.md) :

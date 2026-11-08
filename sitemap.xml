@@ -2,6 +2,10 @@
 <url><loc>https://uhero.github.io/fcutils/404.html</loc></url>
 <url><loc>https://uhero.github.io/fcutils/LICENSE-text.html</loc></url>
 <url><loc>https://uhero.github.io/fcutils/LICENSE.html</loc></url>
+<url><loc>https://uhero.github.io/fcutils/articles/forecasting.html</loc></url>
+<url><loc>https://uhero.github.io/fcutils/articles/getting-started.html</loc></url>
+<url><loc>https://uhero.github.io/fcutils/articles/growth-and-reporting.html</loc></url>
+<url><loc>https://uhero.github.io/fcutils/articles/index.html</loc></url>
 <url><loc>https://uhero.github.io/fcutils/authors.html</loc></url>
 <url><loc>https://uhero.github.io/fcutils/index.html</loc></url>
 <url><loc>https://uhero.github.io/fcutils/news/index.html</loc></url>
@@ -61,6 +65,7 @@
 <url><loc>https://uhero.github.io/fcutils/reference/py.html</loc></url>
 <url><loc>https://uhero.github.io/fcutils/reference/qtrs.html</loc></url>
 <url><loc>https://uhero.github.io/fcutils/reference/quarterly_data_example.html</loc></url>
+<url><loc>https://uhero.github.io/fcutils/reference/rebase.html</loc></url>
 <url><loc>https://uhero.github.io/fcutils/reference/rename_udaman.html</loc></url>
 <url><loc>https://uhero.github.io/fcutils/reference/save_plot_list.html</loc></url>
 <url><loc>https://uhero.github.io/fcutils/reference/set_api_key.html</loc></url>
@@ -70,7 +75,6 @@
 <url><loc>https://uhero.github.io/fcutils/reference/span.html</loc></url>
 <url><loc>https://uhero.github.io/fcutils/reference/sum_pattern.html</loc></url>
 <url><loc>https://uhero.github.io/fcutils/reference/to_ymd.html</loc></url>
-<url><loc>https://uhero.github.io/fcutils/reference/ts_rebase.html</loc></url>
 <url><loc>https://uhero.github.io/fcutils/reference/uh_colors.html</loc></url>
 <url><loc>https://uhero.github.io/fcutils/reference/uh_colors_50.html</loc></url>
 <url><loc>https://uhero.github.io/fcutils/reference/uh_colors_light.html</loc></url>

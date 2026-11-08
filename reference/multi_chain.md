@@ -12,7 +12,8 @@ multi_chain(
   ids = NULL,
   method = c("ratio", "diff"),
   direction = c("both", "forward", "backward"),
-  match = c("name", "stem")
+  match = c("name", "stem"),
+  verbose = TRUE
 )
 ```
 
@@ -49,6 +50,10 @@ multi_chain(
   ending (`_A`, `_Q`, `_M`, `_SOLA`, `_SOLQ`, `_SOLM`, or the same with
   `.`), so `UR_AT_US_A` pairs with `UR_AT_US_SOLQ`. A single series in x
   always pairs with a single series in y. The result keeps x's names.
+
+- verbose:
+
+  if TRUE (default), list the series being extended
 
 ## Value
 
