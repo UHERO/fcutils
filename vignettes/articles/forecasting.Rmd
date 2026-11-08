@@ -100,6 +100,19 @@ ramps <- tibble::tribble(
 adj <- addf(ramps, per = "quarter")
 ```
 
+`adj` is a quarterly series over the whole bank. Adding it to the smooth
+path from the previous section gives the adjusted share. Side by side:
+
+```{r}
+share_fc <- paths$stine + adj
+round(tsbox::ts_c(share = paths$stine, adj = adj, adjusted = share_fc)[p(2025.4, 2030.1)], 3)
+```
+
+The first ramp climbs from 0 in 2026Q1 to 0.3 in 2027Q4, by 0.3 / 7 =
+0.043 points a quarter. The second starts at 0.3 in 2028Q1 and falls back
+to 0 by 2029Q4. Before and after the ramps `adj` is zero, so the adjusted
+share still meets the 6.0 anchor in 2029Q4.
+
 The dates can also be strings (`"2026Q1"`), and the same add-factor can be
 written as points joined by straight lines:
 
@@ -112,11 +125,11 @@ ramps <- tibble::tribble(
 addf(2026.1 ~ 0, 2027.4 ~ 0.3, 2028.1 ~ 0.3, 2029.4 ~ 0)
 ```
 
-Construction jobs follow from the adjusted share and the total. Because all
-three series span the bank, ordinary arithmetic lines them up:
+Construction jobs follow from the adjusted share and the total. Because
+the share and the total both span the bank, ordinary arithmetic lines them
+up:
 
 ```{r}
-share_fc <- extend(share, 2026.4 ~ 6.4, 2029.4 ~ 6.0, interp = "stine") + adj
 ct_fc <- share_fc / 100 * jobs_fc
 round(ct_fc[p(2025.1, 2026.4)], 2)
 ```
@@ -131,7 +144,7 @@ to the series from its last observation. Suppose an annual projection of
 government jobs for 2025–2035:
 
 ```{r}
-gv_a <- make_xts(2025, val = seq(128.5, by = 0.8, length.out = 11))
+gv_a <- make_xts(2025, val = seq(131, by = 0.8, length.out = 11))
 ```
 
 The history is quarterly, so the projection must be quarterly too.
@@ -143,7 +156,7 @@ last growth rate before interpolating.
 
 ```{r}
 gv_q <- disagg(gv_a, extend_with = "last_growth")
-round(agg(gv_q)[p(2025, 2027)], 3)
+round(tsbox::ts_c(annual = gv_a, quarterly_avg = agg(gv_q))[p(2025, 2027)], 3)
 ```
 
 `extend()` then continues the quarterly history with the growth of the
@@ -153,6 +166,16 @@ interpolated projection:
 gv_fc <- extend(q$EGV_HI, path = gv_q, type = "chain")
 gv <- tsbox::ts_c(history = q$EGV_HI, projection = gv_q, forecast = gv_fc)
 round(gv[p(2024.4, 2025.4)], 2)
+```
+
+In 2025Q1 the projection is
+`r round(as.numeric(gv_q["2025-01-01"] - q$EGV_HI["2025-01-01"]), 1)`
+thousand above history. The forecast starts from history and grows from
+quarter to quarter at the projection's rate, so the gap stays the same in
+percent:
+
+```{r}
+round(pcmp(gv[, c("projection", "forecast")], lag = 1)[p(2025.2, 2025.4)], 3)
 ```
 
 `join = "shift"` instead moves the projection by a constant to meet the
@@ -166,25 +189,42 @@ built on history to 2023Q4, and the data now run to 2025Q1. Rather than set
 every assumption again, keep the growth that the old forecast had for each
 series, and apply it from the new last observation.
 
-The old forecast here is made up: each series extended from 2023Q4 at 1%
-annualized growth.
+The old forecast here is made up: each of the 30 series extended from
+2023Q4 at 1% annualized growth. `extend()` works on one series at a time.
+To apply it to all of them, stack the series in a long table, extend each
+group, and turn the result back into xts:
 
-```{r}
+```{r, message = FALSE}
+library(dplyr)
+
 old_hist <- q[p("", 2023.4)]
-old_fc <- do.call(cbind, lapply(names(old_hist), function(n) {
-  extend(old_hist[, n], 2024.1 ~ 1, type = "growth")
-}))
-names(old_fc) <- names(old_hist)
-
-new_fc <- chain(q, old_fc, direction = "forward", verbose = FALSE)
-round(new_fc[p(2024.4, 2025.3), 1:3], 2)
+old_fc <- old_hist |>
+  conv_long() |>
+  group_by(id) |>
+  group_modify(\(series, key) extend(series, 2024.1 ~ 1, type = "growth")) |>
+  ungroup() |>
+  conv_xts()
 ```
 
-All 30 series keep their new history to 2025Q1 and then grow at 1%, from
-the new levels. Each series in the history is paired with the series of the
-same name in the old forecast. If the names differ in their endings, such
-as `UR_AT_US_A` (annual) and `UR_AT_US_SOLQ` (quarterly model output),
-`match = "stem"` pairs them on the part before the ending. For rates such as the unemployment rate,
+`chain()` then pairs each series in the new history `q` with the series of
+the same name in `old_fc`:
+
+```{r}
+new_fc <- chain(q, old_fc, direction = "forward", verbose = FALSE)
+compare <- tsbox::ts_c(old = old_fc$E_NF_HI, new = new_fc$E_NF_HI)
+round(compare[p(2023.3, 2025.3)], 2)
+```
+
+For total jobs, the two agree to 2023Q4, where the old history ended. From
+2024Q1 to 2025Q1 the new forecast is the new history, and after that it
+grows at the old forecast's 1%, starting from the new 2025Q1 level of
+`r round(as.numeric(q$E_NF_HI["2025-01-01"]), 1)` rather than the
+`r round(as.numeric(old_fc$E_NF_HI["2025-01-01"]), 1)` the old forecast
+had reached. The other 29 series are updated the same way.
+
+If the names differ in their endings, such as `UR_AT_US_A` (annual) and
+`UR_AT_US_SOLQ` (quarterly model output), `match = "stem"` pairs them on
+the part before the ending. For rates such as the unemployment rate,
 `method = "diff"` continues with the change in points instead of the growth
 rate. `direction = "backward"` extends a short history back in time with
 the growth of a longer series.
