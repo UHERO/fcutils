@@ -116,19 +116,24 @@ pcmp <- function(x, lag = 4, comp_freq = 1) {
   #     }
   #   }
 
-  # convert to nested tibble and calculate
-  x_mod_pcmp <- x_mod %>%
-    tidyr::nest(data = c("id":"value"), .by = "id") %>%
-    # operation on the nested column
-    dplyr::rowwise() %>%
-    dplyr::mutate(
-      calc = list((((.data$data %ts/% tsbox::ts_lag(.data$data, lag)))))
-      #^(comp_freq / lag)) - 1) * 100)
-    ) %>%
-    # only keep the calculated data
-    dplyr::select("calc") %>%
-    tidyr::unnest("calc") %>%
+  # tsbox's lag and division work on all series at once
+  x_mod_pcmp <- (x_mod %ts/% tsbox::ts_lag(x_mod, lag)) %>%
     dplyr::mutate(value = ((.data$value^(comp_freq / lag)) - 1) * 100)
+
+  # the per-series version it replaces:
+  # # convert to nested tibble and calculate
+  # x_mod_pcmp <- x_mod %>%
+  #   tidyr::nest(data = c("id":"value"), .by = "id") %>%
+  #   # operation on the nested column
+  #   dplyr::rowwise() %>%
+  #   dplyr::mutate(
+  #     calc = list((((.data$data %ts/% tsbox::ts_lag(.data$data, lag)))))
+  #     #^(comp_freq / lag)) - 1) * 100)
+  #   ) %>%
+  #   # only keep the calculated data
+  #   dplyr::select("calc") %>%
+  #   tidyr::unnest("calc") %>%
+  #   dplyr::mutate(value = ((.data$value^(comp_freq / lag)) - 1) * 100)
 
   # reclass the output to match the input
   ans <- reclass(x_mod_pcmp, x_mod, x)

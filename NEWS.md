@@ -1,3 +1,21 @@
+# fcutils 0.1.1
+
+Results are unchanged, except where `faggr()` used to fail.
+
+* `faggr()` aggregates all series at once instead of each series and year
+  separately: 0.4 s instead of 33 s for 20 quarterly series over a century.
+  It no longer stops on a fiscal year with no values (a series that starts
+  or ends with missing values).
+* `aggr()` and `pcmp()` aggregate or compute all series at once, and
+  `conv_long()` reads series names from the id column instead of
+  `ts_summary()`. On a bank of 200 quarterly series over a century, `aggr()`
+  takes 3.5 s instead of 4.5 s and `pcmp()` 2.0 s instead of 3.5 s; most of
+  what remains is `tsbox::ts_frequency()` and `tsbox::ts_regular()`.
+* `get_series()` and `get_series_exp()` share their request, naming and
+  format code. An unknown `rename` or `format` now stops with a message.
+* The code is split into files by topic, and an internal helper replaces the
+  block that returned results in the input's class in 19 functions.
+
 # fcutils 0.1.0
 
 ## Breaking changes

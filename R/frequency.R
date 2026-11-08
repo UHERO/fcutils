@@ -720,36 +720,40 @@ aggr <- function(
   # convert to long format and return additional details
   x_mod <- conv_long(x, ser_info = TRUE)
 
-  # convert to nested tibble and aggregate
-  x_mod_agg <- x_mod %>%
-    tidyr::nest(data = c("id":"value"), .by = "id") %>%
-    dplyr::mutate(
-      # add a column with aggregation type
-      agg_type = if (
-        stringr::str_to_lower(conv_type) %>% stringr::str_detect("^u")
-      ) {
-        dplyr::if_else(
-          .data$id %>% stringr::str_detect(sum_pattern),
-          "sum",
-          "mean"
-        )
-      } else {
-        conv_type
-      }
-    ) %>%
-    # operation on the nested column
-    dplyr::rowwise() %>%
-    dplyr::mutate(
-      aggd = list(tsbox::ts_frequency(
-        .data$data,
-        to = target_freq,
-        aggregate = .data$agg_type,
-        na.rm = na_rm
-      ))
-    ) %>%
-    # only keep the aggregated data
-    dplyr::select("aggd") %>%
-    tidyr::unnest("aggd")
+  # one ts_frequency() call per aggregation type, not one per series
+  x_mod_agg <- aggr_long(x_mod, conv_type, target_freq, na_rm)
+
+  # the per-series version it replaces (one ts_frequency() call per series):
+  # # convert to nested tibble and aggregate
+  # x_mod_agg <- x_mod %>%
+  #   tidyr::nest(data = c("id":"value"), .by = "id") %>%
+  #   dplyr::mutate(
+  #     # add a column with aggregation type
+  #     agg_type = if (
+  #       stringr::str_to_lower(conv_type) %>% stringr::str_detect("^u")
+  #     ) {
+  #       dplyr::if_else(
+  #         .data$id %>% stringr::str_detect(sum_pattern),
+  #         "sum",
+  #         "mean"
+  #       )
+  #     } else {
+  #       conv_type
+  #     }
+  #   ) %>%
+  #   # operation on the nested column
+  #   dplyr::rowwise() %>%
+  #   dplyr::mutate(
+  #     aggd = list(tsbox::ts_frequency(
+  #       .data$data,
+  #       to = target_freq,
+  #       aggregate = .data$agg_type,
+  #       na.rm = na_rm
+  #     ))
+  #   ) %>%
+  #   # only keep the aggregated data
+  #   dplyr::select("aggd") %>%
+  #   tidyr::unnest("aggd")
 
   # reclass the output to match the input
   ans <- reclass(x_mod_agg, x_mod, x)
@@ -796,42 +800,74 @@ faggr <- function(
   # convert to long format and return additional details
   x_mod <- conv_long(x, ser_info = TRUE)
 
-  # convert to nested tibble and aggregate
+  # shift by six months, so that each fiscal year (July to June) falls in
+  # the calendar year it ends in, then aggregate as aggr() does
   x_mod_agg <- x_mod %>%
     tsbox::ts_lag("6 months") %>%
-    dplyr::mutate(yr = lubridate::floor_date(.data$time, "year")) %>%
-    tidyr::nest(data = c("id":"value"), .by = c("id", "yr")) %>%
-    dplyr::mutate(
-      # add a column with aggregation type
-      agg_type = if (
-        stringr::str_to_lower(conv_type) %>% stringr::str_detect("^u")
-      ) {
-        dplyr::if_else(
-          .data$id %>% stringr::str_detect(sum_pattern),
-          "sum",
-          "mean"
-        )
-      } else {
-        conv_type
-      }
-    ) %>%
-    # operation on the nested column
-    dplyr::rowwise() %>%
-    dplyr::mutate(
-      aggd = list(tsbox::ts_frequency(
-        .data$data,
-        to = target_freq,
-        aggregate = .data$agg_type,
-        na.rm = na_rm
-      ))
-    ) %>%
-    # only keep the aggregated data
-    dplyr::select("aggd") %>%
-    tidyr::unnest("aggd") #%>%
-  # tsbox::ts_lag("-6 months")
+    aggr_long(conv_type, target_freq, na_rm)
+
+  # the per-series, per-year version it replaces (one ts_frequency() call per
+  # series and year; it stopped on a year with no values):
+  # # convert to nested tibble and aggregate
+  # x_mod_agg <- x_mod %>%
+  #   tsbox::ts_lag("6 months") %>%
+  #   dplyr::mutate(yr = lubridate::floor_date(.data$time, "year")) %>%
+  #   tidyr::nest(data = c("id":"value"), .by = c("id", "yr")) %>%
+  #   dplyr::mutate(
+  #     # add a column with aggregation type
+  #     agg_type = if (
+  #       stringr::str_to_lower(conv_type) %>% stringr::str_detect("^u")
+  #     ) {
+  #       dplyr::if_else(
+  #         .data$id %>% stringr::str_detect(sum_pattern),
+  #         "sum",
+  #         "mean"
+  #       )
+  #     } else {
+  #       conv_type
+  #     }
+  #   ) %>%
+  #   # operation on the nested column
+  #   dplyr::rowwise() %>%
+  #   dplyr::mutate(
+  #     aggd = list(tsbox::ts_frequency(
+  #       .data$data,
+  #       to = target_freq,
+  #       aggregate = .data$agg_type,
+  #       na.rm = na_rm
+  #     ))
+  #   ) %>%
+  #   # only keep the aggregated data
+  #   dplyr::select("aggd") %>%
+  #   tidyr::unnest("aggd") #%>%
+  # # tsbox::ts_lag("-6 months")
 
   # reclass the output to match the input
   ans <- reclass(x_mod_agg, x_mod, x)
 
   return(ans)
+}
+
+
+#' Aggregate long data, one ts_frequency() call per aggregation type
+#'
+#' @param x_mod long tibble (id, time, value)
+#' @param conv_type "mean", "sum", ... or "uhero" (sum for names matching
+#'   `sum_pattern`, mean otherwise)
+#' @return long tibble, series in their original order
+#' @noRd
+aggr_long <- function(x_mod, conv_type, target_freq, na_rm) {
+  ids <- unique(x_mod$id)
+  agg_type <- if (stringr::str_detect(stringr::str_to_lower(conv_type), "^u")) {
+    dplyr::if_else(stringr::str_detect(ids, sum_pattern), "sum", "mean")
+  } else {
+    rep(conv_type, length(ids))
+  }
+  purrr::map(unique(agg_type), function(type) {
+    x_mod %>%
+      dplyr::filter(.data$id %in% ids[agg_type == type]) %>%
+      tsbox::ts_frequency(to = target_freq, aggregate = type, na.rm = na_rm)
+  }) %>%
+    dplyr::bind_rows() %>%
+    dplyr::arrange(match(.data$id, ids), .data$time)
 }

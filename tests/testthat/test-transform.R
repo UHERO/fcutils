@@ -100,3 +100,17 @@ test_that("multi_chain() keeps names that contain a lowercase x", {
   expect_named(out, c("time", "E_NF_HI", "Ex_HI"))
   expect_equal(out$Ex_HI, q$Ex_HI)
 })
+
+test_that("faggr() handles a series that starts with missing values", {
+  q <- tibble::tibble(
+    time = seq(as.Date("2018-01-01"), by = "quarter", length.out = 16),
+    A = c(NA, NA, NA, NA, 1:12),
+    B = 1:16
+  )
+  out <- faggr(q)
+  # fiscal years (July to June) labeled by the year they end in; only
+  # complete years count
+  expect_equal(out$time, as.Date(c("2019-01-01", "2020-01-01", "2021-01-01")))
+  expect_equal(out$B, c(mean(3:6), mean(7:10), mean(11:14)))
+  expect_equal(out$A, c(NA, mean(3:6), mean(7:10)))
+})
