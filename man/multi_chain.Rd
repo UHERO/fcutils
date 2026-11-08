@@ -10,7 +10,8 @@ multi_chain(
   ids = NULL,
   method = c("ratio", "diff"),
   direction = c("both", "forward", "backward"),
-  match = c("name", "stem")
+  match = c("name", "stem"),
+  verbose = FALSE
 )
 }
 \arguments{
@@ -33,6 +34,8 @@ needs the same name; "stem" compares names without a final frequency or
 solution ending (\verb{_A}, \verb{_Q}, \verb{_M}, \verb{_SOLA}, \verb{_SOLQ}, \verb{_SOLM}, or the same
 with \code{.}), so \code{UR_AT_US_A} pairs with \code{UR_AT_US_SOLQ}. A single series in
 x always pairs with a single series in y. The result keeps x's names.}
+
+\item{verbose}{if TRUE, list the series being extended (default: FALSE)}
 }
 \value{
 object of the same type as the input with extended series

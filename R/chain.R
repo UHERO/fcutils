@@ -93,6 +93,7 @@ chain_1 <- function(a, b, method, direction) {
 #' with `.`), so `UR_AT_US_A` pairs with `UR_AT_US_SOLQ`. A single series in
 #' x always pairs with a single series in y. The result keeps x's names.
 #'
+#' @param verbose if TRUE, list the series being extended (default: FALSE)
 #' @return object of the same type as the input with extended series
 #' @export
 #'
@@ -122,7 +123,8 @@ multi_chain <- function(
   ids = NULL,
   method = c("ratio", "diff"),
   direction = c("both", "forward", "backward"),
-  match = c("name", "stem")
+  match = c("name", "stem"),
+  verbose = FALSE
 ) {
   method <- match.arg(method)
   direction <- match.arg(direction)
@@ -140,10 +142,12 @@ multi_chain <- function(
     if (length(ids) == 0L) {
       return(x)
     } else {
-      message(
-        "Extending the following series: \n",
-        stringr::str_flatten(ids, collapse = ", ")
-      )
+      if (verbose) {
+        message(
+          "Extending the following series: \n",
+          stringr::str_flatten(ids, collapse = ", ")
+        )
+      }
     }
   } else {
     ids <- intersect(ids, colnames(x_wide)) %>%
@@ -151,10 +155,12 @@ multi_chain <- function(
     if (length(ids) == 0L) {
       return(x)
     } else {
-      message(
-        "Extending the following series: \n",
-        stringr::str_flatten(ids, collapse = ", ")
-      )
+      if (verbose) {
+        message(
+          "Extending the following series: \n",
+          stringr::str_flatten(ids, collapse = ", ")
+        )
+      }
     }
   }
 

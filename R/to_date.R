@@ -16,22 +16,7 @@
 #'   ytd_cum(avg = FALSE) |>
 #'   tsbox::ts_plot()
 ytd_cum <- function(x, avg = TRUE) {
-  # convert to long format and return additional details
-  x_mod <- conv_long(x, ser_info = TRUE)
-
-  x_mod_ytd <- x_mod %>%
-    dplyr::mutate(yr = lubridate::floor_date(.data$time, "year")) %>%
-    dplyr::group_by(.data$id, .data$yr) %>%
-    dplyr::mutate(
-      value = if (avg) dplyr::cummean(.data$value) else cumsum(.data$value)
-    ) %>%
-    dplyr::ungroup() %>%
-    dplyr::select(-"yr")
-
-  # reclass the output to match the input
-  ans <- reclass(x_mod_ytd, x_mod, x)
-
-  return(ans)
+  to_date(x, "year", avg = avg)
 }
 
 
@@ -50,17 +35,7 @@ ytd_cum <- function(x, avg = TRUE) {
 #'   ytd_gr() |>
 #'   tail()
 ytd_gr <- function(x) {
-  # convert to long format and return additional details
-  x_mod <- conv_long(x, ser_info = TRUE)
-
-  x_mod_ytd_gr <- x_mod %>%
-    ytd_cum() %>%
-    tsbox::ts_pcy()
-
-  # reclass the output to match the input
-  ans <- reclass(x_mod_ytd_gr, x_mod, x)
-
-  return(ans)
+  to_date(x, "year", growth = "pcy")
 }
 
 
@@ -87,24 +62,7 @@ ytd_gr <- function(x) {
 #'   fytd_cum(avg = FALSE) |>
 #'   tsbox::ts_plot()
 fytd_cum <- function(x, avg = TRUE) {
-  # convert to long format and return additional details
-  x_mod <- conv_long(x, ser_info = TRUE)
-
-  x_mod_fytd <- x_mod %>%
-    tsbox::ts_lag("6 months") %>%
-    dplyr::mutate(yr = lubridate::floor_date(.data$time, "year")) %>%
-    dplyr::group_by(.data$id, .data$yr) %>%
-    dplyr::mutate(
-      value = if (avg) dplyr::cummean(.data$value) else cumsum(.data$value)
-    ) %>%
-    dplyr::ungroup() %>%
-    dplyr::select(-"yr") %>%
-    tsbox::ts_lag("-6 months")
-
-  # reclass the output to match the input
-  ans <- reclass(x_mod_fytd, x_mod, x)
-
-  return(ans)
+  to_date(x, "year", avg = avg, fiscal = TRUE)
 }
 
 
@@ -128,17 +86,7 @@ fytd_cum <- function(x, avg = TRUE) {
 #'   fytd_gr() |>
 #'   tail()
 fytd_gr <- function(x) {
-  # convert to long format and return additional details
-  x_mod <- conv_long(x, ser_info = TRUE)
-
-  x_mod_fytd_gr <- x_mod %>%
-    fytd_cum() %>%
-    tsbox::ts_pcy()
-
-  # reclass the output to match the input
-  ans <- reclass(x_mod_fytd_gr, x_mod, x)
-
-  return(ans)
+  to_date(x, "year", fiscal = TRUE, growth = "pcy")
 }
 
 
@@ -159,22 +107,7 @@ fytd_gr <- function(x) {
 #'   mtd_cum()
 #' tsbox::`%ts/%`(test, tsbox::ts_lag(test, "6 months")) |> tail()
 mtd_cum <- function(x, avg = TRUE) {
-  # convert to long format and return additional details
-  x_mod <- conv_long(x, ser_info = TRUE)
-
-  x_mod_mtd <- x_mod %>%
-    dplyr::mutate(yrmo = lubridate::floor_date(.data$time, "month")) %>%
-    dplyr::group_by(.data$id, .data$yrmo) %>%
-    dplyr::mutate(
-      value = if (avg) dplyr::cummean(.data$value) else cumsum(.data$value)
-    ) %>%
-    dplyr::ungroup() %>%
-    dplyr::select(-"yrmo")
-
-  # reclass the output to match the input
-  ans <- reclass(x_mod_mtd, x_mod, x)
-
-  return(ans)
+  to_date(x, "month", avg = avg)
 }
 
 
@@ -190,17 +123,7 @@ mtd_cum <- function(x, avg = TRUE) {
 #'   mtd_gr() |>
 #'   tail()
 mtd_gr <- function(x) {
-  # convert to long format and return additional details
-  x_mod <- conv_long(x, ser_info = TRUE)
-
-  x_mod_mtd_gr <- x_mod %>%
-    mtd_cum() %>%
-    tsbox::ts_pcy()
-
-  # reclass the output to match the input
-  ans <- reclass(x_mod_mtd_gr, x_mod, x)
-
-  return(ans)
+  to_date(x, "month", growth = "pcy")
 }
 
 
@@ -227,22 +150,7 @@ mtd_gr <- function(x) {
 #'   tsbox::`%ts*%`(100) |>
 #'   tail()
 ptd_cum <- function(x, per = "year", avg = TRUE) {
-  # convert to long format and return additional details
-  x_mod <- conv_long(x, ser_info = TRUE)
-
-  x_mod_ptd <- x_mod %>%
-    dplyr::mutate(time_per = lubridate::floor_date(.data$time, per)) %>%
-    dplyr::group_by(.data$id, .data$time_per) %>%
-    dplyr::mutate(
-      value = if (avg) dplyr::cummean(.data$value) else cumsum(.data$value)
-    ) %>%
-    dplyr::ungroup() %>%
-    dplyr::select(-"time_per")
-
-  # reclass the output to match the input
-  ans <- reclass(x_mod_ptd, x_mod, x)
-
-  return(ans)
+  to_date(x, per, avg = avg)
 }
 
 
@@ -281,17 +189,42 @@ ptd_cum <- function(x, per = "year", avg = TRUE) {
 #'   ptd_gr("week", "4 weeks") %>%
 #'   tail()
 ptd_gr <- function(x, per = "year", lag_length = "1 year") {
-  # convert to long format and return additional details
+  to_date(x, per, growth = lag_length)
+}
+
+
+#' Period-to-date averages or sums, and their growth (used by the to-date
+#' functions)
+#'
+#' @param per period within which values accumulate ("year", "quarter",
+#'   "month", ...)
+#' @param avg TRUE for the running mean, FALSE for the running sum
+#' @param fiscal TRUE for fiscal years (July to June): the data are shifted by
+#'   six months before grouping and back after
+#' @param growth NULL (none), "pcy" (tsbox::ts_pcy()), or a lag such as
+#'   "1 year": % change on the value that far back
+#' @noRd
+to_date <- function(x, per, avg = TRUE, fiscal = FALSE, growth = NULL) {
   x_mod <- conv_long(x, ser_info = TRUE)
-
-  x_mod_ptd_gr <- x_mod %>%
-    ptd_cum(per) %>%
-    {
-      (. %ts/% tsbox::ts_lag(., lag_length) %ts-% 1) %ts*% 100
-    }
-
-  # reclass the output to match the input
-  ans <- reclass(x_mod_ptd_gr, x_mod, x)
-
-  return(ans)
+  out <- x_mod
+  if (fiscal) {
+    out <- tsbox::ts_lag(out, "6 months")
+  }
+  out <- out %>%
+    dplyr::mutate(time_per = lubridate::floor_date(.data$time, per)) %>%
+    dplyr::group_by(.data$id, .data$time_per) %>%
+    dplyr::mutate(
+      value = if (avg) dplyr::cummean(.data$value) else cumsum(.data$value)
+    ) %>%
+    dplyr::ungroup() %>%
+    dplyr::select(-"time_per")
+  if (fiscal) {
+    out <- tsbox::ts_lag(out, "-6 months")
+  }
+  if (identical(growth, "pcy")) {
+    out <- tsbox::ts_pcy(out)
+  } else if (!is.null(growth)) {
+    out <- (out %ts/% tsbox::ts_lag(out, growth) %ts-% 1) %ts*% 100
+  }
+  reclass(out, x_mod, x)
 }

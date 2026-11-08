@@ -1,3 +1,16 @@
+# fcutils 0.1.2
+
+Results are unchanged.
+
+* `multi_chain()` no longer prints the series it extends; `verbose = TRUE`
+  lists them as before.
+* `ytd_cum()`, `ytd_gr()`, `fytd_cum()`, `fytd_gr()`, `mtd_cum()`,
+  `mtd_gr()`, `ptd_cum()` and `ptd_gr()` share one implementation. Old and
+  new give identical results on monthly, quarterly and daily data in every
+  format.
+* `plot_comp_2()` and `plot_comp_3()` share one implementation; the index
+  panel is the only difference.
+
 # fcutils 0.1.1
 
 Results are unchanged, except where `faggr()` used to fail.

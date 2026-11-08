@@ -379,55 +379,7 @@ plot_comp_2 <- function(
   yoy_gr = TRUE,
   gr_bar = FALSE
 ) {
-  rng_start <- to_ymd(rng_start)
-  rng_end <- to_ymd(rng_end)
-  # convert to long format and return additional details
-  x_mod <- conv_long(x, ser_info = TRUE)
-
-  ser_names <- attr(x_mod, "ser_names")
-
-  plot_level <-
-    x_mod %>%
-    tsbox::ts_xts() %>%
-    tsbox::ts_dygraphs(
-      main = "Level",
-      group = "comp",
-      height = height,
-      width = width
-    ) %>%
-    dygraphs::dyLegend(width = width * 0.90) %>%
-    dygraphs::dyOptions(colors = uh_colors[1:length(ser_names)] %>% as.vector()) # %>%
-  # dygraphs::dyOptions(colors = RColorBrewer::brewer.pal(length(ser_names), "Set2"))
-  plot_growth <-
-    x_mod %>%
-    tsbox::ts_xts() %>%
-    {
-      if (yoy_gr) tsbox::ts_pcy(.) else tsbox::ts_pc(.)
-    } %>%
-    tsbox::ts_dygraphs(
-      main = "Growth",
-      group = "comp",
-      height = height,
-      width = width
-    ) %>%
-    {
-      if (gr_bar) dygraphs::dyBarChart(.) else .
-    } %>%
-    dygraphs::dyLegend(width = width * 0.90) %>%
-    dygraphs::dyOptions(
-      colors = uh_colors[1:length(ser_names)] %>% as.vector()
-    ) %>%
-    # dygraphs::dyOptions(colors = RColorBrewer::brewer.pal(length(ser_names), "Set2")) %>%
-    dygraphs::dyRangeSelector(
-      dateWindow = c(rng_start, rng_end),
-      height = 30,
-      strokeColor = "red"
-    )
-
-  # render the dygraphs objects using htmltools
-  list(plot_level, plot_growth) %>%
-    htmltools::tagList() %>%
-    htmltools::browsable()
+  plot_comp(x, NULL, rng_start, rng_end, height, width, yoy_gr, gr_bar)
 }
 
 
@@ -462,7 +414,28 @@ plot_comp_3 <- function(
   yoy_gr = TRUE,
   gr_bar = FALSE
 ) {
-  base_date <- to_ymd(base_date)
+  plot_comp(x, base_date, rng_start, rng_end, height, width, yoy_gr, gr_bar)
+}
+
+
+#' Comparison plots: level, optionally an index, and growth (plot_comp_2()
+#' and plot_comp_3())
+#'
+#' @param base_date NULL for no index panel, else its base period
+#' @noRd
+plot_comp <- function(
+  x,
+  base_date,
+  rng_start,
+  rng_end,
+  height,
+  width,
+  yoy_gr,
+  gr_bar
+) {
+  if (!is.null(base_date)) {
+    base_date <- to_ymd(base_date)
+  }
   rng_start <- to_ymd(rng_start)
   rng_end <- to_ymd(rng_end)
   # convert to long format and return additional details
@@ -483,20 +456,21 @@ plot_comp_3 <- function(
     dygraphs::dyOptions(colors = uh_colors[1:length(ser_names)] %>% as.vector()) # %>%
   # dygraphs::dyOptions(colors = RColorBrewer::brewer.pal(length(ser_names), "Set2"))
   # plot_level[["elementId"]] <- ser_names %>% extract(1) %>% str_extract("^.*@")
-  plot_index <-
+  plot_index <- if (!is.null(base_date)) {
     x_mod %>%
-    tsbox::ts_xts() %>%
-    tsbox::ts_index(base = base_date) %>%
-    tsbox::ts_dygraphs(
-      main = "Index",
-      group = "comp",
-      height = height,
-      width = width
-    ) %>%
-    # dygraphs::dyRebase(value = 100) %>%
-    dygraphs::dyLegend(width = width * 0.90) %>%
-    dygraphs::dyOptions(colors = uh_colors[1:length(ser_names)] %>% as.vector()) # %>%
-  # dygraphs::dyOptions(colors = RColorBrewer::brewer.pal(length(ser_names), "Set2"))
+      tsbox::ts_xts() %>%
+      tsbox::ts_index(base = base_date) %>%
+      tsbox::ts_dygraphs(
+        main = "Index",
+        group = "comp",
+        height = height,
+        width = width
+      ) %>%
+      # dygraphs::dyRebase(value = 100) %>%
+      dygraphs::dyLegend(width = width * 0.90) %>%
+      dygraphs::dyOptions(colors = uh_colors[1:length(ser_names)] %>% as.vector()) # %>%
+    # dygraphs::dyOptions(colors = RColorBrewer::brewer.pal(length(ser_names), "Set2"))
+  }
   plot_growth <-
     x_mod %>%
     tsbox::ts_xts() %>%
@@ -524,7 +498,9 @@ plot_comp_3 <- function(
     )
 
   # render the dygraphs objects using htmltools
+  # list() keeps a NULL plot_index; purrr::compact() drops it
   list(plot_level, plot_index, plot_growth) %>%
+    purrr::compact() %>%
     htmltools::tagList() %>%
     htmltools::browsable()
 }
