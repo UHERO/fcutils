@@ -312,11 +312,14 @@ yoy_to_lev <- function(yoy_gr, hist_lev, smooth_span = 0) {
 }
 
 
-#' Rebase series to an index (wrapper around tsbox::ts_index())
+#' Index series to a base period (wrapper around tsbox::ts_index())
 #'
-#' Formerly `index()`, renamed because it masked `zoo::index()` and
-#' `xts::index()` (and `ts_rebase()` in fcutils 0.1.0; the `ts_` prefix is
-#' tsbox's).
+#' Sets each series to `base_value` in the base period and scales the rest of
+#' the series by the same factor. Formerly `index()`, renamed because it masked
+#' `zoo::index()` and `xts::index()`; then `ts_rebase()` in fcutils 0.1.0 (the
+#' `ts_` prefix is tsbox's) and `rebase()` in 0.1.1 and 0.1.2 (rebasing
+#' re-expresses a real series in the prices of another year, which this
+#' function does not do).
 #'
 #' @param x ts-boxable object to be indexed
 #' @param base_per base date when the index is set to base_value (see examples).
@@ -328,12 +331,12 @@ yoy_to_lev <- function(yoy_gr, hist_lev, smooth_span = 0) {
 #'
 #' @examples
 #' quarterly_data_example |>
-#'   rebase(2010.1)
+#'   index_to_base(2010.1)
 #' quarterly_data_example |>
-#'   rebase(c(2010.1, 2010.4))
+#'   index_to_base(c(2010.1, 2010.4))
 #' quarterly_data_example |>
-#'   rebase(c("2010-01-01", "2010-12-31"), 1)
-rebase <- function(x, base_per = as.character(Sys.Date()), base_value = 100) {
+#'   index_to_base(c("2010-01-01", "2010-12-31"), 1)
+index_to_base <- function(x, base_per = as.character(Sys.Date()), base_value = 100) {
   # convert to long format and return additional details
   x_mod <- conv_long(x, ser_info = TRUE)
 

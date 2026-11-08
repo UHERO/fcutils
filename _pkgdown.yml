@@ -51,7 +51,7 @@ reference:
   - cagr
   - yoy_to_lev
   - ma
-  - rebase
+  - index_to_base
   - ends_with("_cum")
   - ends_with("_gr")
 - title: Formats and conversion
