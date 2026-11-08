@@ -1,4 +1,4 @@
-# fcutils (development version)
+# fcutils 0.1.3
 
 * Renamed for consistency: `multi_chain()` is now `chain()`, `aggr()` and
   `faggr()` are now `agg()` and `fagg()`, and `ytd_cum()`, `fytd_cum()`,
@@ -7,6 +7,8 @@
   and give the same results. The old names still work but warn; they will
   be removed in a later version (see `?"fcutils-deprecated"`). No installed
   package exports any of the new names.
+* `qtrs()` is removed, with no deprecated alias. Replace `qtrs(n)` with
+  `n * months(3)` (lubridate), which it computed.
 
 # fcutils 0.1.2.1
 

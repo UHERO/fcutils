@@ -13,7 +13,7 @@ rates, comparisons with a year earlier and indexes alongside the levels.
 This article covers the functions that compute those (growth rates,
 period-to-date totals, indexes) and those that show them (tables and
 interactive plots). The examples use the package's Hawaii data: payroll
-jobs (quarterly), visitor arrivals (monthly) and visitors present (daily).
+jobs (quarterly) and visitor arrivals (monthly and daily).
 
 ```{r, message = FALSE}
 library(fcutils)
@@ -56,8 +56,8 @@ period: `ma(x, 4)` averages each quarter with the three before it.
 Series of different size are hard to compare as levels. Total jobs are
 about six times accommodation and food services jobs.
 `index_to_base(x, base_per)` divides each series by its value in a base
-period and multiplies by 100. Both series then start from 100, and the
-index shows the percent above or below the base. A year or two dates as
+period and multiplies by 100. Both series then equal 100 in the base
+period, and the index shows the percent above or below the base. A year or two dates as
 the base set the average over that period to 100. Here the two series
 against 2019, through the 2020 pandemic:
 
@@ -97,10 +97,30 @@ round(tail(tsbox::ts_c(
 ), 4), 1)
 ```
 
-The year to March 2025 is `r round(as.numeric(ytd_gr(vis)["2025-03-01"]), 1)`%
+In March, `ytd_avg` is the average of January to March and `ytd_sum` their
+total. The year to March 2025 is `r round(as.numeric(ytd_gr(vis)["2025-03-01"]), 1)`%
 above the same months of 2024. The fiscal year to March, which started in
 July 2024, is `r round(as.numeric(fytd_gr(vis)["2025-03-01"]), 1)`% above
 July 2023 to March 2024.
+
+The month-to-date functions do the same with daily data within each month.
+Daily visitor arrivals in March 2022, as travel recovered from the
+pandemic:
+
+```{r}
+vis_d <- conv_xts(daily_data_example)$VISPNS_HI
+round(tail(tsbox::ts_c(
+  arrivals = vis_d,
+  mtd_avg = mtd_agg(vis_d),
+  mtd_gr = mtd_gr(vis_d)
+), 3), 1)
+```
+
+The first 25 days of March 2022 averaged
+`r format(round(as.numeric(mtd_agg(vis_d)["2022-03-25"])), big.mark = ",")`
+arrivals a day,
+`r round(as.numeric(mtd_gr(vis_d)["2022-03-25"]))`% more than the first 25
+days of March 2021.
 
 ## Tables
 
