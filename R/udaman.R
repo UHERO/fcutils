@@ -34,52 +34,10 @@
 #' @examplesIf interactive()
 #' get_series_1(ser_id = "VISNS@HI.M")
 get_series_1 <- function(ser_id, expand, rename, descr, public) {
-  if (
-    stringr::str_length(Sys.getenv("udaman_token")) == 0 &
-      length(keyring::key_list("udaman_token")$service) == 0
-  ) {
-    rlang::abort(
-      "UDAMAN token is not available in .Renviron or among credentials"
-    )
-  }
-  # API call
-  if (public) {
-    url <- stringr::str_c(
-      "https://api.uhero.hawaii.edu/v1/series?name=",
-      ser_id,
-      "&expand=",
-      expand,
-      "&u=uhero&nocache"
-    )
-  } else {
-    url <- stringr::str_c(
-      "https://api.uhero.hawaii.edu/v1.u/series?name=",
-      ser_id,
-      "&expand=",
-      expand,
-      "&u=uhero&nocache"
-    )
-  }
-  if (stringr::str_length(Sys.getenv("udaman_token")) > 0) {
-    req <- httr::GET(
-      url,
-      httr::add_headers(
-        Authorization = stringr::str_c("Bearer ", Sys.getenv("udaman_token"))
-      )
-    )
-  } else {
-    req <- httr::GET(
-      url,
-      httr::add_headers(
-        Authorization = stringr::str_c(
-          "Bearer ",
-          keyring::key_get("udaman_token")
-        )
-      )
-    )
-  }
-  json <- httr::content(req, as = "text", encoding = "UTF-8")
-  uhero_data <- jsonlite::fromJSON(json)
+  uhero_data <- udaman_get(
+    stringr::str_c("series?name=", ser_id, "&expand=", expand),
+    public
+  )
   # extract series info
   dates <- uhero_data$data$observations$transformationResults$dates[[1]]
   values <- uhero_data$data$observations$transformationResults$values[[1]]
@@ -103,41 +61,9 @@ get_series_1 <- function(ser_id, expand, rename, descr, public) {
   series <- tsbox::ts_regular(series)
   title <- uhero_data$data$series$title
   geo <- uhero_data$data$series$geography$shortName
-  colnames(series) <- dplyr::case_when(
-    rename == "compact" ~
-      c(
-        "time",
-        name %>%
-          stringr::str_replace_all(c(
-            "\\.[A-Z]" = "",
-            "@" = "_",
-            "OCUP%" = "OCUPP"
-          )) %>%
-          {
-            if (descr) stringr::str_c(., " (", title, ", ", geo, ")") else .
-          }
-      ),
-    rename == "full" ~
-      c(
-        "time",
-        name %>%
-          stringr::str_replace_all(c(
-            "\\.([A-Z])" = "_\\1",
-            "@" = "_AT_",
-            "OCUP%" = "OCUPP"
-          )) %>%
-          {
-            if (descr) stringr::str_c(., " (", title, ", ", geo, ")") else .
-          }
-      ),
-    rename == "no" ~
-      c(
-        "time",
-        name %>%
-          {
-            if (descr) stringr::str_c(., " (", title, ", ", geo, ")") else .
-          }
-      )
+  colnames(series) <- c(
+    "time",
+    udaman_names(name, rename, descr, stringr::str_c(title, ", ", geo))
   )
   # return series
   return(series)
@@ -202,18 +128,7 @@ get_series <- function(
     ) %>%
     purrr::reduce(dplyr::full_join, by = "time") %>%
     dplyr::arrange(.data$time)
-  if (format == "wide") {
-    ser_out <- ser_tbl
-  }
-  if (format == "long") {
-    ser_out <- ser_tbl %>% tsbox::ts_long()
-  }
-  if (format == "xts") {
-    ser_out <- ser_tbl %>%
-      tsbox::ts_long() %>%
-      tsbox::ts_xts()
-  }
-  return(ser_out)
+  return(udaman_format(ser_tbl, format))
 }
 
 
@@ -252,52 +167,10 @@ get_series_exp <- function(
   save_loc = NULL
 ) {
   expand <- if (raw) "raw" else "true"
-  if (
-    stringr::str_length(Sys.getenv("udaman_token")) == 0 &
-      length(keyring::key_list("udaman_token")$service) == 0
-  ) {
-    rlang::abort(
-      "UDAMAN token is not available in .Renviron or among credentials"
-    )
-  }
-  # API call
-  if (public) {
-    url <- stringr::str_c(
-      "https://api.uhero.hawaii.edu/v1/package/export?id=",
-      exp_id,
-      "&expand=",
-      expand,
-      "&u=uhero&nocache"
-    )
-  } else {
-    url <- stringr::str_c(
-      "https://api.uhero.hawaii.edu/v1.u/package/export?id=",
-      exp_id,
-      "&expand=",
-      expand,
-      "&u=uhero&nocache"
-    )
-  }
-  if (stringr::str_length(Sys.getenv("udaman_token")) > 0) {
-    req <- httr::GET(
-      url,
-      httr::add_headers(
-        Authorization = stringr::str_c("Bearer ", Sys.getenv("udaman_token"))
-      )
-    )
-  } else {
-    req <- httr::GET(
-      url,
-      httr::add_headers(
-        Authorization = stringr::str_c(
-          "Bearer ",
-          keyring::key_get("udaman_token")
-        )
-      )
-    )
-  }
-  json <- httr::content(req, as = "text", encoding = "UTF-8")
-  uhero_data <- jsonlite::fromJSON(json)
+  uhero_data <- udaman_get(
+    stringr::str_c("package/export?id=", exp_id, "&expand=", expand),
+    public
+  )
   # extract series info
   dates <- uhero_data$data$seriesObservations$transformationResults %>%
     purrr::map("dates") %>%
@@ -328,63 +201,15 @@ get_series_exp <- function(
   name <- uhero_data$data$name[!empty_ser]
   title <- uhero_data$data$title[!empty_ser]
   # geo <- NULL
-  colnames(data_tbl) <- dplyr::case_when(
-    rename == "compact" ~
-      c(
-        "time",
-        name %>%
-          stringr::str_replace_all(c(
-            "\\.[A-Z]" = "",
-            "@" = "_",
-            "OCUP%" = "OCUPP"
-          )) %>%
-          {
-            # if (descr) stringr::str_c(., " (", title, ", ", geo, ")") else .
-            if (descr) stringr::str_c(., " (", title, ")") else .
-          }
-      ),
-    rename == "full" ~
-      c(
-        "time",
-        name %>%
-          stringr::str_replace_all(c(
-            "\\.([A-Z])" = "_\\1",
-            "@" = "_AT_",
-            "OCUP%" = "OCUPP"
-          )) %>%
-          {
-            # if (descr) stringr::str_c(., " (", title, ", ", geo, ")") else .
-            if (descr) stringr::str_c(., " (", title, ")") else .
-          }
-      ),
-    rename == "no" ~
-      c(
-        "time",
-        name %>%
-          {
-            # if (descr) stringr::str_c(., " (", title, ", ", geo, ")") else .
-            if (descr) stringr::str_c(., " (", title, ")") else .
-          }
-      )
-  )
+  # if (descr) stringr::str_c(., " (", title, ", ", geo, ")") else .
+  colnames(data_tbl) <- c("time", udaman_names(name, rename, descr, title))
 
   # is a file requested?
   if (!is.null(save_loc)) {
     data_tbl %>% readr::write_csv(file = save_loc)
   }
 
-  if (format == "wide") {
-    data_out <- data_tbl
-  }
-  if (format == "long") {
-    data_out <- data_tbl %>% tsbox::ts_long()
-  }
-  if (format == "xts") {
-    data_out <- data_tbl %>%
-      tsbox::ts_long() %>%
-      tsbox::ts_xts()
-  }
-  return(data_out)
+  return(udaman_format(data_tbl, format))
 }
 
 
@@ -539,4 +364,64 @@ set_udaman_token <- function(key) {
     rlang::warn("`key` does not have a length of 44 characters.")
   }
   set_api_key("udaman", key)
+}
+
+
+#' Request from the udaman API and parse the JSON answer
+#'
+#' @param query path and query after the API version, e.g.
+#'   "series?name=VISNS@HI.M&expand=raw"
+#' @param public TRUE for the public API (no VPN needed)
+#' @noRd
+udaman_get <- function(query, public) {
+  token <- api_key("udaman")
+  base <- if (public) {
+    "https://api.uhero.hawaii.edu/v1/"
+  } else {
+    "https://api.uhero.hawaii.edu/v1.u/"
+  }
+  req <- httr::GET(
+    stringr::str_c(base, query, "&u=uhero&nocache"),
+    httr::add_headers(Authorization = stringr::str_c("Bearer ", token))
+  )
+  json <- httr::content(req, as = "text", encoding = "UTF-8")
+  jsonlite::fromJSON(json)
+}
+
+
+#' Column names for udaman series
+#'
+#' @param name udaman names (VISNS@HI.M)
+#' @param rename "compact" (VISNS_HI), "full" (VISNS_AT_HI_M) or "no"
+#' @param descr if TRUE, append " (label)"
+#' @param label description appended when descr is TRUE
+#' @noRd
+udaman_names <- function(name, rename, descr, label) {
+  out <- switch(
+    rename,
+    compact = stringr::str_replace_all(
+      name,
+      c("\\.[A-Z]" = "", "@" = "_", "OCUP%" = "OCUPP")
+    ),
+    full = stringr::str_replace_all(
+      name,
+      c("\\.([A-Z])" = "_\\1", "@" = "_AT_", "OCUP%" = "OCUPP")
+    ),
+    no = name,
+    rlang::abort("`rename` must be \"compact\", \"full\" or \"no\".")
+  )
+  if (descr) stringr::str_c(out, " (", label, ")") else out
+}
+
+
+#' A wide udaman table in the requested format
+#' @noRd
+udaman_format <- function(tbl, format) {
+  switch(
+    format,
+    wide = tbl,
+    long = tsbox::ts_long(tbl),
+    xts = tsbox::ts_xts(tsbox::ts_long(tbl)),
+    rlang::abort("`format` must be \"wide\", \"long\" or \"xts\".")
+  )
 }
