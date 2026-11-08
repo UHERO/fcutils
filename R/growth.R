@@ -315,7 +315,8 @@ yoy_to_lev <- function(yoy_gr, hist_lev, smooth_span = 0) {
 #' Rebase series to an index (wrapper around tsbox::ts_index())
 #'
 #' Formerly `index()`, renamed because it masked `zoo::index()` and
-#' `xts::index()`.
+#' `xts::index()` (and `ts_rebase()` in fcutils 0.1.0; the `ts_` prefix is
+#' tsbox's).
 #'
 #' @param x ts-boxable object to be indexed
 #' @param base_per base date when the index is set to base_value (see examples).
@@ -327,12 +328,12 @@ yoy_to_lev <- function(yoy_gr, hist_lev, smooth_span = 0) {
 #'
 #' @examples
 #' quarterly_data_example |>
-#'   ts_rebase(2010.1)
+#'   rebase(2010.1)
 #' quarterly_data_example |>
-#'   ts_rebase(c(2010.1, 2010.4))
+#'   rebase(c(2010.1, 2010.4))
 #' quarterly_data_example |>
-#'   ts_rebase(c("2010-01-01", "2010-12-31"), 1)
-ts_rebase <- function(x, base_per = as.character(Sys.Date()), base_value = 100) {
+#'   rebase(c("2010-01-01", "2010-12-31"), 1)
+rebase <- function(x, base_per = as.character(Sys.Date()), base_value = 100) {
   # convert to long format and return additional details
   x_mod <- conv_long(x, ser_info = TRUE)
 

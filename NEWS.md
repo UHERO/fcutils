@@ -2,6 +2,9 @@
 
 Results are unchanged, except where `faggr()` used to fail.
 
+* `ts_rebase()` is renamed `rebase()`, because the `ts_` prefix marks tsbox
+  functions. No other installed package exports a `rebase()`.
+
 * `faggr()` aggregates all series at once instead of each series and year
   separately: 0.4 s instead of 33 s for 20 quarterly series over a century.
   It no longer stops on a fiscal year with no values (a series that starts
