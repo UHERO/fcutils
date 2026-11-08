@@ -84,3 +84,11 @@ reference:
   - "%+=%"
   - "%>%"
   - fcutils-package
+
+articles:
+- title: Articles
+  navbar: ~
+  contents:
+  - articles/getting-started
+  - articles/forecasting
+  - articles/growth-and-reporting

@@ -1,0 +1,153 @@
+---
+title: "Growth rates, tables and plots"
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
+requireNamespace("xts", quietly = TRUE)
+```
+
+This article covers the functions that transform a series for reading
+(growth rates, period-to-date totals, indexes) and those that show it
+(tables and interactive plots). The examples use the package's Hawaii
+data: payroll jobs (quarterly), visitor arrivals (monthly) and visitors
+present (daily).
+
+```{r, message = FALSE}
+library(fcutils)
+options(
+  fcutils.bnk_start = as.Date("1998-01-01"),
+  fcutils.bnk_end = as.Date("2035-12-31")
+)
+q <- conv_xts(quarterly_data_example)
+jobs <- q$E_NF_HI
+```
+
+## Growth rates
+
+`pcmp(x, lag, comp_freq)` is the percent change over `lag` periods,
+compounded `comp_freq` times a year. One function covers the usual
+measures for a quarterly series:
+
+```{r}
+gr <- tsbox::ts_c(
+  q_q = pcmp(jobs, lag = 1),                     # quarter on quarter
+  q_q_ann = pcmp(jobs, lag = 1, comp_freq = 4),  # annualized
+  y_y = pcmp(jobs, lag = 4),                     # year on year
+  ten_yr_ann = pcmp(jobs, lag = 40, comp_freq = 4)
+)
+round(tail(gr, 2), 2)
+```
+
+`pc_to_pca()` and `pca_to_pc()` convert between period and annualized
+rates, and `cagr()` gives the compound annual growth rate between the first
+and last observation, in percent, with the years elapsed:
+
+```{r}
+cagr(jobs[p(2015, 2024)])
+```
+
+`ma(x, order)` is a trailing moving average that includes the current
+period. `rebase(x, base_per)` turns levels into an index that equals 100 in
+the base period. A year or two dates as the base set the period's average
+to 100, which makes series of different size comparable. Here total jobs
+and jobs in accommodation and food services, against 2019:
+
+```{r}
+idx <- rebase(q[, c("E_NF_HI", "EAF_HI")], 2019)
+round(idx[p(2019.4, 2020.3)], 1)
+```
+
+## Period to date
+
+For monthly and daily data, the *to-date* functions accumulate within a
+year, fiscal year (July to June), quarter or month, and compare with the
+same span a year earlier.
+
+| Function | Period | Returns |
+|---|---|---|
+| `ytd_cum(x, avg)` | calendar year | average (or sum, `avg = FALSE`) so far |
+| `ytd_gr(x)` | calendar year | % change of the year so far on a year earlier |
+| `fytd_cum()`, `fytd_gr()` | fiscal year | the same for the fiscal year |
+| `mtd_cum()`, `mtd_gr()` | month | the same within each month, for daily data |
+| `ptd_cum(x, per)`, `ptd_gr(x, per)` | `per`: "year", "quarter", "month" | the general form |
+
+Visitor arrivals in early 2025:
+
+```{r}
+vis <- conv_xts(monthly_data_example)$VISNS_HI
+round(tail(tsbox::ts_c(
+  arrivals = vis,
+  ytd_avg = ytd_cum(vis),
+  ytd_sum = ytd_cum(vis, avg = FALSE),
+  ytd_gr = ytd_gr(vis),
+  fytd_gr = fytd_gr(vis)
+), 4), 1)
+```
+
+The year to March 2025 is `r round(as.numeric(ytd_gr(vis)["2025-03-01"]), 1)`%
+above the same months of 2024. The fiscal year to March, which started in
+July 2024, is `r round(as.numeric(fytd_gr(vis)["2025-03-01"]), 1)`% above
+July 2023 to March 2024.
+
+## Tables
+
+`gen_table()` lays out series with their growth rates. By default the
+dates run across and each series and growth rate has a row;
+`time_across = FALSE` turns that around, which suits a short page.
+`percent` picks the growth rate: `"pc"` (period on period), `"pcy"` (year
+on year), `"pca"` (annualized) or `"none"`.
+
+```{r}
+gen_table(q[, c("E_NF_HI", "EAF_HI")],
+  tbl_start = "2024-01-01", tbl_end = "2025-01-01", percent = "pcy",
+  time_across = FALSE
+)
+```
+
+With `save_loc`, it writes the table to a CSV file or, for `.html`, to a
+searchable page.
+
+## Interactive plots
+
+The plot functions draw [dygraphs](https://rstudio.github.io/dygraphs/):
+hover to read values, drag to zoom, and use the range selector at the
+bottom. `rng_start` and `rng_end` set the initial window. All plots on a
+page zoom together, so a page of plots keeps one date window; the two
+plots below share 2016 to 2028.
+
+`plot_fc()` shows up to three series, typically the forecast, an earlier
+forecast and history, as lines, with the growth of the first as bars on
+the right axis and a table below. This is the jobs forecast from
+[Building a forecast](forecasting.html) against history:
+
+```{r}
+jobs_fc <- extend(jobs, 2025.4 ~ 1.2, 2027.4 ~ 0.8, type = "growth")
+plot_fc(
+  tsbox::ts_c(forecast = jobs_fc, history = jobs),
+  rng_start = "2016-01-01", rng_end = "2028-01-01",
+  table_start = "2024-01-01", table_end = "2028-01-01",
+  width = 700
+)
+```
+
+`rate = TRUE` shows the change in points instead of the percent change,
+for rates such as the unemployment rate, and `yoy_gr = FALSE` shows
+annualized growth instead of year on year.
+
+`plot_1()` plots one or more series with the growth of the first, and
+`plot_2ax()` puts the second series on its own axis. `plot_comp_2()` shows
+several series in two panels, levels and growth. `plot_comp_3()` adds a
+panel with each series indexed to 1 at `base_date`, which compares series
+of different size. Accommodation and food services jobs fell much further
+in 2020 than total jobs:
+
+```{r}
+plot_comp_3(q[, c("E_NF_HI", "EAF_HI")],
+  base_date = "2019-10-01",
+  rng_start = "2016-01-01", rng_end = "2028-01-01", width = 700
+)
+```
+
+To collect many plots on one page that can be shared as a single file, put
+them in a list and pass it to `save_plot_list()`.

@@ -1,0 +1,141 @@
+---
+title: "Getting started"
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
+requireNamespace("xts", quietly = TRUE)
+```
+
+fcutils is a set of functions for the time series work behind UHERO's
+forecasts: getting data, converting between formats and frequencies,
+extending series into the forecast period, and showing the results. This
+article covers what every script needs first: the bank options, the data
+formats the functions accept, and how to write dates.
+
+Install the package from GitHub:
+
+```{r, eval = FALSE}
+remotes::install_github("UHERO/fcutils")
+```
+
+```{r, message = FALSE}
+library(fcutils)
+```
+
+## The bank
+
+Many functions return a series that spans the *bank*, a fixed date range
+shared by all series in a forecast. `make_xts()`, `addf()`, `extend()` and
+`span(extend = TRUE)` all read it from two options. Set them once at the top
+of a script, before calling any of these functions:
+
+```{r}
+options(
+  fcutils.bnk_start = as.Date("1990-01-01"),
+  fcutils.bnk_end = as.Date("2035-12-31")
+)
+```
+
+Without the options, those functions stop with an error saying so.
+`make_xts()` builds an empty or constant series on the bank, or a series
+from a vector of values:
+
+```{r}
+make_xts(per = "quarter", val = 0) |> head(3)
+make_xts(2024.1, per = "quarter", val = c(1.5, 1.7, 1.6))
+```
+
+## Data formats
+
+The functions accept any object that the
+[tsbox](https://docs.ropensci.org/tsbox/) package reads (xts, ts, long data
+frames with `id`, `time` and `value` columns) and also wide data frames with
+a `time` column and one column per series. They return the result in the
+format of the input.
+
+The package ships three wide tibbles of Hawaii data:
+`quarterly_data_example` (payroll jobs by industry),
+`monthly_data_example` (visitor arrivals) and `daily_data_example`.
+
+```{r}
+q <- quarterly_data_example[, c("time", "E_NF_HI", "ECT_HI")]
+tail(q, 3)
+```
+
+`aggr()` averages quarters to years. Given a wide tibble it returns a wide
+tibble, and given xts it returns xts:
+
+```{r}
+aggr(q) |> tail(3)
+aggr(conv_xts(q)) |> tail(3)
+```
+
+`conv_long()`, `conv_wide()`, `conv_xts()` and `conv_tslist()` convert
+between formats. Unlike `tsbox::ts_long()`, `conv_long()` takes wide data
+frames and gives a single series an `id` column:
+
+```{r}
+conv_long(q) |> head(3)
+conv_long(conv_xts(q)$E_NF_HI) |> head(3)
+```
+
+## Dates
+
+Wherever a function takes a date, `to_ymd()` reads it. A year, a quarter
+or a day can be a number or a string; as a number, a quarter is either a
+decimal (`2024.3`) or six digits (`202403`). A month must be a string,
+because R stores `2024.10` and `2024.1` as the same number.
+
+```{r}
+to_ymd(c("2024", "2024Q3", "2024M10", "2024-10-15"))
+to_ymd(c(2024, 2024.3, 202403, 20241015))
+```
+
+`p()` turns two dates into the range string that xts uses for subsetting.
+A year or a quarter given as the end is included in full:
+
+```{r}
+x <- conv_xts(q)$E_NF_HI
+x[p(2024.2, 2024)]
+```
+
+`span()` cuts any format to a range, and with `extend = TRUE` it also pads
+a series out to the range, such as the bank. `find_start()` and
+`find_end()` give the first and last date with a value:
+
+```{r}
+span(q, 2024) |> head(3)
+find_end(q)
+nrow(span(x, getOption("fcutils.bnk_start"), getOption("fcutils.bnk_end"),
+  extend = TRUE))
+```
+
+## Getting data
+
+These functions need network access and keys, so this page does not run
+them.
+
+`get_series()` downloads series from UDAMAN, UHERO's data system, by name.
+`get_series_exp()` downloads every series in a UDAMAN export. Both need the
+UDAMAN token, stored once with `set_udaman_token()` (or as `udaman_token` in
+`.Renviron`), and the UHERO VPN unless `public = TRUE`.
+
+```{r, eval = FALSE}
+get_series(c("VISNS@HI.M", "E_NF@HI.Q"))
+get_series_exp(74, format = "xts")
+```
+
+`get_series_src()` downloads from FRED, Statistics Canada, the Bank of
+Canada, Japan's e-Stat and the EIA. FRED, e-Stat and the EIA need a key,
+stored with `set_api_key()` or in `.Renviron` (`FRED_API_KEY`,
+`ESTAT_API_KEY`, `EIA_API_KEY`):
+
+```{r, eval = FALSE}
+get_series_src("UNRATE", "fred")
+get_series_src(c("PAYEMS", "CPIAUCSL"), "fred", format = "xts")
+```
+
+[Building a forecast](forecasting.html) extends series into the forecast
+period, and [Growth rates, tables and plots](growth-and-reporting.html)
+covers the transformations and the output.
