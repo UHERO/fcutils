@@ -1,5 +1,33 @@
 # Changelog
 
+## fcutils (development version)
+
+- Renamed for consistency:
+  [`multi_chain()`](https://uhero.github.io/fcutils/reference/fcutils-deprecated.md)
+  is now
+  [`chain()`](https://uhero.github.io/fcutils/reference/chain.md),
+  [`aggr()`](https://uhero.github.io/fcutils/reference/fcutils-deprecated.md)
+  and
+  [`faggr()`](https://uhero.github.io/fcutils/reference/fcutils-deprecated.md)
+  are now [`agg()`](https://uhero.github.io/fcutils/reference/agg.md)
+  and [`fagg()`](https://uhero.github.io/fcutils/reference/fagg.md), and
+  [`ytd_cum()`](https://uhero.github.io/fcutils/reference/fcutils-deprecated.md),
+  [`fytd_cum()`](https://uhero.github.io/fcutils/reference/fcutils-deprecated.md),
+  [`mtd_cum()`](https://uhero.github.io/fcutils/reference/fcutils-deprecated.md)
+  and
+  [`ptd_cum()`](https://uhero.github.io/fcutils/reference/fcutils-deprecated.md)
+  are now
+  [`ytd_agg()`](https://uhero.github.io/fcutils/reference/ytd_agg.md),
+  [`fytd_agg()`](https://uhero.github.io/fcutils/reference/fytd_agg.md),
+  [`mtd_agg()`](https://uhero.github.io/fcutils/reference/mtd_agg.md)
+  and
+  [`ptd_agg()`](https://uhero.github.io/fcutils/reference/ptd_agg.md).
+  The new functions take the same arguments and give the same results.
+  The old names still work but warn; they will be removed in a later
+  version (see
+  [`?"fcutils-deprecated"`](https://uhero.github.io/fcutils/reference/fcutils-deprecated.md)).
+  No installed package exports any of the new names.
+
 ## fcutils 0.1.2.1
 
 - `rebase()` is renamed
@@ -21,15 +49,17 @@ Results are unchanged.
   [`ptd_gr()`](https://uhero.github.io/fcutils/reference/ptd_gr.md) take
   a lag by position within each series instead of through
   [`tsbox::ts_lag()`](https://docs.ropensci.org/tsbox/reference/ts_lag.html),
-  and [`aggr()`](https://uhero.github.io/fcutils/reference/aggr.md) and
-  [`faggr()`](https://uhero.github.io/fcutils/reference/faggr.md) take
-  grouped means or sums instead of
+  and
+  [`aggr()`](https://uhero.github.io/fcutils/reference/fcutils-deprecated.md)
+  and
+  [`faggr()`](https://uhero.github.io/fcutils/reference/fcutils-deprecated.md)
+  take grouped means or sums instead of
   [`tsbox::ts_frequency()`](https://docs.ropensci.org/tsbox/reference/ts_frequency.html)
   (when missing values sit only at the start or end of each series).
   Anything else goes through tsbox as before. On 200 quarterly series
   over a century:
-  [`aggr()`](https://uhero.github.io/fcutils/reference/aggr.md) 0.4 s
-  (4.5 s in 0.1.0),
+  [`aggr()`](https://uhero.github.io/fcutils/reference/fcutils-deprecated.md)
+  0.4 s (4.5 s in 0.1.0),
   [`pcmp()`](https://uhero.github.io/fcutils/reference/pcmp.md) 0.14 s
   (3.4 s),
   [`ytd_gr()`](https://uhero.github.io/fcutils/reference/ytd_gr.md) 0.3
@@ -42,13 +72,13 @@ Results are unchanged.
   [`tsbox::ts_regular()`](https://docs.ropensci.org/tsbox/reference/ts_regular.html)’s
   checks when no date is missing (0.9 s to 0.07 s on 200 quarterly
   series over a century), and
-  [`multi_chain()`](https://uhero.github.io/fcutils/reference/multi_chain.md)
+  [`multi_chain()`](https://uhero.github.io/fcutils/reference/fcutils-deprecated.md)
   places each chained series back by date instead of a join per series.
   On that bank
-  [`multi_chain()`](https://uhero.github.io/fcutils/reference/multi_chain.md)
+  [`multi_chain()`](https://uhero.github.io/fcutils/reference/fcutils-deprecated.md)
   takes 0.7 s instead of 3 s,
-  [`aggr()`](https://uhero.github.io/fcutils/reference/aggr.md) 2.7 s
-  instead of 4.5 s and
+  [`aggr()`](https://uhero.github.io/fcutils/reference/fcutils-deprecated.md)
+  2.7 s instead of 4.5 s and
   [`pcmp()`](https://uhero.github.io/fcutils/reference/pcmp.md) 1.5 s
   instead of 3.5 s.
 - Less fixed cost per call, with identical results.
@@ -70,13 +100,13 @@ Results are unchanged.
 - [`get_series_exp()`](https://uhero.github.io/fcutils/reference/get_series_exp.md)
   combines the downloaded series in one step instead of one pair at a
   time (200 series: 0.02 s instead of 2 s).
-- [`ytd_cum()`](https://uhero.github.io/fcutils/reference/ytd_cum.md),
+- [`ytd_cum()`](https://uhero.github.io/fcutils/reference/fcutils-deprecated.md),
   [`ytd_gr()`](https://uhero.github.io/fcutils/reference/ytd_gr.md),
-  [`fytd_cum()`](https://uhero.github.io/fcutils/reference/fytd_cum.md),
+  [`fytd_cum()`](https://uhero.github.io/fcutils/reference/fcutils-deprecated.md),
   [`fytd_gr()`](https://uhero.github.io/fcutils/reference/fytd_gr.md),
-  [`mtd_cum()`](https://uhero.github.io/fcutils/reference/mtd_cum.md),
+  [`mtd_cum()`](https://uhero.github.io/fcutils/reference/fcutils-deprecated.md),
   [`mtd_gr()`](https://uhero.github.io/fcutils/reference/mtd_gr.md),
-  [`ptd_cum()`](https://uhero.github.io/fcutils/reference/ptd_cum.md)
+  [`ptd_cum()`](https://uhero.github.io/fcutils/reference/fcutils-deprecated.md)
   and [`ptd_gr()`](https://uhero.github.io/fcutils/reference/ptd_gr.md)
   share one implementation. Old and new give identical results on
   monthly, quarterly and daily data in every format.
@@ -88,26 +118,26 @@ Results are unchanged.
 ## fcutils 0.1.1
 
 Results are unchanged, except where
-[`faggr()`](https://uhero.github.io/fcutils/reference/faggr.md) used to
-fail.
+[`faggr()`](https://uhero.github.io/fcutils/reference/fcutils-deprecated.md)
+used to fail.
 
 - `ts_rebase()` is renamed `rebase()`, because the `ts_` prefix marks
   tsbox functions. No other installed package exports a `rebase()`.
 
-- [`faggr()`](https://uhero.github.io/fcutils/reference/faggr.md)
+- [`faggr()`](https://uhero.github.io/fcutils/reference/fcutils-deprecated.md)
   aggregates all series at once instead of each series and year
   separately: 0.4 s instead of 33 s for 20 quarterly series over a
   century. It no longer stops on a fiscal year with no values (a series
   that starts or ends with missing values).
 
-- [`aggr()`](https://uhero.github.io/fcutils/reference/aggr.md) and
-  [`pcmp()`](https://uhero.github.io/fcutils/reference/pcmp.md)
+- [`aggr()`](https://uhero.github.io/fcutils/reference/fcutils-deprecated.md)
+  and [`pcmp()`](https://uhero.github.io/fcutils/reference/pcmp.md)
   aggregate or compute all series at once, and
   [`conv_long()`](https://uhero.github.io/fcutils/reference/conv_long.md)
   reads series names from the id column instead of `ts_summary()`. On a
   bank of 200 quarterly series over a century,
-  [`aggr()`](https://uhero.github.io/fcutils/reference/aggr.md) takes
-  3.5 s instead of 4.5 s and
+  [`aggr()`](https://uhero.github.io/fcutils/reference/fcutils-deprecated.md)
+  takes 3.5 s instead of 4.5 s and
   [`pcmp()`](https://uhero.github.io/fcutils/reference/pcmp.md) 2.0 s
   instead of 3.5 s; most of what remains is
   [`tsbox::ts_frequency()`](https://docs.ropensci.org/tsbox/reference/ts_frequency.html)
@@ -179,7 +209,7 @@ fail.
 
 ### New arguments
 
-- [`multi_chain()`](https://uhero.github.io/fcutils/reference/multi_chain.md):
+- [`multi_chain()`](https://uhero.github.io/fcutils/reference/fcutils-deprecated.md):
   `method = "diff"` adds y’s changes to x’s level;
   `direction = "forward"` or `"backward"` chains only one way;
   `match = "stem"` pairs `UR_AT_US_A` with `UR_AT_US_SOLA`.
@@ -200,9 +230,9 @@ fail.
   [`QtoA()`](https://uhero.github.io/fcutils/reference/QtoA.md) rename
   only the frequency ending of a name (`_SOLA` to `_SOLQ`), not the same
   letters elsewhere in it.
-- [`multi_chain()`](https://uhero.github.io/fcutils/reference/multi_chain.md)
+- [`multi_chain()`](https://uhero.github.io/fcutils/reference/fcutils-deprecated.md)
   matches the `.x` and `.y` suffixes only at the end of a name.
-- [`multi_chain()`](https://uhero.github.io/fcutils/reference/multi_chain.md)
+- [`multi_chain()`](https://uhero.github.io/fcutils/reference/fcutils-deprecated.md)
   accepts series stored as integers.
 - [`save_plot_list()`](https://uhero.github.io/fcutils/reference/save_plot_list.md)
   finds the pandoc that comes with Quarto.

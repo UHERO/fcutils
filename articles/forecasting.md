@@ -10,9 +10,9 @@ whose history ends in 2025Q1, and extends them to 2035 with
 [`extend()`](https://uhero.github.io/fcutils/reference/extend.md),
 [`addf()`](https://uhero.github.io/fcutils/reference/addf.md),
 [`disagg()`](https://uhero.github.io/fcutils/reference/disagg.md) and
-[`multi_chain()`](https://uhero.github.io/fcutils/reference/multi_chain.md),
-then averages the result to years with
-[`aggr()`](https://uhero.github.io/fcutils/reference/aggr.md). The
+[`chain()`](https://uhero.github.io/fcutils/reference/chain.md), then
+averages the result to years with
+[`agg()`](https://uhero.github.io/fcutils/reference/agg.md). The
 assumptions are made up for the example. If the bank or the series names
 are new to you, read [Getting
 started](https://uhero.github.io/fcutils/articles/getting-started.md)
@@ -188,7 +188,7 @@ its last growth rate before interpolating.
 ``` r
 
 gv_q <- disagg(gv_a, extend_with = "last_growth")
-round(aggr(gv_q)[p(2025, 2027)], 3)
+round(agg(gv_q)[p(2025, 2027)], 3)
 #>            value
 #> 2025-01-01 128.5
 #> 2026-01-01 129.3
@@ -217,12 +217,12 @@ history and uses the growth of the shifted series.
 
 ## Updating a forecast bank
 
-[`multi_chain()`](https://uhero.github.io/fcutils/reference/multi_chain.md)
-does the same for many series at once. A common use is updating a
-forecast when new data arrive. Suppose last time’s forecast was built on
-history to 2023Q4, and the data now run to 2025Q1. Rather than set every
-assumption again, keep the growth that the old forecast had for each
-series, and apply it from the new last observation.
+[`chain()`](https://uhero.github.io/fcutils/reference/chain.md) does the
+same for many series at once. A common use is updating a forecast when
+new data arrive. Suppose last time’s forecast was built on history to
+2023Q4, and the data now run to 2025Q1. Rather than set every assumption
+again, keep the growth that the old forecast had for each series, and
+apply it from the new last observation.
 
 The old forecast here is made up: each series extended from 2023Q4 at 1%
 annualized growth.
@@ -235,7 +235,7 @@ old_fc <- do.call(cbind, lapply(names(old_hist), function(n) {
 }))
 names(old_fc) <- names(old_hist)
 
-new_fc <- multi_chain(q, old_fc, direction = "forward", verbose = FALSE)
+new_fc <- chain(q, old_fc, direction = "forward", verbose = FALSE)
 round(new_fc[p(2024.4, 2025.3), 1:3], 2)
 #>            E_NF_HI ECT_HI EMN_HI
 #> 2024-10-01  643.26  39.11  12.98
@@ -257,8 +257,8 @@ growth of a longer series.
 ## Annual results
 
 Forecasts are usually reported as annual figures.
-[`aggr()`](https://uhero.github.io/fcutils/reference/aggr.md) averages
-the quarters of each complete year. Only complete years count, so a year
+[`agg()`](https://uhero.github.io/fcutils/reference/agg.md) averages the
+quarters of each complete year. Only complete years count, so a year
 with three quarters of data has no value. Jobs are a count at a point in
 time, so the average is right. For flows, such as visitor arrivals, the
 annual figure is the total, so use `conv_type = "sum"`:
@@ -266,7 +266,7 @@ annual figure is the total, so use `conv_type = "sum"`:
 ``` r
 
 fc <- tsbox::ts_c(E_NF_HI = jobs_fc, ECT_HI = ct_fc, EGV_HI = gv_fc)
-round(aggr(fc)[p(2024, 2028)], 1)
+round(agg(fc)[p(2024, 2028)], 1)
 #>            E_NF_HI ECT_HI EGV_HI
 #> 2024-01-01   639.1   39.2  125.7
 #> 2025-01-01   652.7   40.0  128.3
@@ -277,9 +277,9 @@ round(aggr(fc)[p(2024, 2028)], 1)
 
 When an annual history differs from the average of its quarters (because
 it averages unadjusted months, say),
-`multi_chain(annual_history, aggr(fc), direction = "forward")` keeps the
-annual history and continues it with the growth of the annual averages
-of the forecast.
+`chain(annual_history, agg(fc), direction = "forward")` keeps the annual
+history and continues it with the growth of the annual averages of the
+forecast.
 
 [Growth rates, tables and
 plots](https://uhero.github.io/fcutils/articles/growth-and-reporting.md)

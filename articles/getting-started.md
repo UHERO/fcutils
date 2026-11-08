@@ -100,20 +100,20 @@ tail(q, 3)
 #> 3 2025-01-01    648.   39.4
 ```
 
-[`aggr()`](https://uhero.github.io/fcutils/reference/aggr.md) averages
+[`agg()`](https://uhero.github.io/fcutils/reference/agg.md) averages
 quarters to years. Given a wide tibble it returns a wide tibble, and
 given xts it returns xts:
 
 ``` r
 
-aggr(q) |> tail(3)
+agg(q) |> tail(3)
 #> # A tibble: 3 × 3
 #>   time       E_NF_HI ECT_HI
 #>   <date>       <dbl>  <dbl>
 #> 1 2022-01-01    618.   37.2
 #> 2 2023-01-01    632.   38.1
 #> 3 2024-01-01    639.   39.2
-aggr(conv_xts(q)) |> tail(3)
+agg(conv_xts(q)) |> tail(3)
 #>             E_NF_HI   ECT_HI
 #> 2022-01-01 618.0704 37.17124
 #> 2023-01-01 632.2629 38.10377

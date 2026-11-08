@@ -92,11 +92,11 @@ earlier.
 
 | Function | Period | Returns |
 |----|----|----|
-| `ytd_cum(x, avg)` | calendar year | average (or sum, `avg = FALSE`) so far |
+| `ytd_agg(x, avg)` | calendar year | average (or sum, `avg = FALSE`) so far |
 | `ytd_gr(x)` | calendar year | % change of the year so far on a year earlier |
-| [`fytd_cum()`](https://uhero.github.io/fcutils/reference/fytd_cum.md), [`fytd_gr()`](https://uhero.github.io/fcutils/reference/fytd_gr.md) | fiscal year | the same for the fiscal year |
-| [`mtd_cum()`](https://uhero.github.io/fcutils/reference/mtd_cum.md), [`mtd_gr()`](https://uhero.github.io/fcutils/reference/mtd_gr.md) | month | the same within each month, for daily data |
-| `ptd_cum(x, per)`, `ptd_gr(x, per)` | `per`: “year”, “quarter”, “month” | the general form |
+| [`fytd_agg()`](https://uhero.github.io/fcutils/reference/fytd_agg.md), [`fytd_gr()`](https://uhero.github.io/fcutils/reference/fytd_gr.md) | fiscal year | the same for the fiscal year |
+| [`mtd_agg()`](https://uhero.github.io/fcutils/reference/mtd_agg.md), [`mtd_gr()`](https://uhero.github.io/fcutils/reference/mtd_gr.md) | month | the same within each month, for daily data |
+| `ptd_agg(x, per)`, `ptd_gr(x, per)` | `per`: “year”, “quarter”, “month” | the general form |
 
 Visitor arrivals in early 2025:
 
@@ -105,8 +105,8 @@ Visitor arrivals in early 2025:
 vis <- conv_xts(monthly_data_example)$VISNS_HI
 round(tail(tsbox::ts_c(
   arrivals = vis,
-  ytd_avg = ytd_cum(vis),
-  ytd_sum = ytd_cum(vis, avg = FALSE),
+  ytd_avg = ytd_agg(vis),
+  ytd_sum = ytd_agg(vis, avg = FALSE),
   ytd_gr = ytd_gr(vis),
   fytd_gr = fytd_gr(vis)
 ), 4), 1)

@@ -12,8 +12,9 @@
 <url><loc>https://uhero.github.io/fcutils/reference/AtoQ.html</loc></url>
 <url><loc>https://uhero.github.io/fcutils/reference/QtoA.html</loc></url>
 <url><loc>https://uhero.github.io/fcutils/reference/addf.html</loc></url>
-<url><loc>https://uhero.github.io/fcutils/reference/aggr.html</loc></url>
+<url><loc>https://uhero.github.io/fcutils/reference/agg.html</loc></url>
 <url><loc>https://uhero.github.io/fcutils/reference/cagr.html</loc></url>
+<url><loc>https://uhero.github.io/fcutils/reference/chain.html</loc></url>
 <url><loc>https://uhero.github.io/fcutils/reference/conv_long.html</loc></url>
 <url><loc>https://uhero.github.io/fcutils/reference/conv_tslist.html</loc></url>
 <url><loc>https://uhero.github.io/fcutils/reference/conv_wide.html</loc></url>
@@ -23,11 +24,12 @@
 <url><loc>https://uhero.github.io/fcutils/reference/disagg.html</loc></url>
 <url><loc>https://uhero.github.io/fcutils/reference/extend.html</loc></url>
 <url><loc>https://uhero.github.io/fcutils/reference/extract_data.html</loc></url>
-<url><loc>https://uhero.github.io/fcutils/reference/faggr.html</loc></url>
+<url><loc>https://uhero.github.io/fcutils/reference/fagg.html</loc></url>
+<url><loc>https://uhero.github.io/fcutils/reference/fcutils-deprecated.html</loc></url>
 <url><loc>https://uhero.github.io/fcutils/reference/fcutils-package.html</loc></url>
 <url><loc>https://uhero.github.io/fcutils/reference/find_end.html</loc></url>
 <url><loc>https://uhero.github.io/fcutils/reference/find_start.html</loc></url>
-<url><loc>https://uhero.github.io/fcutils/reference/fytd_cum.html</loc></url>
+<url><loc>https://uhero.github.io/fcutils/reference/fytd_agg.html</loc></url>
 <url><loc>https://uhero.github.io/fcutils/reference/fytd_gr.html</loc></url>
 <url><loc>https://uhero.github.io/fcutils/reference/gen_table.html</loc></url>
 <url><loc>https://uhero.github.io/fcutils/reference/get_series.html</loc></url>
@@ -44,9 +46,8 @@
 <url><loc>https://uhero.github.io/fcutils/reference/make_xts.html</loc></url>
 <url><loc>https://uhero.github.io/fcutils/reference/model_equation.html</loc></url>
 <url><loc>https://uhero.github.io/fcutils/reference/monthly_data_example.html</loc></url>
-<url><loc>https://uhero.github.io/fcutils/reference/mtd_cum.html</loc></url>
+<url><loc>https://uhero.github.io/fcutils/reference/mtd_agg.html</loc></url>
 <url><loc>https://uhero.github.io/fcutils/reference/mtd_gr.html</loc></url>
-<url><loc>https://uhero.github.io/fcutils/reference/multi_chain.html</loc></url>
 <url><loc>https://uhero.github.io/fcutils/reference/nmons.html</loc></url>
 <url><loc>https://uhero.github.io/fcutils/reference/nqtrs.html</loc></url>
 <url><loc>https://uhero.github.io/fcutils/reference/p.html</loc></url>
@@ -61,7 +62,7 @@
 <url><loc>https://uhero.github.io/fcutils/reference/plot_fc.html</loc></url>
 <url><loc>https://uhero.github.io/fcutils/reference/pm.html</loc></url>
 <url><loc>https://uhero.github.io/fcutils/reference/pq.html</loc></url>
-<url><loc>https://uhero.github.io/fcutils/reference/ptd_cum.html</loc></url>
+<url><loc>https://uhero.github.io/fcutils/reference/ptd_agg.html</loc></url>
 <url><loc>https://uhero.github.io/fcutils/reference/ptd_gr.html</loc></url>
 <url><loc>https://uhero.github.io/fcutils/reference/py.html</loc></url>
 <url><loc>https://uhero.github.io/fcutils/reference/qtrs.html</loc></url>
@@ -82,7 +83,7 @@
 <url><loc>https://uhero.github.io/fcutils/reference/write_tsd.html</loc></url>
 <url><loc>https://uhero.github.io/fcutils/reference/ymd_to_yQq.html</loc></url>
 <url><loc>https://uhero.github.io/fcutils/reference/yoy_to_lev.html</loc></url>
-<url><loc>https://uhero.github.io/fcutils/reference/ytd_cum.html</loc></url>
+<url><loc>https://uhero.github.io/fcutils/reference/ytd_agg.html</loc></url>
 <url><loc>https://uhero.github.io/fcutils/reference/ytd_gr.html</loc></url>
 </urlset>
 

@@ -153,7 +153,7 @@ the same span a year earlier.</p>
 </tr></thead>
 <tbody>
 <tr class="odd">
-<td><code>ytd_cum(x, avg)</code></td>
+<td><code>ytd_agg(x, avg)</code></td>
 <td>calendar year</td>
 <td>average (or sum, <code>avg = FALSE</code>) so far</td>
 </tr>
@@ -164,21 +164,21 @@ the same span a year earlier.</p>
 </tr>
 <tr class="odd">
 <td>
-<code><a href="../reference/fytd_cum.html">fytd_cum()</a></code>, <code><a href="../reference/fytd_gr.html">fytd_gr()</a></code>
+<code><a href="../reference/fytd_agg.html">fytd_agg()</a></code>, <code><a href="../reference/fytd_gr.html">fytd_gr()</a></code>
 </td>
 <td>fiscal year</td>
 <td>the same for the fiscal year</td>
 </tr>
 <tr class="even">
 <td>
-<code><a href="../reference/mtd_cum.html">mtd_cum()</a></code>, <code><a href="../reference/mtd_gr.html">mtd_gr()</a></code>
+<code><a href="../reference/mtd_agg.html">mtd_agg()</a></code>, <code><a href="../reference/mtd_gr.html">mtd_gr()</a></code>
 </td>
 <td>month</td>
 <td>the same within each month, for daily data</td>
 </tr>
 <tr class="odd">
 <td>
-<code>ptd_cum(x, per)</code>, <code>ptd_gr(x, per)</code>
+<code>ptd_agg(x, per)</code>, <code>ptd_gr(x, per)</code>
 </td>
 <td>
 <code>per</code>: “year”, “quarter”, “month”</td>
@@ -191,8 +191,8 @@ the same span a year earlier.</p>
 <code class="sourceCode R"><span><span class="va">vis</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/conv_xts.html">conv_xts</a></span><span class="op">(</span><span class="va">monthly_data_example</span><span class="op">)</span><span class="op">$</span><span class="va">VISNS_HI</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">round</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">tail</a></span><span class="op">(</span><span class="fu">tsbox</span><span class="fu">::</span><span class="fu"><a href="https://docs.ropensci.org/tsbox/reference/ts_c.html" class="external-link">ts_c</a></span><span class="op">(</span></span>
 <span>  arrivals <span class="op">=</span> <span class="va">vis</span>,</span>
-<span>  ytd_avg <span class="op">=</span> <span class="fu"><a href="../reference/ytd_cum.html">ytd_cum</a></span><span class="op">(</span><span class="va">vis</span><span class="op">)</span>,</span>
-<span>  ytd_sum <span class="op">=</span> <span class="fu"><a href="../reference/ytd_cum.html">ytd_cum</a></span><span class="op">(</span><span class="va">vis</span>, avg <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span>,</span>
+<span>  ytd_avg <span class="op">=</span> <span class="fu"><a href="../reference/ytd_agg.html">ytd_agg</a></span><span class="op">(</span><span class="va">vis</span><span class="op">)</span>,</span>
+<span>  ytd_sum <span class="op">=</span> <span class="fu"><a href="../reference/ytd_agg.html">ytd_agg</a></span><span class="op">(</span><span class="va">vis</span>, avg <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span>,</span>
 <span>  ytd_gr <span class="op">=</span> <span class="fu"><a href="../reference/ytd_gr.html">ytd_gr</a></span><span class="op">(</span><span class="va">vis</span><span class="op">)</span>,</span>
 <span>  fytd_gr <span class="op">=</span> <span class="fu"><a href="../reference/fytd_gr.html">fytd_gr</a></span><span class="op">(</span><span class="va">vis</span><span class="op">)</span></span>
 <span><span class="op">)</span>, <span class="fl">4</span><span class="op">)</span>, <span class="fl">1</span><span class="op">)</span></span>

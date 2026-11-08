@@ -139,17 +139,17 @@ by industry, 1998–2025, in thousands), <code>monthly_data_example</code>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> 2024-07-01    640.   39.6</span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> 2024-10-01    643.   39.1</span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> 2025-01-01    648.   39.4</span></span></code></pre></div>
-<p><code><a href="../reference/aggr.html">aggr()</a></code> averages quarters to years. Given a wide tibble
-it returns a wide tibble, and given xts it returns xts:</p>
+<p><code><a href="../reference/agg.html">agg()</a></code> averages quarters to years. Given a wide tibble it
+returns a wide tibble, and given xts it returns xts:</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/aggr.html">aggr</a></span><span class="op">(</span><span class="va">q</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">tail</a></span><span class="op">(</span><span class="fl">3</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/agg.html">agg</a></span><span class="op">(</span><span class="va">q</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">tail</a></span><span class="op">(</span><span class="fl">3</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 3 × 3</span></span></span>
 <span><span class="co">#&gt;   time       E_NF_HI ECT_HI</span></span>
 <span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;date&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> 2022-01-01    618.   37.2</span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> 2023-01-01    632.   38.1</span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> 2024-01-01    639.   39.2</span></span>
-<span><span class="fu"><a href="../reference/aggr.html">aggr</a></span><span class="op">(</span><span class="fu"><a href="../reference/conv_xts.html">conv_xts</a></span><span class="op">(</span><span class="va">q</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">tail</a></span><span class="op">(</span><span class="fl">3</span><span class="op">)</span></span>
+<span><span class="fu"><a href="../reference/agg.html">agg</a></span><span class="op">(</span><span class="fu"><a href="../reference/conv_xts.html">conv_xts</a></span><span class="op">(</span><span class="va">q</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">tail</a></span><span class="op">(</span><span class="fl">3</span><span class="op">)</span></span>
 <span><span class="co">#&gt;             E_NF_HI   ECT_HI</span></span>
 <span><span class="co">#&gt; 2022-01-01 618.0704 37.17124</span></span>
 <span><span class="co">#&gt; 2023-01-01 632.2629 38.10377</span></span>

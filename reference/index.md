@@ -32,8 +32,7 @@
 - [`extend()`](https://uhero.github.io/fcutils/reference/extend.md) :
   Extend a series past its last observation
 
-- [`multi_chain()`](https://uhero.github.io/fcutils/reference/multi_chain.md)
-  :
+- [`chain()`](https://uhero.github.io/fcutils/reference/chain.md) :
 
   Extend "ts-boxable" objects by chaining (extension of
   [`tsbox::ts_chain()`](https://docs.ropensci.org/tsbox/reference/ts_bind.html))
@@ -70,10 +69,10 @@
 
 ## Frequency conversion and interpolation
 
-- [`aggr()`](https://uhero.github.io/fcutils/reference/aggr.md) :
+- [`agg()`](https://uhero.github.io/fcutils/reference/agg.md) :
   Aggregate univariate or multivariate time series from low to high
   frequency
-- [`faggr()`](https://uhero.github.io/fcutils/reference/faggr.md) :
+- [`fagg()`](https://uhero.github.io/fcutils/reference/fagg.md) :
   Aggregate univariate or multivariate fiscal time series from low to
   high frequency
 - [`disagg()`](https://uhero.github.io/fcutils/reference/disagg.md) :
@@ -107,13 +106,13 @@
   looking moving average
 - [`index_to_base()`](https://uhero.github.io/fcutils/reference/index_to_base.md)
   : Index series to a base period (wrapper around tsbox::ts_index())
-- [`fytd_cum()`](https://uhero.github.io/fcutils/reference/fytd_cum.md)
+- [`fytd_agg()`](https://uhero.github.io/fcutils/reference/fytd_agg.md)
   : Fiscal year to date sum or average
-- [`mtd_cum()`](https://uhero.github.io/fcutils/reference/mtd_cum.md) :
+- [`mtd_agg()`](https://uhero.github.io/fcutils/reference/mtd_agg.md) :
   Month to date sum or average
-- [`ptd_cum()`](https://uhero.github.io/fcutils/reference/ptd_cum.md) :
+- [`ptd_agg()`](https://uhero.github.io/fcutils/reference/ptd_agg.md) :
   Period to date sum or average
-- [`ytd_cum()`](https://uhero.github.io/fcutils/reference/ytd_cum.md) :
+- [`ytd_agg()`](https://uhero.github.io/fcutils/reference/ytd_agg.md) :
   Year to date sum or average
 - [`fytd_gr()`](https://uhero.github.io/fcutils/reference/fytd_gr.md) :
   Fiscal year to date growth rate
