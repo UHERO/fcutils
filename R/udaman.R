@@ -194,9 +194,15 @@ get_series_exp <- function(
     uhero_data$data$name[empty_ser],
     collapse = "\n"
   ))
-  data_tbl <- data_lst %>%
-    purrr::discard(~ nrow(.x) == 0) %>%
-    purrr::reduce(tsbox::ts_c) %>%
+  # one long table, then wide: merging the series one pair at a time with
+  # ts_c() takes time that grows with the square of the number of series
+  # data_tbl <- data_lst %>%
+  #   purrr::discard(~ nrow(.x) == 0) %>%
+  #   purrr::reduce(tsbox::ts_c) %>%
+  #   tsbox::ts_wide()
+  data_lst <- purrr::discard(data_lst, ~ nrow(.x) == 0)
+  names(data_lst) <- sprintf("s%06d", seq_along(data_lst))
+  data_tbl <- dplyr::bind_rows(data_lst, .id = "id") %>%
     tsbox::ts_wide()
   name <- uhero_data$data$name[!empty_ser]
   title <- uhero_data$data$title[!empty_ser]

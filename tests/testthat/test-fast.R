@@ -59,3 +59,13 @@ test_that("the fast paths are taken where they should be", {
   expect_true(is.na(lag_periods(gap, 4)))
   expect_true(is.na(lag_periods(q, "2 weeks")))
 })
+
+test_that("find_start() and find_end() equal tsbox::ts_summary()", {
+  withr::local_seed(20261108)
+  for (i in 1:200) {
+    x <- random_case()
+    summ <- result(tsbox::ts_summary(conv_long(x)))
+    expect_identical(result(find_start(x)), if (is.character(summ)) summ else summ$start)
+    expect_identical(result(find_end(x)), if (is.character(summ)) summ else summ$end)
+  }
+})

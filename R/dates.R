@@ -65,9 +65,30 @@ find_start <- function(x) {
   # convert to long format and return additional details
   x_mod <- conv_long(x, ser_info = TRUE)
 
+  # x_mod %>%
+  #   tsbox::ts_summary() %>%
+  #   dplyr::pull(.data$start)
+  obs_range(x_mod)$start
+}
+
+
+#' First and last date with a value, by series (as in `tsbox::ts_summary()`)
+#'
+#' Input with a series of fewer than two values goes to ts_summary(), which
+#' stops on it, so such input fails as it always has.
+#' @param x_mod long tibble from conv_long()
+#' @noRd
+obs_range <- function(x_mod) {
+  if (!enough_values(x_mod)) {
+    return(tsbox::ts_summary(x_mod))
+  }
   x_mod %>%
-    tsbox::ts_summary() %>%
-    dplyr::pull(.data$start)
+    dplyr::filter(!is.na(.data$value)) %>%
+    dplyr::summarise(
+      start = min(.data$time),
+      end = max(.data$time),
+      .by = "id"
+    )
 }
 
 
@@ -90,8 +111,12 @@ find_end <- function(x, last_day = FALSE) {
   # convert to long format and return additional details
   x_mod <- conv_long(x, ser_info = TRUE)
 
-  x_mod_summary <- x_mod %>%
-    tsbox::ts_summary()
+  # ts_summary() is slow; it is only needed for the period length
+  x_mod_summary <- if (last_day) {
+    tsbox::ts_summary(x_mod)
+  } else {
+    obs_range(x_mod)
+  }
 
   x_mod_summary %>%
     dplyr::pull(.data$end) %>%

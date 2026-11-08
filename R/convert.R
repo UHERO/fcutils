@@ -287,18 +287,14 @@ conv_long <- function(x, ser_info = FALSE) {
   # need long tbl series names for differential treatment of univariate data
   # (read from the id column when there is one: ts_summary() computes much
   # more than the names and is slow on large banks)
-  ser_names_2 <- if (identical(names(x_mod)[1], "id")) {
+  # (only needed when x does not carry a single name itself)
+  ser_names <- if (length(ser_names_1) == 1) {
+    ser_names_1
+  } else if (identical(names(x_mod)[1], "id")) {
     unique(as.character(x_mod$id))
   } else {
     tsbox::ts_summary(x_mod) %>%
       dplyr::pull(.data$id)
-  }
-  ser_names <- if (length(ser_names_1) == 1) {
-    ser_names_1
-  } else if (length(ser_names_2) == 1) {
-    ser_names_2
-  } else {
-    ser_names_2
   }
   # add an id column to univariate data
   x_mod <- x_mod %>%
