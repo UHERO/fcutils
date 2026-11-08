@@ -13,6 +13,7 @@
 #' | `fytd_cum()` | [fytd_agg()] |
 #' | `mtd_cum()` | [mtd_agg()] |
 #' | `ptd_cum()` | [ptd_agg()] |
+#' | `qtrs()` | [qtrs_to_mons()] |
 #'
 #' @param ... arguments passed to the new function
 #'
@@ -68,4 +69,11 @@ ptd_cum <- function(...) {
 faggr <- function(...) {
   .Deprecated("fagg", package = "fcutils")
   fagg(...)
+}
+
+#' @rdname fcutils-deprecated
+#' @export
+qtrs <- function(...) {
+  .Deprecated("qtrs_to_mons", package = "fcutils")
+  qtrs_to_mons(...)
 }

@@ -9,6 +9,7 @@
 \alias{mtd_cum}
 \alias{ptd_cum}
 \alias{faggr}
+\alias{qtrs}
 \title{Deprecated functions}
 \usage{
 multi_chain(...)
@@ -24,6 +25,8 @@ mtd_cum(...)
 ptd_cum(...)
 
 faggr(...)
+
+qtrs(...)
 }
 \arguments{
 \item{...}{arguments passed to the new function}
@@ -46,6 +49,7 @@ new names, which take the same arguments:
    \code{fytd_cum()} \tab \code{\link[=fytd_agg]{fytd_agg()}} \cr
    \code{mtd_cum()} \tab \code{\link[=mtd_agg]{mtd_agg()}} \cr
    \code{ptd_cum()} \tab \code{\link[=ptd_agg]{ptd_agg()}} \cr
+   \code{qtrs()} \tab \code{\link[=qtrs_to_mons]{qtrs_to_mons()}} \cr
 }
 }
 \keyword{internal}

@@ -374,9 +374,9 @@ parse_period <- function(x) {
 #' @export
 #'
 #' @examples
-#' qtrs(3)
-#' lubridate::ymd("2020-01-01") + qtrs(3)
-qtrs <- function(nr_quarters) {
+#' qtrs_to_mons(3)
+#' lubridate::ymd("2020-01-01") + qtrs_to_mons(3)
+qtrs_to_mons <- function(nr_quarters) {
   nr_quarters * months(3)
 }
 
