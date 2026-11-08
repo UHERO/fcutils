@@ -3,12 +3,12 @@
 * Renamed for consistency: `multi_chain()` is now `chain()`, `aggr()` and
   `faggr()` are now `agg()` and `fagg()`, and `ytd_cum()`, `fytd_cum()`,
   `mtd_cum()` and `ptd_cum()` are now `ytd_agg()`, `fytd_agg()`,
-  `mtd_agg()` and `ptd_agg()`. `qtrs()` is now `qtrs_to_mons()`, which
-  names what it returns: a number of quarters as a period in months. The
-  new functions take the same arguments and give the same results. The old
-  names still work but warn; they will be removed in a later version (see
-  `?"fcutils-deprecated"`). No installed package exports any of the new
-  names.
+  `mtd_agg()` and `ptd_agg()`. The new functions take the same arguments
+  and give the same results. The old names still work but warn; they will
+  be removed in a later version (see `?"fcutils-deprecated"`). No installed
+  package exports any of the new names.
+* `qtrs()` is removed, with no deprecated alias. Replace `qtrs(n)` with
+  `n * months(3)` (lubridate), which it computed.
 
 # fcutils 0.1.2.1
 

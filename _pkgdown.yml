@@ -32,7 +32,6 @@ reference:
   - find_end
   - nqtrs
   - nmons
-  - qtrs_to_mons
   - set_tsrange
 - title: Frequency conversion and interpolation
   contents:
