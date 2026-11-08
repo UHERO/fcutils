@@ -1,5 +1,14 @@
 # Changelog
 
+## fcutils 0.1.2.1
+
+- `rebase()` is renamed
+  [`index_to_base()`](https://uhero.github.io/fcutils/reference/index_to_base.md).
+  It sets a series to a value in a base period, which is indexing.
+  Rebasing is a different operation: it re-expresses a real series, such
+  as real GDP, in the prices of another year. Replace `rebase(x, ...)`
+  with `index_to_base(x, ...)`.
+
 ## fcutils 0.1.2
 
 Results are unchanged.
@@ -82,11 +91,8 @@ Results are unchanged, except where
 [`faggr()`](https://uhero.github.io/fcutils/reference/faggr.md) used to
 fail.
 
-- `ts_rebase()` is renamed
-  [`rebase()`](https://uhero.github.io/fcutils/reference/rebase.md),
-  because the `ts_` prefix marks tsbox functions. No other installed
-  package exports a
-  [`rebase()`](https://uhero.github.io/fcutils/reference/rebase.md).
+- `ts_rebase()` is renamed `rebase()`, because the `ts_` prefix marks
+  tsbox functions. No other installed package exports a `rebase()`.
 
 - [`faggr()`](https://uhero.github.io/fcutils/reference/faggr.md)
   aggregates all series at once instead of each series and year

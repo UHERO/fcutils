@@ -19,7 +19,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">fcutils</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.2</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.2.1</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -107,13 +107,13 @@ with the years elapsed:</p>
 <span><span class="co">#&gt;           <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>          9.75   0.142</span></span></code></pre></div>
 <p><code>ma(x, order)</code> is a trailing moving average that includes
-the current period. <code>rebase(x, base_per)</code> turns levels into
-an index that equals 100 in the base period. A year or two dates as the
-base set the period’s average to 100, which makes series of different
-size comparable. Here total jobs and jobs in accommodation and food
-services, against 2019:</p>
+the current period. <code>index_to_base(x, base_per)</code> turns levels
+into an index that equals 100 in the base period. A year or two dates as
+the base set the period’s average to 100, which makes series of
+different size comparable. Here total jobs and jobs in accommodation and
+food services, against 2019:</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">idx</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/rebase.html">rebase</a></span><span class="op">(</span><span class="va">q</span><span class="op">[</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"E_NF_HI"</span>, <span class="st">"EAF_HI"</span><span class="op">)</span><span class="op">]</span>, <span class="fl">2019</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="va">idx</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/index_to_base.html">index_to_base</a></span><span class="op">(</span><span class="va">q</span><span class="op">[</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"E_NF_HI"</span>, <span class="st">"EAF_HI"</span><span class="op">)</span><span class="op">]</span>, <span class="fl">2019</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">round</a></span><span class="op">(</span><span class="va">idx</span><span class="op">[</span><span class="fu"><a href="../reference/p.html">p</a></span><span class="op">(</span><span class="fl">2019.4</span>, <span class="fl">2020.3</span><span class="op">)</span><span class="op">]</span>, <span class="fl">1</span><span class="op">)</span></span>
 <span><span class="co">#&gt;            E_NF_HI EAF_HI</span></span>
 <span><span class="co">#&gt; 2019-10-01   100.3  100.1</span></span>

@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">fcutils</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.2</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.2.1</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -38,6 +38,11 @@
     </div>
 
     <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.1.2.1" id="fcutils-0121">fcutils 0.1.2.1<a class="anchor" aria-label="anchor" href="#fcutils-0121"></a></h2>
+<ul><li>
+<code>rebase()</code> is renamed <code><a href="../reference/index_to_base.html">index_to_base()</a></code>. It sets a series to a value in a base period, which is indexing. Rebasing is a different operation: it re-expresses a real series, such as real GDP, in the prices of another year. Replace <code>rebase(x, ...)</code> with <code>index_to_base(x, ...)</code>.</li>
+</ul></div>
+    <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.1.2" id="fcutils-012">fcutils 0.1.2<a class="anchor" aria-label="anchor" href="#fcutils-012"></a></h2>
 <p>Results are unchanged.</p>
 <ul><li>
@@ -55,7 +60,7 @@
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.1.1" id="fcutils-011">fcutils 0.1.1<a class="anchor" aria-label="anchor" href="#fcutils-011"></a></h2>
 <p>Results are unchanged, except where <code><a href="../reference/faggr.html">faggr()</a></code> used to fail.</p>
-<ul><li><p><code>ts_rebase()</code> is renamed <code><a href="../reference/rebase.html">rebase()</a></code>, because the <code>ts_</code> prefix marks tsbox functions. No other installed package exports a <code><a href="../reference/rebase.html">rebase()</a></code>.</p></li>
+<ul><li><p><code>ts_rebase()</code> is renamed <code>rebase()</code>, because the <code>ts_</code> prefix marks tsbox functions. No other installed package exports a <code>rebase()</code>.</p></li>
 <li><p><code><a href="../reference/faggr.html">faggr()</a></code> aggregates all series at once instead of each series and year separately: 0.4 s instead of 33 s for 20 quarterly series over a century. It no longer stops on a fiscal year with no values (a series that starts or ends with missing values).</p></li>
 <li><p><code><a href="../reference/aggr.html">aggr()</a></code> and <code><a href="../reference/pcmp.html">pcmp()</a></code> aggregate or compute all series at once, and <code><a href="../reference/conv_long.html">conv_long()</a></code> reads series names from the id column instead of <code>ts_summary()</code>. On a bank of 200 quarterly series over a century, <code><a href="../reference/aggr.html">aggr()</a></code> takes 3.5 s instead of 4.5 s and <code><a href="../reference/pcmp.html">pcmp()</a></code> 2.0 s instead of 3.5 s; most of what remains is <code><a href="https://docs.ropensci.org/tsbox/reference/ts_frequency.html" class="external-link">tsbox::ts_frequency()</a></code> and <code><a href="https://docs.ropensci.org/tsbox/reference/ts_regular.html" class="external-link">tsbox::ts_regular()</a></code>.</p></li>
 <li><p><code><a href="../reference/get_series.html">get_series()</a></code> and <code><a href="../reference/get_series_exp.html">get_series_exp()</a></code> share their request, naming and format code. An unknown <code>rename</code> or <code>format</code> now stops with a message.</p></li>
