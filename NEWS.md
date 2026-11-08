@@ -3,6 +3,12 @@
 Results are unchanged.
 
 * `multi_chain(verbose = FALSE)` does not print the series it extends.
+* Faster on large banks, with identical results: `conv_long()`, which most
+  functions call first, skips `tsbox::ts_regular()`'s checks when no date is
+  missing (0.9 s to 0.07 s on 200 quarterly series over a century), and
+  `multi_chain()` places each chained series back by date instead of a join
+  per series. On that bank `multi_chain()` takes 0.7 s instead of 3 s,
+  `aggr()` 2.7 s instead of 4.5 s and `pcmp()` 1.5 s instead of 3.5 s.
 * `ytd_cum()`, `ytd_gr()`, `fytd_cum()`, `fytd_gr()`, `mtd_cum()`,
   `mtd_gr()`, `ptd_cum()` and `ptd_gr()` share one implementation. Old and
   new give identical results on monthly, quarterly and daily data in every

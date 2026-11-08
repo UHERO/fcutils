@@ -164,7 +164,8 @@ multi_chain <- function(
     }
   }
 
-  # extend x with y
+  # extend x with y: chain_1() on each pair of columns, results placed back
+  # by date (direct column access; a left_join() per series was slow)
   chained_x <- x_wide %>%
     dplyr::select(dplyr::all_of(c("time", ids))) %>%
     dplyr::full_join(
@@ -172,35 +173,28 @@ multi_chain <- function(
         dplyr::select(dplyr::all_of(c("time", ids))),
       by = "time"
     ) %>%
-    dplyr::arrange(.data$time) %>%
-    dplyr::mutate(dplyr::across(
-      .cols = dplyr::ends_with(".x"),
-      .fns = ~ dplyr::left_join(
-        dplyr::pick("time"),
-        chain_1(
-          tibble::tibble(
-            id = dplyr::cur_column(),
-            time = dplyr::pick("time")$time,
-            value = dplyr::pick(dplyr::cur_column()) %>%
-              dplyr::pull()
-          ) %>%
-            tidyr::drop_na(),
-          tibble::tibble(
-            id = dplyr::cur_column() %>% stringr::str_replace("\\.x$", ".y"),
-            time = dplyr::pick("time")$time,
-            value = dplyr::pick(
-              dplyr::cur_column() %>% stringr::str_replace("\\.x$", ".y")
-            ) %>%
-              dplyr::pull()
-          ) %>%
-            tidyr::drop_na(),
-          method = method,
-          direction = direction
-        ),
-        by = "time",
+    dplyr::arrange(.data$time)
+  for (x_col in stringr::str_subset(names(chained_x), "\\.x$")) {
+    y_col <- stringr::str_replace(x_col, "\\.x$", ".y")
+    chained <- chain_1(
+      tibble::tibble(
+        id = x_col,
+        time = chained_x$time,
+        value = chained_x[[x_col]]
       ) %>%
-        dplyr::pull(.data$value)
-    )) %>%
+        tidyr::drop_na(),
+      tibble::tibble(
+        id = y_col,
+        time = chained_x$time,
+        value = chained_x[[y_col]]
+      ) %>%
+        tidyr::drop_na(),
+      method = method,
+      direction = direction
+    )
+    chained_x[[x_col]] <- chained$value[match(chained_x$time, chained$time)]
+  }
+  chained_x <- chained_x %>%
     dplyr::rename_with(
       ~ stringr::str_remove(.x, "\\.x$"),
       .cols = dplyr::ends_with(".x")
