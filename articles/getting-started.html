@@ -19,7 +19,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">fcutils</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.2.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.3</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -129,7 +129,8 @@ base R’s ts. They return the result in the format of the input.</p>
 UHERO’s data system: <code>quarterly_data_example</code> (payroll jobs
 by industry, 1998–2025, in thousands), <code>monthly_data_example</code>
 (visitor arrivals and related series, in thousands) and
-<code>daily_data_example</code> (visitors present).</p>
+<code>daily_data_example</code> (visitor arrivals by day,
+2020–2022).</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">q</span> <span class="op">&lt;-</span> <span class="va">quarterly_data_example</span><span class="op">[</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"time"</span>, <span class="st">"E_NF_HI"</span>, <span class="st">"ECT_HI"</span><span class="op">)</span><span class="op">]</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">tail</a></span><span class="op">(</span><span class="va">q</span>, <span class="fl">3</span><span class="op">)</span></span>
@@ -237,10 +238,9 @@ full:</p>
 <span><span class="co">#&gt; 2024-04-01 636.4715</span></span>
 <span><span class="co">#&gt; 2024-07-01 639.7316</span></span>
 <span><span class="co">#&gt; 2024-10-01 643.2565</span></span></code></pre></div>
-<p><code><a href="../reference/span.html">span()</a></code> cuts any format to a range, and with
-<code>extend = TRUE</code> it also pads a series out to the range, such
-as the bank. <code><a href="../reference/find_start.html">find_start()</a></code> and <code><a href="../reference/find_end.html">find_end()</a></code> give
-the first and last date with a value:</p>
+<p><code><a href="../reference/span.html">span()</a></code> cuts any format to a range.
+<code><a href="../reference/find_start.html">find_start()</a></code> and <code><a href="../reference/find_end.html">find_end()</a></code> give the first and
+last date with a value:</p>
 <div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/span.html">span</a></span><span class="op">(</span><span class="va">q</span>, <span class="fl">2024</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fl">3</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 3 × 3</span></span></span>
@@ -250,10 +250,18 @@ the first and last date with a value:</p>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> 2024-04-01    636.   39.2</span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> 2024-07-01    640.   39.6</span></span>
 <span><span class="fu"><a href="../reference/find_end.html">find_end</a></span><span class="op">(</span><span class="va">q</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [1] "2025-01-01" "2025-01-01"</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="fu"><a href="../reference/span.html">span</a></span><span class="op">(</span><span class="va">x</span>, <span class="fu"><a href="https://rdrr.io/r/base/options.html" class="external-link">getOption</a></span><span class="op">(</span><span class="st">"fcutils.bnk_start"</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/options.html" class="external-link">getOption</a></span><span class="op">(</span><span class="st">"fcutils.bnk_end"</span><span class="op">)</span>,</span>
-<span>  extend <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [1] 184</span></span></code></pre></div>
+<span><span class="co">#&gt; [1] "2025-01-01" "2025-01-01"</span></span></code></pre></div>
+<p>With <code>extend = TRUE</code>, <code><a href="../reference/span.html">span()</a></code> also pads a
+series with NA out to the end of the range, which is how a series is
+fitted to the bank:</p>
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/span.html">span</a></span><span class="op">(</span><span class="va">x</span>, <span class="fl">2024.4</span>, <span class="fl">2025.4</span>, extend <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<span><span class="co">#&gt;             E_NF_HI</span></span>
+<span><span class="co">#&gt; 2024-10-01 643.2565</span></span>
+<span><span class="co">#&gt; 2025-01-01 647.9022</span></span>
+<span><span class="co">#&gt; 2025-04-01       NA</span></span>
+<span><span class="co">#&gt; 2025-07-01       NA</span></span>
+<span><span class="co">#&gt; 2025-10-01       NA</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="getting-data">Getting data<a class="anchor" aria-label="anchor" href="#getting-data"></a>
@@ -266,7 +274,7 @@ a UDAMAN export. Both need the UDAMAN token, stored once with
 <code><a href="../reference/set_udaman_token.html">set_udaman_token()</a></code> (or as <code>udaman_token</code> in
 <code>.Renviron</code>), and the UHERO VPN unless
 <code>public = TRUE</code>.</p>
-<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/get_series.html">get_series</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"VISNS@HI.M"</span>, <span class="st">"E_NF@HI.Q"</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/get_series_exp.html">get_series_exp</a></span><span class="op">(</span><span class="fl">74</span>, format <span class="op">=</span> <span class="st">"xts"</span><span class="op">)</span></span></code></pre></div>
 <p><code><a href="../reference/get_series_src.html">get_series_src()</a></code> downloads from FRED, Statistics Canada,
@@ -274,7 +282,7 @@ the Bank of Canada, Japan’s e-Stat and the EIA. FRED, e-Stat and the EIA
 need a key, stored with <code><a href="../reference/set_api_key.html">set_api_key()</a></code> or in
 <code>.Renviron</code> (<code>FRED_API_KEY</code>,
 <code>ESTAT_API_KEY</code>, <code>EIA_API_KEY</code>):</p>
-<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/get_series_src.html">get_series_src</a></span><span class="op">(</span><span class="st">"UNRATE"</span>, <span class="st">"fred"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/get_series_src.html">get_series_src</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"PAYEMS"</span>, <span class="st">"CPIAUCSL"</span><span class="op">)</span>, <span class="st">"fred"</span>, format <span class="op">=</span> <span class="st">"xts"</span><span class="op">)</span></span></code></pre></div>
 <p>Next, <a href="forecasting.html">Building a forecast</a> extends

@@ -85,8 +85,8 @@ R’s ts. They return the result in the format of the input.
 The package ships three wide tibbles of Hawaii data from UDAMAN, UHERO’s
 data system: `quarterly_data_example` (payroll jobs by industry,
 1998–2025, in thousands), `monthly_data_example` (visitor arrivals and
-related series, in thousands) and `daily_data_example` (visitors
-present).
+related series, in thousands) and `daily_data_example` (visitor arrivals
+by day, 2020–2022).
 
 ``` r
 
@@ -196,8 +196,7 @@ x[p(2024.2, 2024)]
 ```
 
 [`span()`](https://uhero.github.io/fcutils/reference/span.md) cuts any
-format to a range, and with `extend = TRUE` it also pads a series out to
-the range, such as the bank.
+format to a range.
 [`find_start()`](https://uhero.github.io/fcutils/reference/find_start.md)
 and
 [`find_end()`](https://uhero.github.io/fcutils/reference/find_end.md)
@@ -214,9 +213,22 @@ span(q, 2024) |> head(3)
 #> 3 2024-07-01    640.   39.6
 find_end(q)
 #> [1] "2025-01-01" "2025-01-01"
-nrow(span(x, getOption("fcutils.bnk_start"), getOption("fcutils.bnk_end"),
-  extend = TRUE))
-#> [1] 184
+```
+
+With `extend = TRUE`,
+[`span()`](https://uhero.github.io/fcutils/reference/span.md) also pads
+a series with NA out to the end of the range, which is how a series is
+fitted to the bank:
+
+``` r
+
+span(x, 2024.4, 2025.4, extend = TRUE)
+#>             E_NF_HI
+#> 2024-10-01 643.2565
+#> 2025-01-01 647.9022
+#> 2025-04-01       NA
+#> 2025-07-01       NA
+#> 2025-10-01       NA
 ```
 
 ## Getting data

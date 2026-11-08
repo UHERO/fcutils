@@ -62,8 +62,6 @@
   yyyy-mm-dd
 - [`nmons()`](https://uhero.github.io/fcutils/reference/nmons.md) :
   Calculate number of months between two dates yyyyMm or yyyy-mm-dd
-- [`qtrs()`](https://uhero.github.io/fcutils/reference/qtrs.md) :
-  Convert period in quarters to period in months
 - [`set_tsrange()`](https://uhero.github.io/fcutils/reference/set_tsrange.md)
   : Set tsrange for behavioral equations to available data range
 

@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">fcutils</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.2.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.3</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -38,8 +38,10 @@
     </div>
 
     <div class="section level2">
-<h2 class="pkg-version" data-toc-text="development version" id="fcutils-development-version">fcutils (development version)<a class="anchor" aria-label="anchor" href="#fcutils-development-version"></a></h2>
+<h2 class="pkg-version" data-toc-text="0.1.3" id="fcutils-013">fcutils 0.1.3<a class="anchor" aria-label="anchor" href="#fcutils-013"></a></h2>
 <ul><li>Renamed for consistency: <code><a href="../reference/fcutils-deprecated.html">multi_chain()</a></code> is now <code><a href="../reference/chain.html">chain()</a></code>, <code><a href="../reference/fcutils-deprecated.html">aggr()</a></code> and <code><a href="../reference/fcutils-deprecated.html">faggr()</a></code> are now <code><a href="../reference/agg.html">agg()</a></code> and <code><a href="../reference/fagg.html">fagg()</a></code>, and <code><a href="../reference/fcutils-deprecated.html">ytd_cum()</a></code>, <code><a href="../reference/fcutils-deprecated.html">fytd_cum()</a></code>, <code><a href="../reference/fcutils-deprecated.html">mtd_cum()</a></code> and <code><a href="../reference/fcutils-deprecated.html">ptd_cum()</a></code> are now <code><a href="../reference/ytd_agg.html">ytd_agg()</a></code>, <code><a href="../reference/fytd_agg.html">fytd_agg()</a></code>, <code><a href="../reference/mtd_agg.html">mtd_agg()</a></code> and <code><a href="../reference/ptd_agg.html">ptd_agg()</a></code>. The new functions take the same arguments and give the same results. The old names still work but warn; they will be removed in a later version (see <code><a href="../reference/fcutils-deprecated.html">?"fcutils-deprecated"</a></code>). No installed package exports any of the new names.</li>
+<li>
+<code>qtrs()</code> is removed, with no deprecated alias. Replace <code>qtrs(n)</code> with <code>n * months(3)</code> (lubridate), which it computed.</li>
 </ul></div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.1.2.1" id="fcutils-0121">fcutils 0.1.2.1<a class="anchor" aria-label="anchor" href="#fcutils-0121"></a></h2>

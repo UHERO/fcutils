@@ -6,8 +6,7 @@ show growth rates, comparisons with a year earlier and indexes alongside
 the levels. This article covers the functions that compute those (growth
 rates, period-to-date totals, indexes) and those that show them (tables
 and interactive plots). The examples use the package’s Hawaii data:
-payroll jobs (quarterly), visitor arrivals (monthly) and visitors
-present (daily).
+payroll jobs (quarterly) and visitor arrivals (monthly and daily).
 
 ``` r
 
@@ -64,10 +63,10 @@ period: `ma(x, 4)` averages each quarter with the three before it.
 Series of different size are hard to compare as levels. Total jobs are
 about six times accommodation and food services jobs.
 `index_to_base(x, base_per)` divides each series by its value in a base
-period and multiplies by 100. Both series then start from 100, and the
-index shows the percent above or below the base. A year or two dates as
-the base set the average over that period to 100. Here the two series
-against 2019, through the 2020 pandemic:
+period and multiplies by 100. Both series then equal 100 in the base
+period, and the index shows the percent above or below the base. A year
+or two dates as the base set the average over that period to 100. Here
+the two series against 2019, through the 2020 pandemic:
 
 ``` r
 
@@ -117,9 +116,31 @@ round(tail(tsbox::ts_c(
 #> 2025-03-01    903.9   818.6  2455.7    1.7     3.7
 ```
 
-The year to March 2025 is 1.7% above the same months of 2024. The fiscal
-year to March, which started in July 2024, is 3.7% above July 2023 to
-March 2024.
+In March, `ytd_avg` is the average of January to March and `ytd_sum`
+their total. The year to March 2025 is 1.7% above the same months of
+2024. The fiscal year to March, which started in July 2024, is 3.7%
+above July 2023 to March 2024.
+
+The month-to-date functions do the same with daily data within each
+month. Daily visitor arrivals in March 2022, as travel recovered from
+the pandemic:
+
+``` r
+
+vis_d <- conv_xts(daily_data_example)$VISPNS_HI
+round(tail(tsbox::ts_c(
+  arrivals = vis_d,
+  mtd_avg = mtd_agg(vis_d),
+  mtd_gr = mtd_gr(vis_d)
+), 3), 1)
+#>            arrivals mtd_avg mtd_gr
+#> 2022-03-23    22693 22627.0   86.5
+#> 2022-03-24    25682 22754.3   85.5
+#> 2022-03-25    25556 22866.4   82.9
+```
+
+The first 25 days of March 2022 averaged 22,866 arrivals a day, 83% more
+than the first 25 days of March 2021.
 
 ## Tables
 

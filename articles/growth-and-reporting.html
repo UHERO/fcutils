@@ -19,7 +19,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">fcutils</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.2.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.3</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -72,8 +72,7 @@ show growth rates, comparisons with a year earlier and indexes alongside
 the levels. This article covers the functions that compute those (growth
 rates, period-to-date totals, indexes) and those that show them (tables
 and interactive plots). The examples use the package’s Hawaii data:
-payroll jobs (quarterly), visitor arrivals (monthly) and visitors
-present (daily).</p>
+payroll jobs (quarterly) and visitor arrivals (monthly and daily).</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://uhero.github.io/fcutils/">fcutils</a></span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/options.html" class="external-link">options</a></span><span class="op">(</span></span>
@@ -117,10 +116,10 @@ three before it.</p>
 <p>Series of different size are hard to compare as levels. Total jobs
 are about six times accommodation and food services jobs.
 <code>index_to_base(x, base_per)</code> divides each series by its value
-in a base period and multiplies by 100. Both series then start from 100,
-and the index shows the percent above or below the base. A year or two
-dates as the base set the average over that period to 100. Here the two
-series against 2019, through the 2020 pandemic:</p>
+in a base period and multiplies by 100. Both series then equal 100 in
+the base period, and the index shows the percent above or below the
+base. A year or two dates as the base set the average over that period
+to 100. Here the two series against 2019, through the 2020 pandemic:</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">idx</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/index_to_base.html">index_to_base</a></span><span class="op">(</span><span class="va">q</span><span class="op">[</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"E_NF_HI"</span>, <span class="st">"EAF_HI"</span><span class="op">)</span><span class="op">]</span>, <span class="fl">2019</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">round</a></span><span class="op">(</span><span class="va">idx</span><span class="op">[</span><span class="fu"><a href="../reference/p.html">p</a></span><span class="op">(</span><span class="fl">2019.4</span>, <span class="fl">2020.3</span><span class="op">)</span><span class="op">]</span>, <span class="fl">1</span><span class="op">)</span></span>
@@ -201,9 +200,26 @@ the same span a year earlier.</p>
 <span><span class="co">#&gt; 2025-01-01    792.2   792.2   792.2    3.8     4.5</span></span>
 <span><span class="co">#&gt; 2025-02-01    759.7   775.9  1551.9    1.0     3.8</span></span>
 <span><span class="co">#&gt; 2025-03-01    903.9   818.6  2455.7    1.7     3.7</span></span></code></pre></div>
-<p>The year to March 2025 is 1.7% above the same months of 2024. The
-fiscal year to March, which started in July 2024, is 3.7% above July
-2023 to March 2024.</p>
+<p>In March, <code>ytd_avg</code> is the average of January to March and
+<code>ytd_sum</code> their total. The year to March 2025 is 1.7% above
+the same months of 2024. The fiscal year to March, which started in July
+2024, is 3.7% above July 2023 to March 2024.</p>
+<p>The month-to-date functions do the same with daily data within each
+month. Daily visitor arrivals in March 2022, as travel recovered from
+the pandemic:</p>
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">vis_d</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/conv_xts.html">conv_xts</a></span><span class="op">(</span><span class="va">daily_data_example</span><span class="op">)</span><span class="op">$</span><span class="va">VISPNS_HI</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">round</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">tail</a></span><span class="op">(</span><span class="fu">tsbox</span><span class="fu">::</span><span class="fu"><a href="https://docs.ropensci.org/tsbox/reference/ts_c.html" class="external-link">ts_c</a></span><span class="op">(</span></span>
+<span>  arrivals <span class="op">=</span> <span class="va">vis_d</span>,</span>
+<span>  mtd_avg <span class="op">=</span> <span class="fu"><a href="../reference/mtd_agg.html">mtd_agg</a></span><span class="op">(</span><span class="va">vis_d</span><span class="op">)</span>,</span>
+<span>  mtd_gr <span class="op">=</span> <span class="fu"><a href="../reference/mtd_gr.html">mtd_gr</a></span><span class="op">(</span><span class="va">vis_d</span><span class="op">)</span></span>
+<span><span class="op">)</span>, <span class="fl">3</span><span class="op">)</span>, <span class="fl">1</span><span class="op">)</span></span>
+<span><span class="co">#&gt;            arrivals mtd_avg mtd_gr</span></span>
+<span><span class="co">#&gt; 2022-03-23    22693 22627.0   86.5</span></span>
+<span><span class="co">#&gt; 2022-03-24    25682 22754.3   85.5</span></span>
+<span><span class="co">#&gt; 2022-03-25    25556 22866.4   82.9</span></span></code></pre></div>
+<p>The first 25 days of March 2022 averaged 22,866 arrivals a day, 83%
+more than the first 25 days of March 2021.</p>
 </div>
 <div class="section level2">
 <h2 id="tables">Tables<a class="anchor" aria-label="anchor" href="#tables"></a>
@@ -214,7 +230,7 @@ default the dates run across and each series and growth rate has a row;
 page. <code>percent</code> picks the growth rate shown with each series:
 <code>"pc"</code> (period on period), <code>"pcy"</code> (year on year),
 <code>"pca"</code> (annualized) or <code>"none"</code>.</p>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/gen_table.html">gen_table</a></span><span class="op">(</span><span class="va">q</span><span class="op">[</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"E_NF_HI"</span>, <span class="st">"EAF_HI"</span><span class="op">)</span><span class="op">]</span>,</span>
 <span>  tbl_start <span class="op">=</span> <span class="st">"2024-01-01"</span>, tbl_end <span class="op">=</span> <span class="st">"2025-01-01"</span>, percent <span class="op">=</span> <span class="st">"pcy"</span>,</span>
 <span>  time_across <span class="op">=</span> <span class="cn">FALSE</span></span>
@@ -243,7 +259,7 @@ forecast, an earlier forecast and history, as lines, with the growth of
 the first as bars on the right axis and a table below. This is the jobs
 forecast from <a href="forecasting.html">Building a forecast</a> against
 history:</p>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">jobs_fc</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/extend.html">extend</a></span><span class="op">(</span><span class="va">jobs</span>, <span class="fl">2025.4</span> <span class="op">~</span> <span class="fl">1.2</span>, <span class="fl">2027.4</span> <span class="op">~</span> <span class="fl">0.8</span>, type <span class="op">=</span> <span class="st">"growth"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/plot_fc.html">plot_fc</a></span><span class="op">(</span></span>
 <span>  <span class="fu">tsbox</span><span class="fu">::</span><span class="fu"><a href="https://docs.ropensci.org/tsbox/reference/ts_c.html" class="external-link">ts_c</a></span><span class="op">(</span>forecast <span class="op">=</span> <span class="va">jobs_fc</span>, history <span class="op">=</span> <span class="va">jobs</span><span class="op">)</span>,</span>
@@ -264,7 +280,7 @@ levels and growth. <code><a href="../reference/plot_comp_3.html">plot_comp_3()</
 series indexed to 1 at <code>base_date</code>, which compares series of
 different size. Accommodation and food services jobs fell much further
 in 2020 than total jobs:</p>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_comp_3.html">plot_comp_3</a></span><span class="op">(</span><span class="va">q</span><span class="op">[</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"E_NF_HI"</span>, <span class="st">"EAF_HI"</span><span class="op">)</span><span class="op">]</span>,</span>
 <span>  base_date <span class="op">=</span> <span class="st">"2019-10-01"</span>,</span>
 <span>  rng_start <span class="op">=</span> <span class="st">"2016-01-01"</span>, rng_end <span class="op">=</span> <span class="st">"2028-01-01"</span>, width <span class="op">=</span> <span class="fl">700</span></span>

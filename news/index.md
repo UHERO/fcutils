@@ -1,6 +1,6 @@
 # Changelog
 
-## fcutils (development version)
+## fcutils 0.1.3
 
 - Renamed for consistency:
   [`multi_chain()`](https://uhero.github.io/fcutils/reference/fcutils-deprecated.md)
@@ -27,6 +27,8 @@
   version (see
   [`?"fcutils-deprecated"`](https://uhero.github.io/fcutils/reference/fcutils-deprecated.md)).
   No installed package exports any of the new names.
+- `qtrs()` is removed, with no deprecated alias. Replace `qtrs(n)` with
+  `n * months(3)` (lubridate), which it computed.
 
 ## fcutils 0.1.2.1
 

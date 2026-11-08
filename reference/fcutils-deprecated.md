@@ -1,8 +1,8 @@
 # Deprecated functions
 
-These functions were renamed after fcutils 0.1.2.1. The old names still
-work, but they warn and will be removed in a later version. Replace them
-with the new names, which take the same arguments:
+These functions were renamed in fcutils 0.1.3. The old names still work,
+but they warn and will be removed in a later version. Replace them with
+the new names, which take the same arguments:
 
 ## Usage
 
