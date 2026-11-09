@@ -1,3 +1,13 @@
+# fcutils 0.1.5
+
+* `agg()` takes `partial`, to estimate the last period of a series when only
+  part of it has data, such as a quarter with one or two months published.
+  `"average"` takes the mean of the observations so far (rates, volatile
+  prices); `"growth"` grows a complete earlier period by the change from the
+  same observations of that period (trending levels). `partial_lag` sets how
+  far back `"growth"` looks: one target period by default, or for example
+  `"1 year"`. The default, `"drop"`, leaves results unchanged.
+
 # fcutils 0.1.4
 
 * `write_tsd()` takes `descriptions`, a named vector of labels written in
