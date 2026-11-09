@@ -13,8 +13,9 @@ plot_2ax(
 )
 }
 \arguments{
-\item{x}{ts-boxable object to plot, at least two series. The first goes on
-the left axis and all others on the right axis.}
+\item{x}{ts-boxable object to plot. The first series goes on the left
+axis and all others on the right axis; a single series gets the left
+axis only.}
 
 \item{rng_start}{start of zoom range ("YYYY-MM-DD")}
 

@@ -3,10 +3,9 @@
 #' @param x ts-boxable object to filter by span
 #' @param start start date, in any form `to_ymd()` reads
 #' @param end end date, in any form `to_ymd()` reads. A year, quarter or month
-#'   given as `end` stands for its first day, so on monthly data
-#'   `span(x, 2010, 2010)` keeps only January 2010. To keep a whole period,
-#'   give its last day ("2010-12-31"), or subset an xts with `x[p(2010, 2010)]`,
-#'   which includes the end period in full.
+#'   given as `end` is included in full, as in `p()`: on monthly data
+#'   `span(x, 2010, 2010)` keeps January to December 2010. A day is kept as
+#'   is.
 #' @param template ts-boxable time series (see tsbox::ts_span)
 #' @param extend logical. If TRUE, a `start` before the data or an `end` after
 #'   them pads the series with NA.
@@ -27,11 +26,9 @@
 #'   span(2010.1, 2010.4)
 #' quarterly_data_example |>
 #'   span("2010-01-01", "2010-12-31")
-#' # on monthly data, a year as end means its first month
+#' # a year as end includes all of it
 #' monthly_data_example |>
-#'   span(2010, 2010)
-#' monthly_data_example |>
-#'   span(2010, "2010-12-31") |>
+#'   span(2010, 2010) |>
 #'   tail(2)
 span <- function(x, start = NULL, end = NULL, template = NULL, extend = FALSE) {
   if (is.null(start) && is.null(end) && is.null(template)) {
@@ -40,7 +37,7 @@ span <- function(x, start = NULL, end = NULL, template = NULL, extend = FALSE) {
     extend <- TRUE
   }
   start <- if (!is.null(start)) to_ymd(start)
-  end <- if (!is.null(end)) to_ymd(end)
+  end <- if (!is.null(end)) period_end(end)
 
   # convert to long format and return additional details
   x_mod <- conv_long(x, ser_info = TRUE)

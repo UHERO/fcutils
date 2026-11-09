@@ -4,7 +4,7 @@
 \alias{index_to_base}
 \title{Index series to a base period (wrapper around tsbox::ts_index())}
 \usage{
-index_to_base(x, base_per = as.character(Sys.Date()), base_value = 100)
+index_to_base(x, base_per, base_value = 100)
 }
 \arguments{
 \item{x}{ts-boxable object to be indexed}
@@ -14,8 +14,7 @@ the first observation on or after it equals \code{base_value}, so \code{2019} se
 2019Q1 (or January 2019) to \code{base_value}. With two dates, the mean of the
 observations from the first date to the second equals \code{base_value}. A
 date stands for the first day of its period, so \code{c(2019.1, 2019.4)} covers
-2019 for quarterly data, and monthly data need \code{c("2019-01-01", "2019-12-31")}. The default, today's date, works only for data that reach
-today.}
+2019 for quarterly data, and monthly data need \code{c("2019-01-01", "2019-12-31")}.}
 
 \item{base_value}{numeric value of the index at base_per (e.g. 1 or 100)}
 }

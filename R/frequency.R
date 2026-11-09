@@ -97,14 +97,20 @@ interpol_1 <- function(vec_incomplete, vec_pattern) {
 #'
 #' @param incomplete a ts-boxable object with NAs
 #' @param pattern a ts-boxable object at the same frequency, or NULL (default)
-#'   to fill the gaps inside each series by `interp`. Pattern series are
-#'   matched to the series in `incomplete` by position, not by name; a single
+#'   to fill the gaps inside each series by `interp`. `match` sets how pattern
+#'   series pair with the series in `incomplete`; with "position", a single
 #'   pattern series serves every series, with a warning. `interpol()` prints
 #'   the mapping it uses.
 #' @param extend_range logical. If TRUE, the result covers every date of
 #'   either input, and each series is continued along its pattern over the
 #'   added dates. If FALSE (default), the result keeps the dates of
 #'   `incomplete`.
+#' @param match how series in `incomplete` find their pattern: "position"
+#'   (default) pairs them in order; "name" needs the same name; "stem"
+#'   compares names without a final frequency or solution ending, as in
+#'   [chain()], so `VISNS_HI_Q` pairs with `VISNS_HI_M`. With "name" or
+#'   "stem", every series needs a partner, or interpol() stops. A single
+#'   series in each always pairs.
 #' @param interp without a pattern: "linear" (default) fills a gap along a
 #'   straight line, "stine" along a Stineman spline through the observed
 #'   values, which bends smoothly without overshooting them (as in
@@ -169,8 +175,10 @@ interpol <- function(
   incomplete,
   pattern = NULL,
   extend_range = FALSE,
+  match = c("position", "name", "stem"),
   interp = c("linear", "stine")
 ) {
+  match <- match.arg(match)
   interp <- match.arg(interp)
   if (is.null(pattern)) {
     return(interpol_gaps(incomplete, interp))
@@ -192,12 +200,32 @@ interpol <- function(
   aligned_data <- join_fun(incomplete_wide, pattern_wide, by = "time") %>%
     dplyr::arrange(.data$time)
 
-  # map incomplete columns to pattern columns by position
   inc_cols <- names(incomplete_wide)[-1]
   pat_cols <- names(pattern_wide)[-1]
 
-  # check that all needed pattern columns exist
-  if (length(inc_cols) > 1 & length(pat_cols) == 1) {
+  # map incomplete columns to pattern columns by name or stem
+  if (match != "position" && !(length(inc_cols) == 1 && length(pat_cols) == 1)) {
+    key <- if (match == "name") identity else name_stem
+    inc_key <- key(stringr::str_remove(inc_cols, "_I$"))
+    pat_key <- key(stringr::str_remove(pat_cols, "_P$"))
+    if (anyDuplicated(pat_key)) {
+      stop(
+        "interpol(): several pattern series share the ", match, " ",
+        stringr::str_flatten(unique(pat_key[duplicated(pat_key)]), collapse = ", "),
+        call. = FALSE
+      )
+    }
+    found <- base::match(inc_key, pat_key)
+    if (anyNA(found)) {
+      stop(
+        "interpol(): no pattern with the same ", match, " for ",
+        stringr::str_flatten(stringr::str_remove(inc_cols[is.na(found)], "_I$"), collapse = ", "),
+        call. = FALSE
+      )
+    }
+    pat_cols <- pat_cols[found]
+  } else if (length(inc_cols) > 1 & length(pat_cols) == 1) {
+    # by position: one pattern serves every series
     pat_cols <- rep(pat_cols, length(inc_cols))
     warning(
       "The same pattern is used for all interpolated series."

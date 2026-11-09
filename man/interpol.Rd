@@ -8,6 +8,7 @@ interpol(
   incomplete,
   pattern = NULL,
   extend_range = FALSE,
+  match = c("position", "name", "stem"),
   interp = c("linear", "stine")
 )
 }
@@ -15,8 +16,8 @@ interpol(
 \item{incomplete}{a ts-boxable object with NAs}
 
 \item{pattern}{a ts-boxable object at the same frequency, or NULL (default)
-to fill the gaps inside each series by \code{interp}. Pattern series are
-matched to the series in \code{incomplete} by position, not by name; a single
+to fill the gaps inside each series by \code{interp}. \code{match} sets how pattern
+series pair with the series in \code{incomplete}; with "position", a single
 pattern series serves every series, with a warning. \code{interpol()} prints
 the mapping it uses.}
 
@@ -24,6 +25,13 @@ the mapping it uses.}
 either input, and each series is continued along its pattern over the
 added dates. If FALSE (default), the result keeps the dates of
 \code{incomplete}.}
+
+\item{match}{how series in \code{incomplete} find their pattern: "position"
+(default) pairs them in order; "name" needs the same name; "stem"
+compares names without a final frequency or solution ending, as in
+\code{\link[=chain]{chain()}}, so \code{VISNS_HI_Q} pairs with \code{VISNS_HI_M}. With "name" or
+"stem", every series needs a partner, or interpol() stops. A single
+series in each always pairs.}
 
 \item{interp}{without a pattern: "linear" (default) fills a gap along a
 straight line, "stine" along a Stineman spline through the observed

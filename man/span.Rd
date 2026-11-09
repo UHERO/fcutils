@@ -12,10 +12,9 @@ span(x, start = NULL, end = NULL, template = NULL, extend = FALSE)
 \item{start}{start date, in any form \code{to_ymd()} reads}
 
 \item{end}{end date, in any form \code{to_ymd()} reads. A year, quarter or month
-given as \code{end} stands for its first day, so on monthly data
-\code{span(x, 2010, 2010)} keeps only January 2010. To keep a whole period,
-give its last day ("2010-12-31"), or subset an xts with \code{x[p(2010, 2010)]},
-which includes the end period in full.}
+given as \code{end} is included in full, as in \code{p()}: on monthly data
+\code{span(x, 2010, 2010)} keeps January to December 2010. A day is kept as
+is.}
 
 \item{template}{ts-boxable time series (see tsbox::ts_span)}
 
@@ -41,10 +40,8 @@ quarterly_data_example |>
   span(2010.1, 2010.4)
 quarterly_data_example |>
   span("2010-01-01", "2010-12-31")
-# on monthly data, a year as end means its first month
+# a year as end includes all of it
 monthly_data_example |>
-  span(2010, 2010)
-monthly_data_example |>
-  span(2010, "2010-12-31") |>
+  span(2010, 2010) |>
   tail(2)
 }

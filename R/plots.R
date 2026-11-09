@@ -107,8 +107,9 @@ plot_1 <- function(
 
 #' Interactive lineplot with two axes
 #'
-#' @param x ts-boxable object to plot, at least two series. The first goes on
-#'   the left axis and all others on the right axis.
+#' @param x ts-boxable object to plot. The first series goes on the left
+#'   axis and all others on the right axis; a single series gets the left
+#'   axis only.
 #' @param rng_start start of zoom range ("YYYY-MM-DD")
 #' @param rng_end end of the zoom range ("YYYY-MM-DD")
 #' @param height height of a single panel (px)
@@ -147,20 +148,24 @@ plot_2ax <- function(
       width = width
     ) %>%
     dygraphs::dyAxis("y", label = "series 1") %>%
-    dygraphs::dyAxis(
-      "y2",
-      label = "series 2+",
-      drawGrid = FALSE,
-      independentTicks = TRUE
-    ) %>%
+    dygraphs::dySeries(ser_names[1], strokeWidth = 2, axis = "y") %>%
     {
-      dygraphs::dySeries(., ser_names[1], strokeWidth = 2, axis = "y")
-    } %>%
-    {
-      if (length(ser_names[-1]) > 1) {
-        dygraphs::dyGroup(., ser_names[-1], strokeWidth = 2, axis = "y2")
+      rest <- ser_names[-1]
+      if (length(rest) == 0) {
+        .
       } else {
-        dygraphs::dySeries(., ser_names[-1], strokeWidth = 2, axis = "y2")
+        g <- dygraphs::dyAxis(
+          .,
+          "y2",
+          label = "series 2+",
+          drawGrid = FALSE,
+          independentTicks = TRUE
+        )
+        if (length(rest) > 1) {
+          dygraphs::dyGroup(g, rest, strokeWidth = 2, axis = "y2")
+        } else {
+          dygraphs::dySeries(g, rest, strokeWidth = 2, axis = "y2")
+        }
       }
     } %>%
     # dygraphs::dyOptions(colors = RColorBrewer::brewer.pal(length(ser_names), "Set1")) %>%

@@ -341,8 +341,7 @@ yoy_to_lev <- function(yoy_gr, hist_lev, smooth_span = 0) {
 #'   observations from the first date to the second equals `base_value`. A
 #'   date stands for the first day of its period, so `c(2019.1, 2019.4)` covers
 #'   2019 for quarterly data, and monthly data need `c("2019-01-01",
-#'   "2019-12-31")`. The default, today's date, works only for data that reach
-#'   today.
+#'   "2019-12-31")`.
 #' @param base_value numeric value of the index at base_per (e.g. 1 or 100)
 #'
 #' @return indexed object of the same type as the input
@@ -358,7 +357,7 @@ yoy_to_lev <- function(yoy_gr, hist_lev, smooth_span = 0) {
 #' colMeans(idx[p(2010.1, 2010.4)])
 #' # the same with dates, and 1 as the base value
 #' round(index_to_base(jobs, c("2010-01-01", "2010-12-31"), 1)[p(2010.1, 2010.4)], 4)
-index_to_base <- function(x, base_per = as.character(Sys.Date()), base_value = 100) {
+index_to_base <- function(x, base_per, base_value = 100) {
   # convert to long format and return additional details
   x_mod <- conv_long(x, ser_info = TRUE)
 

@@ -2,6 +2,11 @@
 # time series utility functions ----
 # **************************
 
+#' Name without a final frequency or solution ending (`_A`, `.SOLQ`, ...)
+#' @noRd
+name_stem <- function(nm) stringr::str_remove(nm, "[._](SOL)?[AQM]$")
+
+
 #' Rename y's series after their partners in x (used by `chain()`)
 #'
 #' @param x_wide,y_wide wide tibbles with a time column
@@ -19,7 +24,7 @@ match_names <- function(x_wide, y_wide, how) {
   if (how == "name") {
     return(y_wide)
   }
-  stem <- function(nm) stringr::str_remove(nm, "[._](SOL)?[AQM]$")
+  stem <- name_stem
   for (side in list(list(x_names, "x"), list(y_names, "y"))) {
     dup <- unique(stem(side[[1]])[duplicated(stem(side[[1]]))])
     if (length(dup) > 0) {

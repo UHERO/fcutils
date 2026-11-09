@@ -11,6 +11,9 @@
 * `yoy_to_lev()` is deprecated; use
   `extend(hist_lev, path = yoy_gr, type = "growth", growth = "pcy")`, which
   gives the same result.
+* `interpol()` takes `match`: "position" (default, as before) pairs series
+  with pattern series in order; "name" and "stem" pair them by name, as in
+  `chain()`.
 * `interpol()` takes `interp = "stine"`: without a pattern, it fills gaps
   inside a series along a Stineman spline instead of a straight line.
 * `addf()` takes `interp = "stine"` with points given as formulas: a smooth
@@ -49,6 +52,15 @@
   `SH_JP__HON_M` becomes `SH_JP@HON.M` (was `SH_JP@JP.M`).
 * `extract_data()` renames only the AR lag columns (`ar1`, `ar2`, ...); it
   also changed "ar" inside other regressor names.
+
+* `span()` includes an end year, quarter or month in full, as `p()` does:
+  on monthly data `span(x, 2010, 2010)` keeps all of 2010 (it kept only
+  January), and on quarterly data all four quarters (it kept only Q1). An
+  end given as a day is unchanged.
+* `plot_2ax()` plots a single series on the left axis; it stopped with an
+  error.
+* `index_to_base()` needs `base_per`. Its default, today's date, failed for
+  any data that end before today.
 
 ## Documentation
 
