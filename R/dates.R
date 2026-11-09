@@ -6,10 +6,16 @@
 #' @param template ts-boxable time series (see tsbox::ts_span)
 #' @param extend logical. If true, the start and end values are allowed to extend the series (by adding NA values).
 #'
-#' @return filtered object of the same type as the input
+#' @return filtered object of the same type as the input. Without `start`,
+#'   `end` and `template`, x is fitted to the bank: cut at the bank's start
+#'   and end and padded with NA to both (`extend` is ignored).
 #' @export
 #'
 #' @examples
+#' options(fcutils.bnk_start = as.Date("1990-01-01"),
+#'   fcutils.bnk_end = as.Date("2030-12-31"))
+#' quarterly_data_example |>
+#'   span() # 1990Q1 to 2030Q4
 #' quarterly_data_example |>
 #'   span(2010.1)
 #' quarterly_data_example |>
@@ -17,6 +23,11 @@
 #' quarterly_data_example |>
 #'   span("2010-01-01", "2010-12-31")
 span <- function(x, start = NULL, end = NULL, template = NULL, extend = FALSE) {
+  if (is.null(start) && is.null(end) && is.null(template)) {
+    start <- bank_start()
+    end <- bank_end()
+    extend <- TRUE
+  }
   start <- if (!is.null(start)) to_ymd(start)
   end <- if (!is.null(end)) to_ymd(end)
 

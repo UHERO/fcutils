@@ -1,3 +1,30 @@
+# fcutils 0.1.5
+
+* `extend(type = "growth")` takes `growth = "pcy"`: anchors and paths as
+  year-over-year rates, each period grown from the same period a year
+  earlier. The default, `"pca"`, is the annualized rate as before.
+* `extend(type = "chain")` takes `method = "ratio"` or `"diff"`, the words
+  `chain()` uses. It replaces `join`, which is removed; `join = "shift"` is
+  now `method = "diff"`, with the same result.
+* `chain()` takes a method per series: `method = c(UR = "diff")` continues UR
+  with its changes and every other series with its growth.
+* `yoy_to_lev()` is deprecated; use
+  `extend(hist_lev, path = yoy_gr, type = "growth", growth = "pcy")`, which
+  gives the same result.
+* `interpol()` takes `interp = "stine"`: without a pattern, it fills gaps
+  inside a series along a Stineman spline instead of a straight line.
+* `span(x)` without dates fits x to the bank: it cuts x at the bank's start
+  and end and pads it with NA to both.
+* The help pages of `extend()` and `chain()`, and the "Building a forecast"
+  article, say which to use when.
+* `agg()` takes `partial`, to estimate the last period of a series when only
+  part of it has data, such as a quarter with one or two months published.
+  `"average"` takes the mean of the observations so far (rates, volatile
+  prices); `"growth"` grows a complete earlier period by the change from the
+  same observations of that period (trending levels). `partial_lag` sets how
+  far back `"growth"` looks: one target period by default, or for example
+  `"1 year"`. The default, `"drop"`, leaves results unchanged.
+
 # fcutils 0.1.4
 
 * `write_tsd()` takes `descriptions`, a named vector of labels written in

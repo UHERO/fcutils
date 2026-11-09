@@ -97,10 +97,14 @@ interpol_1 <- function(vec_incomplete, vec_pattern) {
 #'
 #' @param incomplete a ts-boxable object with NAs
 #' @param pattern a ts-boxable object no missing values, or NULL (default)
-#'   to fill the gaps inside each series along a straight line
+#'   to fill the gaps inside each series by `interp`
 #' @param extend_range logical. If TRUE, uses a full_join to potentially extend
 #'   the date range. If FALSE (default), uses a left_join to only fill NAs
 #'   within the original date range.
+#' @param interp without a pattern: "linear" (default) fills a gap along a
+#'   straight line, "stine" along a Stineman spline through the observed
+#'   values, which bends smoothly without overshooting them (as in
+#'   [extend()]). Not used with a pattern.
 #'
 #' @return interpolated object of the same type as the input
 #' @export
@@ -108,7 +112,7 @@ interpol_1 <- function(vec_incomplete, vec_pattern) {
 #' @details the function aligns two sets of time series by date and then
 #' interpolates the first set using the second set as a pattern. Without a
 #' pattern, missing values between a series' first and last observation are
-#' filled linearly (by position, so each period counts the same); missing
+#' filled by `interp` (by position, so each period counts the same); missing
 #' dates in a regular series are added first, and leading and trailing gaps
 #' stay empty. extend_range has no effect then.
 #' The time-span of the pattern has to match or be larger
@@ -118,6 +122,9 @@ interpol_1 <- function(vec_incomplete, vec_pattern) {
 #' # straight-line fill of an internal gap
 #' make_xts("2025M7", val = c(1, 2, NA, 4, 5)) |>
 #'   interpol()
+#' # a smooth fill along the curve of the neighbouring values
+#' make_xts("2025M7", val = c(1, 1.2, 2, NA, NA, 8, 8.5)) |>
+#'   interpol(interp = "stine")
 #' monthly_data_example |>
 #'   dplyr::filter(time > "2002-01-01") |>
 #'   tsbox::ts_long() |>
@@ -152,10 +159,15 @@ interpol_1 <- function(vec_incomplete, vec_pattern) {
 interpol <- function(
   incomplete,
   pattern = NULL,
-  extend_range = FALSE
+  extend_range = FALSE,
+  interp = c("linear", "stine")
 ) {
+  interp <- match.arg(interp)
   if (is.null(pattern)) {
-    return(interpol_linear(incomplete))
+    return(interpol_gaps(incomplete, interp))
+  }
+  if (interp != "linear") {
+    stop("interpol(): interp applies only without a pattern", call. = FALSE)
   }
   # convert to wide format and return additional details
   incomplete_mod <- conv_long(incomplete, ser_info = TRUE)
@@ -231,29 +243,38 @@ interpol <- function(
 }
 
 
-#' Fill gaps inside series by linear interpolation (`interpol()` without a
-#' pattern)
+#' Fill gaps inside series (`interpol()` without a pattern)
 #'
 #' @param x ts-boxable object
+#' @param interp "linear" or "stine" (Stineman spline)
 #'
 #' @return object of the same type as x; missing values between the first
-#'   and last observation of each series are filled along a straight line,
-#'   leading and trailing ones are kept
+#'   and last observation of each series are filled, leading and trailing
+#'   ones are kept
 #' @noRd
-interpol_linear <- function(x) {
+interpol_gaps <- function(x, interp) {
+  fill <- function(v) {
+    pos <- seq_along(v)
+    have <- !is.na(v)
+    if (sum(have) < 2) {
+      return(v)
+    }
+    inside <- !have & pos > min(pos[have]) & pos < max(pos[have])
+    if (!any(inside)) {
+      return(v)
+    }
+    v[inside] <- if (interp == "linear") {
+      stats::approx(pos[have], v[have], xout = pos[inside])$y
+    } else {
+      stinepack::stinterp(pos[have], v[have], pos[inside])$y
+    }
+    v
+  }
   x_mod <- conv_long(x, ser_info = TRUE)
   filled <- x_mod %>%
     tsbox::ts_regular() %>%
     dplyr::group_by(.data$id) %>%
-    dplyr::mutate(value = {
-      pos <- seq_along(.data$value)
-      have <- !is.na(.data$value)
-      if (sum(have) < 2) {
-        .data$value
-      } else {
-        stats::approx(pos[have], .data$value[have], xout = pos, rule = 1)$y
-      }
-    }) %>%
+    dplyr::mutate(value = fill(.data$value)) %>%
     dplyr::ungroup()
   reclass(filled, x_mod, x)
 }
@@ -691,6 +712,22 @@ QtoA <- function(ser_in, aggr = "mean") {
 #' @param target_freq target frequency "year", "quarter", "month", "week"
 #' @param na_rm	logical, if TRUE, incomplete periods are aggregated as
 #' well. For irregular series, incomplete periods are always aggregated.
+#' @param partial what to do with the LAST period of each series when only part
+#'   of it has data (e.g. a quarter with one or two months published):
+#'   * "drop" (default): leave it out, as for any incomplete period.
+#'   * "average": the mean of the observations so far. Suits rates and
+#'     volatile prices. Only for series aggregated by "mean".
+#'   * "growth": a complete earlier period, `partial_lag` before, grown by the
+#'     change from the same observations of that period: with October
+#'     published and `partial_lag = "3 months"`, Q4 = Q3 x Oct / Jul; with
+#'     October and November, Q4 = Q3 x mean(Oct, Nov) / mean(Jul, Aug). Suits
+#'     trending levels.
+#'
+#'   Incomplete periods before the last are always left out.
+#' @param partial_lag how far back "growth" looks, as a lubridate period
+#'   string: the default, NULL, is one target period ("3 months" for
+#'   quarters, "1 year" for years). "1 year" compares with the same months a
+#'   year earlier, as [ptd_gr()] does.
 #'
 #' @return aggregated object of the same type as the input
 #' @export
@@ -698,6 +735,11 @@ QtoA <- function(ser_in, aggr = "mean") {
 #' @examples
 #' monthly_data_example |>
 #'   agg(conv_type = "sum", target_freq = "quarter")
+#' # the last quarter estimated from the months published so far
+#' monthly_data_example |>
+#'   utils::head(-1) |>
+#'   agg(target_freq = "quarter", partial = "growth") |>
+#'   utils::tail(2)
 #' monthly_data_example |>
 #'   agg(conv_type = "uhero", target_freq = "quarter")
 #' monthly_data_example |>
@@ -715,13 +757,24 @@ agg <- function(
   x,
   conv_type = "mean",
   target_freq = "year",
-  na_rm = FALSE
+  na_rm = FALSE,
+  partial = c("drop", "average", "growth"),
+  partial_lag = NULL
 ) {
+  partial <- match.arg(partial)
+
   # convert to long format and return additional details
   x_mod <- conv_long(x, ser_info = TRUE)
 
   # one ts_frequency() call per aggregation type, not one per series
   x_mod_agg <- aggr_long(x_mod, conv_type, target_freq, na_rm)
+
+  # estimate the last period of each series where it is incomplete
+  if (partial != "drop") {
+    x_mod_agg <- agg_partial(
+      x_mod, x_mod_agg, conv_type, target_freq, partial, partial_lag
+    )
+  }
 
   # the per-series version it replaces (one ts_frequency() call per series):
   # # convert to nested tibble and aggregate
@@ -869,5 +922,80 @@ aggr_long <- function(x_mod, conv_type, target_freq, na_rm) {
       frequency_fast(to = target_freq, aggregate = type, na.rm = na_rm)
   }) %>%
     dplyr::bind_rows() %>%
+    dplyr::arrange(match(.data$id, ids), .data$time)
+}
+
+#' Estimate the incomplete last period of each series (agg(partial = ))
+#'
+#' @param x_mod the input in long form (id, time, value).
+#' @param x_mod_agg its aggregate from aggr_long(), complete periods only.
+#' @param conv_type,target_freq,partial,partial_lag as in agg().
+#' @return x_mod_agg with one row added per series whose last period is
+#'   incomplete and can be estimated.
+#' @noRd
+agg_partial <- function(
+  x_mod,
+  x_mod_agg,
+  conv_type,
+  target_freq,
+  partial,
+  partial_lag
+) {
+  ids <- unique(x_mod$id)
+  agg_type <- if (stringr::str_detect(stringr::str_to_lower(conv_type), "^u")) {
+    dplyr::if_else(stringr::str_detect(ids, sum_pattern), "sum", "mean")
+  } else {
+    rep(conv_type, length(ids))
+  }
+  agg_type <- rlang::set_names(agg_type, ids)
+  if (!all(agg_type %in% c("mean", "sum"))) {
+    stop('agg(partial = ) works with conv_type "mean", "sum" or "uhero".')
+  }
+  if (partial == "average" && any(agg_type == "sum")) {
+    stop('agg(partial = "average") is for series aggregated by "mean".')
+  }
+  # lubridate::period() reads "3 months" or "1 year" but not quarters
+  lag_text <- if (is.null(partial_lag)) paste(1, target_freq) else partial_lag
+  n_qtr <- stringr::str_match(lag_text, "^\\s*(\\d*)\\s*quarters?\\s*$")[, 2]
+  lag <- if (is.na(n_qtr)) {
+    lubridate::period(lag_text)
+  } else {
+    lubridate::period(3 * (if (n_qtr == "") 1 else as.numeric(n_qtr)), "month")
+  }
+  if (is.na(lag)) {
+    stop("agg(): cannot read partial_lag = \"", lag_text, "\" as a period.")
+  }
+  back <- function(dates) lubridate::add_with_rollback(dates, -lag)
+  unit <- paste(1, target_freq)
+
+  added <- purrr::map(ids, function(id) {
+    obs <- x_mod[x_mod$id == id & !is.na(x_mod$value), ]
+    if (nrow(obs) == 0) {
+      return(NULL)
+    }
+    last_period <- lubridate::floor_date(max(obs$time), unit)
+    done <- x_mod_agg[x_mod_agg$id == id & !is.na(x_mod_agg$value), ]
+    if (last_period %in% done$time) {
+      return(NULL) # the last period is complete
+    }
+    now <- obs[lubridate::floor_date(obs$time, unit) == last_period, ]
+    fun <- if (agg_type[[id]] == "sum") sum else mean
+    value <- if (partial == "average") {
+      mean(now$value)
+    } else {
+      base <- done$value[done$time == back(last_period)]
+      before <- obs$value[match(back(now$time), obs$time)]
+      if (length(base) != 1 || anyNA(before)) {
+        return(NULL) # no complete earlier period, or its months are missing
+      }
+      base * fun(now$value) / fun(before)
+    }
+    tibble::tibble(id = id, time = last_period, value = value)
+  })
+
+  x_mod_agg %>%
+    dplyr::filter(!(paste(.data$id, .data$time) %in%
+      purrr::map_chr(purrr::compact(added), ~ paste(.x$id, .x$time)))) %>%
+    dplyr::bind_rows(purrr::list_rbind(purrr::compact(added))) %>%
     dplyr::arrange(match(.data$id, ids), .data$time)
 }

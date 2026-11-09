@@ -4,7 +4,14 @@
 \alias{agg}
 \title{Aggregate univariate or multivariate time series from low to high frequency}
 \usage{
-agg(x, conv_type = "mean", target_freq = "year", na_rm = FALSE)
+agg(
+  x,
+  conv_type = "mean",
+  target_freq = "year",
+  na_rm = FALSE,
+  partial = c("drop", "average", "growth"),
+  partial_lag = NULL
+)
 }
 \arguments{
 \item{x}{a tx-boxable object at a high frequency (e.g. monthly or quarterly)}
@@ -18,6 +25,26 @@ the aggregation is based on "sum"; for all others it is based on "mean."}
 
 \item{na_rm}{logical, if TRUE, incomplete periods are aggregated as
 well. For irregular series, incomplete periods are always aggregated.}
+
+\item{partial}{what to do with the LAST period of each series when only part
+of it has data (e.g. a quarter with one or two months published):
+\itemize{
+\item "drop" (default): leave it out, as for any incomplete period.
+\item "average": the mean of the observations so far. Suits rates and
+volatile prices. Only for series aggregated by "mean".
+\item "growth": a complete earlier period, \code{partial_lag} before, grown by the
+change from the same observations of that period: with October
+published and \code{partial_lag = "3 months"}, Q4 = Q3 x Oct / Jul; with
+October and November, Q4 = Q3 x mean(Oct, Nov) / mean(Jul, Aug). Suits
+trending levels.
+}
+
+Incomplete periods before the last are always left out.}
+
+\item{partial_lag}{how far back "growth" looks, as a lubridate period
+string: the default, NULL, is one target period ("3 months" for
+quarters, "1 year" for years). "1 year" compares with the same months a
+year earlier, as \code{\link[=ptd_gr]{ptd_gr()}} does.}
 }
 \value{
 aggregated object of the same type as the input
@@ -28,6 +55,11 @@ Aggregate univariate or multivariate time series from low to high frequency
 \examples{
 monthly_data_example |>
   agg(conv_type = "sum", target_freq = "quarter")
+# the last quarter estimated from the months published so far
+monthly_data_example |>
+  utils::head(-1) |>
+  agg(target_freq = "quarter", partial = "growth") |>
+  utils::tail(2)
 monthly_data_example |>
   agg(conv_type = "uhero", target_freq = "quarter")
 monthly_data_example |>

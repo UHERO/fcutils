@@ -1,10 +1,15 @@
 #' Extend a series past its last observation
 #'
-#' Continues a single series from `last` to the end of the bank, in one of
-#' three ways: the series runs through anchor values (`type = "level"`), its
-#' growth rate runs through anchors and the level is compounded
-#' (`type = "growth"`), or it continues with the growth of another series
+#' Forecasts a single series: continues it from `last` to the end of the
+#' bank, in one of three ways. The series runs through anchor values
+#' (`type = "level"`); its growth rate runs through anchors, or follows a
+#' growth path, and the level is compounded (`type = "growth"`); or it
+#' continues with the growth or the changes of another series
 #' (`type = "chain"`).
+#'
+#' To join two sources of the same data, several series at once, or to
+#' extend a series back in time, use [chain()] instead. See "Which function"
+#' below.
 #'
 #' @param x a ts-boxable object holding one series (quarterly, monthly or
 #'   annual)
@@ -18,10 +23,15 @@
 #'   `at = NULL`; or a series (e.g. from `make_xts()`), whose observations are
 #'   the anchors
 #' @param path instead of anchors, a series that sets the forecast: the
-#'   level (`type = "level"`), the annualized growth rate in percent
-#'   (`type = "growth"`), or a level whose growth continues x
-#'   (`type = "chain"`)
+#'   level (`type = "level"`), the growth rate in percent (`type = "growth"`),
+#'   or a level whose growth or changes continue x (`type = "chain"`)
 #' @param type "level", "growth" or "chain" (see details)
+#' @param growth for `type = "growth"`, how anchors and `path` state growth:
+#'   "pca" (default), the period-on-period rate annualized (4.0 for a
+#'   quarter that grew 1%); "pcy", the year-over-year rate
+#' @param method for `type = "chain"`: "ratio" (default) continues x with
+#'   the growth of `path`, for levels; "diff" with its changes, for rates
+#'   (the same words as in [chain()])
 #' @param interp interpolation between anchors: "linear" or "stine" (the
 #'   Stineman spline: smooth turns without overshooting)
 #' @param last last date that counts as history (default: the last
@@ -29,9 +39,6 @@
 #' @param hold_last if TRUE (default), the last anchor is held to the end of
 #'   the bank. If FALSE, the interpolation itself runs to the last anchor and
 #'   its value is then carried forward.
-#' @param join for `type = "chain"`: "ratio" (default) uses the growth of
-#'   `path` as it is; "shift" first moves `path` by a constant so that it
-#'   meets x at `last`, then uses the growth of the shifted path
 #' @param smooth NULL, or a list with `span` and optionally `from` and `to`:
 #'   smooth the forecast with loess before compounding (the period growth
 #'   rate for "growth" and "chain", the level for "level"). `from` defaults
@@ -47,12 +54,31 @@
 #'   interpolated, including between the last history value and the first
 #'   anchor. Anchors dated at or before `last` are dropped with a message,
 #'   since history takes precedence.
-#' * `type = "growth"`: the same applied to the annualized growth rate of x;
-#'   the level is then compounded from its value at `last`. Growth is
-#'   annualized at the series' frequency (4 for quarters, 12 for months).
-#' * `type = "chain"`: the level of `path` after `last`, scaled to meet x.
+#' * `type = "growth"`: the same applied to the growth rate of x; the level
+#'   is then compounded from history. With `growth = "pca"` the line starts
+#'   from the annualized growth at `last` and each period grows from the one
+#'   before (annualized at the series' frequency: 4 for quarters, 12 for
+#'   months). With `growth = "pcy"` it starts from the year-over-year growth
+#'   at `last`, and each period grows from the same period a year earlier;
+#'   this needs a full year of history and repeats last year's
+#'   within-year pattern.
+#' * `type = "chain"`: `path` after `last`, joined to x at `last`: scaled to
+#'   meet it (`method = "ratio"`) or shifted by a constant
+#'   (`method = "diff"`).
 #'
 #' Linear interpolation weighs the gaps by time, the spline by position.
+#'
+#' **Which function.** All of these continue a series from data:
+#' * levels at some dates: `extend(type = "level")`;
+#' * growth rates at some dates, or a growth path, period-on-period or
+#'   year-over-year: `extend(type = "growth", growth = "pca"/"pcy")`;
+#' * another series' path (a projection, a model forecast), for one series:
+#'   `extend(type = "chain", method = "ratio"/"diff")`;
+#' * two sources of the same data to join, many series at once (each with
+#'   its own method), or a series to extend back in time: [chain()].
+#'
+#' extend() returns the series on the bank; chain() keeps the span of its
+#' inputs.
 #'
 #' Anchors can be given in four ways: formulas (`2026.4 ~ 4.4`), `at` and
 #' `val`, a named vector (`val = c("2026Q4" = 4.4)`), or a series. Decimal
@@ -73,9 +99,14 @@
 #' # a price level whose annualized inflation falls from 3% to 2%
 #' cpi <- make_xts(2024.1, val = 100 * 1.0075^(0:6))
 #' extend(cpi, at = c(2026.1, 2027.4), val = c(3, 2), type = "growth")
+#' # the same with year-over-year inflation
+#' extend(cpi, at = c(2026.1, 2027.4), val = c(3, 2), type = "growth", growth = "pcy")
 #' # history continued with the growth of a projection on another level
 #' proj <- make_xts(2020.1, val = 50 * 1.01^(0:63))
 #' extend(cpi, path = proj, type = "chain")
+#' # a rate continued with the changes of a projection
+#' extend(ur, path = make_xts(2024.1, val = seq(4, 5, length.out = 20)),
+#'   type = "chain", method = "diff")
 extend <- function(
   x,
   ...,
@@ -83,15 +114,20 @@ extend <- function(
   val = NULL,
   path = NULL,
   type = c("level", "growth", "chain"),
+  growth = c("pca", "pcy"),
+  method = c("ratio", "diff"),
   interp = c("linear", "stine"),
   last = NULL,
   hold_last = TRUE,
-  join = c("ratio", "shift"),
   smooth = NULL
 ) {
   type <- match.arg(type)
+  growth <- match.arg(growth)
+  method <- match.arg(method)
   interp <- match.arg(interp)
-  join <- match.arg(join)
+  if (growth == "pcy" && type != "growth") {
+    stop("extend(): growth = \"pcy\" is for type = \"growth\"", call. = FALSE)
+  }
 
   x_mod <- conv_long(x, ser_info = TRUE)
   if (length(unique(x_mod$id)) != 1) {
@@ -152,16 +188,21 @@ extend <- function(
       lev
     },
     growth = {
+      rate <- if (growth == "pca") tsbox::ts_pca else tsbox::ts_pcy
       g <- if (is.null(path)) {
-        anchor_series(tsbox::ts_pca(xs), anchors, last, interp, hold_last, per)
+        anchor_series(rate(xs), anchors, last, interp, hold_last, per)
       } else {
         single_xts(path)
       }
-      compound_from(xs, pca_to_pc(g, nper), last, smooth, smooth_from())
+      if (growth == "pca") {
+        compound_from(xs, pca_to_pc(g, nper), last, smooth, smooth_from())
+      } else {
+        compound_yoy(xs, g, last, smooth, smooth_from(), nper)
+      }
     },
     chain = {
       pth <- single_xts(path)
-      if (join == "shift") {
+      if (method == "diff") {
         pth <- pth + (value_at(xs, last) - value_at(pth, last))
       }
       g <- pca_to_pc(tsbox::ts_pca(pth), nper)
@@ -358,6 +399,42 @@ compound_from <- function(x, growth, last, smooth, from) {
   }
   x[p("", last)] %>%
     tsbox::ts_chain(tsbox::ts_compound(growth[p(last, "")]))
+}
+
+#' Compound year-over-year growth onto history (extend(growth = "pcy"))
+#'
+#' @param x history, xts
+#' @param growth year-over-year growth in percent, xts; used after `last`
+#' @param last last date of history
+#' @param smooth,from smoothing of the growth rate, as in compound_from()
+#' @param nper periods per year
+#' @return xts: x up to `last`, then level[t] = level[t - nper] x (1 + g / 100)
+#'   for as long as the growth rate has values
+#' @noRd
+compound_yoy <- function(x, growth, last, smooth, from, nper) {
+  if (!is.null(smooth)) {
+    growth <- smooth_window(growth, smooth$span, from, smooth$to)
+  }
+  hist <- x[p("", last)]
+  seed <- utils::tail(as.numeric(hist), nper)
+  if (length(seed) < nper || anyNA(seed) || is.na(value_at(x, last))) {
+    stop(
+      "extend(): growth = \"pcy\" needs a full year of history up to `last`",
+      call. = FALSE
+    )
+  }
+  g <- growth[zoo::index(growth) > last]
+  n <- match(TRUE, is.na(as.numeric(g)), nomatch = length(g) + 1) - 1
+  g <- as.numeric(g)[seq_len(n)]
+  lev <- c(seed, numeric(n))
+  for (t in seq_len(n)) {
+    lev[nper + t] <- lev[t] * (1 + g[t] / 100)
+  }
+  future <- xts::xts(
+    matrix(lev[nper + seq_len(n)], ncol = 1, dimnames = list(NULL, colnames(hist))),
+    zoo::index(growth[zoo::index(growth) > last])[seq_len(n)]
+  )
+  rbind(hist, future)
 }
 
 

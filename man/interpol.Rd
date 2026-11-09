@@ -4,17 +4,27 @@
 \alias{interpol}
 \title{Interpolate univariate or multivariate time series with missing values}
 \usage{
-interpol(incomplete, pattern = NULL, extend_range = FALSE)
+interpol(
+  incomplete,
+  pattern = NULL,
+  extend_range = FALSE,
+  interp = c("linear", "stine")
+)
 }
 \arguments{
 \item{incomplete}{a ts-boxable object with NAs}
 
 \item{pattern}{a ts-boxable object no missing values, or NULL (default)
-to fill the gaps inside each series along a straight line}
+to fill the gaps inside each series by \code{interp}}
 
 \item{extend_range}{logical. If TRUE, uses a full_join to potentially extend
 the date range. If FALSE (default), uses a left_join to only fill NAs
 within the original date range.}
+
+\item{interp}{without a pattern: "linear" (default) fills a gap along a
+straight line, "stine" along a Stineman spline through the observed
+values, which bends smoothly without overshooting them (as in
+\code{\link[=extend]{extend()}}). Not used with a pattern.}
 }
 \value{
 interpolated object of the same type as the input
@@ -26,7 +36,7 @@ Interpolate univariate or multivariate time series with missing values
 the function aligns two sets of time series by date and then
 interpolates the first set using the second set as a pattern. Without a
 pattern, missing values between a series' first and last observation are
-filled linearly (by position, so each period counts the same); missing
+filled by \code{interp} (by position, so each period counts the same); missing
 dates in a regular series are added first, and leading and trailing gaps
 stay empty. extend_range has no effect then.
 The time-span of the pattern has to match or be larger
@@ -36,6 +46,9 @@ than the time-span of the incomplete data.
 # straight-line fill of an internal gap
 make_xts("2025M7", val = c(1, 2, NA, 4, 5)) |>
   interpol()
+# a smooth fill along the curve of the neighbouring values
+make_xts("2025M7", val = c(1, 1.2, 2, NA, NA, 8, 8.5)) |>
+  interpol(interp = "stine")
 monthly_data_example |>
   dplyr::filter(time > "2002-01-01") |>
   tsbox::ts_long() |>
