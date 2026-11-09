@@ -39,7 +39,23 @@ jobs:
       - uses: r-lib/actions/setup-pandoc@v2
         continue-on-error: true
 
+      # R itself is needed, so a failed download (HTTP 504 from GitHub) gets
+      # a second try instead of failing the job.
       - uses: r-lib/actions/setup-r@v2
+        id: setup-r
+        continue-on-error: true
+        with:
+          r-version: ${{ matrix.config.r }}
+          http-user-agent: ${{ matrix.config.http-user-agent }}
+          use-public-rspm: true
+
+      - name: Wait before retrying R setup
+        if: steps.setup-r.outcome == 'failure'
+        run: sleep 60
+        shell: bash
+
+      - uses: r-lib/actions/setup-r@v2
+        if: steps.setup-r.outcome == 'failure'
         with:
           r-version: ${{ matrix.config.r }}
           http-user-agent: ${{ matrix.config.http-user-agent }}
