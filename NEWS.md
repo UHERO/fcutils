@@ -23,7 +23,8 @@
   prices); `"growth"` grows a complete earlier period by the change from the
   same observations of that period (trending levels). `partial_lag` sets how
   far back `"growth"` looks: one target period by default, or for example
-  `"1 year"`. The default, `"drop"`, leaves results unchanged.
+  `"1 year"`. The default, `"drop"`, leaves results unchanged. The "Growth
+  rates, tables and plots" article has an example.
 
 # fcutils 0.1.4
 
