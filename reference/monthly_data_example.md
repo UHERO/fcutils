@@ -1,6 +1,6 @@
-# monthly data for examples
+# Monthly data for examples
 
-monthly data for examples
+Monthly data for examples
 
 ## Usage
 
@@ -10,7 +10,9 @@ monthly_data_example
 
 ## Format
 
-tibble of monthly data
+wide tibble of Hawaii visitor arrivals (VISNS_HI), arrivals by air
+(VAPNS_HI) and average daily census (VADCNS_HI), not seasonally
+adjusted, September 2000 to March 2025
 
 ## Source
 
@@ -18,7 +20,7 @@ author
 
 ## References
 
-[uhero.hawaii.edu](https://uhero.github.io/fcutils/reference/uhero.hawaii.edu)
+<https://uhero.hawaii.edu>
 
 ## Author
 

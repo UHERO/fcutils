@@ -22,13 +22,20 @@ ptd_agg(x, per = "year", avg = TRUE)
 
 - avg:
 
-  if TRUE (default), retorn period to date average, if FALSE, return
+  if TRUE (default), return period to date average, if FALSE, return
   period to date sum
 
 ## Value
 
 object of the same type as the input containing period to date sum or
 average
+
+## Details
+
+`per` takes any unit
+[`lubridate::floor_date()`](https://lubridate.tidyverse.org/reference/round_date.html)
+does, such as "week" or "day". Weeks start on Sunday. An NA makes the
+rest of its period NA.
 
 ## Examples
 

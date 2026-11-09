@@ -1,7 +1,8 @@
 # In place addition
 
-Warning: Typing x %+=% y/2 returns x \<- (x + y)/2. Adding parentheses,
-i.e. x %+=% (y/2) solves the problem.
+`x %+=% y` adds y to x and stores the sum in x. `%+=%` binds more
+tightly than `*` and `/`, so `x %+=% y/2` sets x to x + y and halves
+only the returned value. Write `x %+=% (y/2)` to add half of y.
 
 ## Usage
 
@@ -13,7 +14,7 @@ e1 %+=% e2
 
 - e1:
 
-  first addend (and returned sum)
+  first addend, replaced by the sum
 
 - e2:
 
@@ -21,7 +22,7 @@ e1 %+=% e2
 
 ## Value
 
-sum of the two addends replacing the values in the first addend
+the new value of e1, invisibly
 
 ## Examples
 

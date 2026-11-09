@@ -48,13 +48,34 @@
 <li>
 <code><a href="../reference/yoy_to_lev.html">yoy_to_lev()</a></code> is deprecated; use <code>extend(hist_lev, path = yoy_gr, type = "growth", growth = "pcy")</code>, which gives the same result.</li>
 <li>
+<code><a href="../reference/interpol.html">interpol()</a></code> takes <code>match</code>: “position” (default, as before) pairs series with pattern series in order; “name” and “stem” pair them by name, as in <code><a href="../reference/chain.html">chain()</a></code>.</li>
+<li>
 <code><a href="../reference/interpol.html">interpol()</a></code> takes <code>interp = "stine"</code>: without a pattern, it fills gaps inside a series along a Stineman spline instead of a straight line.</li>
+<li>
+<code><a href="../reference/addf.html">addf()</a></code> takes <code>interp = "stine"</code> with points given as formulas: a smooth curve through the points that eases off zero and back, the same curve <code>extend(interp = "stine")</code> draws from a zero history.</li>
 <li>
 <code>span(x)</code> without dates fits x to the bank: it cuts x at the bank’s start and end and pads it with NA to both.</li>
 <li>The help pages of <code><a href="../reference/extend.html">extend()</a></code> and <code><a href="../reference/chain.html">chain()</a></code>, and the “Building a forecast” article, say which to use when.</li>
 <li>
 <code><a href="../reference/agg.html">agg()</a></code> takes <code>partial</code>, to estimate the last period of a series when only part of it has data, such as a quarter with one or two months published. <code>"average"</code> takes the mean of the observations so far (rates, volatile prices); <code>"growth"</code> grows a complete earlier period by the change from the same observations of that period (trending levels). <code>partial_lag</code> sets how far back <code>"growth"</code> looks: one target period by default, or for example <code>"1 year"</code>. The default, <code>"drop"</code>, leaves results unchanged. The “Growth rates, tables and plots” article has an example.</li>
+</ul><div class="section level3">
+<h3 id="bug-fixes-0-1-5">Bug fixes<a class="anchor" aria-label="anchor" href="#bug-fixes-0-1-5"></a></h3>
+<ul><li><p><code>extend(type = "chain", method = "diff")</code> follows the shifted path as is. It compounded the path’s growth, which lost the sign of a path that reaches zero or below and gave NA after a history ending at zero. With <code>smooth</code>, or with <code>method = "ratio"</code>, a path at or below zero is now an error.</p></li>
+<li><p><code><a href="../reference/extend.html">extend()</a></code> stops on an anchor that is not the first day of a period within the bank, as <code><a href="../reference/addf.html">addf()</a></code> does. Such an anchor used to be moved to the next period or ignored without a message.</p></li>
+<li><p><code>extend(hold_last = FALSE)</code> carries the last anchor forward with <code>interp = "linear"</code>, as it did with <code>"stine"</code>; the values after it were NA.</p></li>
+<li><p><code><a href="../reference/write_tsd.html">write_tsd()</a></code> writes an NA inside a series as the TSD missing value, 1.000000E+0015, as the older <code><a href="../reference/write_tsd.html">write_tsd()</a></code> in forecastr’s util_funs.R does. It dropped it, which moved every later value one period early.</p></li>
+<li><p><code>plot_fc(table_start = NULL, table_end = NULL)</code> shows the whole data, as documented; it stopped with an error.</p></li>
+<li><p><code><a href="../reference/rename_udaman.html">rename_udaman()</a></code> takes the location just before the frequency, so <code>SH_JP__HON_M</code> becomes <code>SH_JP@HON.M</code> (was <code>SH_JP@JP.M</code>).</p></li>
+<li><p><code><a href="../reference/extract_data.html">extract_data()</a></code> renames only the AR lag columns (<code>ar1</code>, <code>ar2</code>, …); it also changed “ar” inside other regressor names.</p></li>
+<li><p><code><a href="../reference/span.html">span()</a></code> includes an end year, quarter or month in full, as <code><a href="../reference/p.html">p()</a></code> does: on monthly data <code>span(x, 2010, 2010)</code> keeps all of 2010 (it kept only January), and on quarterly data all four quarters (it kept only Q1). An end given as a day is unchanged.</p></li>
+<li><p><code><a href="../reference/plot_2ax.html">plot_2ax()</a></code> plots a single series on the left axis; it stopped with an error.</p></li>
+<li><p><code><a href="../reference/index_to_base.html">index_to_base()</a></code> needs <code>base_per</code>. Its default, today’s date, failed for any data that end before today.</p></li>
 </ul></div>
+<div class="section level3">
+<h3 id="documentation-0-1-5">Documentation<a class="anchor" aria-label="anchor" href="#documentation-0-1-5"></a></h3>
+<ul><li>Help pages checked against the code. Among the corrections: <code>pcmp(x, 4)</code> is the average quarterly growth over a year (year on year is <code>pcmp(x, 4, 4)</code>); <code>yoy_gr = FALSE</code> in the plots is growth on the previous period, not annualized; <code><a href="../reference/index_to_base.html">index_to_base()</a></code> with one date sets that period, not the year, to the base; <code><a href="../reference/span.html">span()</a></code> reads an end year or quarter as its first day; <code><a href="../reference/interpol.html">interpol()</a></code> matches pattern series by position; <code>%+=%</code> binds more tightly than <code>/</code>; <code><a href="../reference/set_udaman_token.html">set_udaman_token()</a></code> sets the token for the session only. Examples print only the rows that matter.</li>
+</ul></div>
+</div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.1.4" id="fcutils-014">fcutils 0.1.4<a class="anchor" aria-label="anchor" href="#fcutils-014"></a></h2>
 <ul><li>

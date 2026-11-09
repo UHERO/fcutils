@@ -52,16 +52,18 @@
 
 
 <dl><dt id="arg-dat-">dat1<a class="anchor" aria-label="anchor" href="#arg-dat-"></a></dt>
-<dd><p>date of period start (string: yyyyQq or yyyy.q)</p></dd>
+<dd><p>date of period start (yyyyQq or yyyy.q, as string or number)</p></dd>
 
 
 <dt id="arg-dat-">dat2<a class="anchor" aria-label="anchor" href="#arg-dat-"></a></dt>
-<dd><p>date of period end (string: yyyyQq or yyyy.q)</p></dd>
+<dd><p>date of period end (yyyyQq or yyyy.q, as string or number)</p></dd>
 
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p>string containing date range</p>
+    <p>string containing date range. It ends on the first day of dat2,
+so on monthly data <code>pq(2010.1, 2010.4)</code> stops at October. <code><a href="p.html">p()</a></code>
+includes the end period in full.</p>
     </div>
 
     <div class="section level2">

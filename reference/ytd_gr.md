@@ -18,6 +18,11 @@ ytd_gr(x)
 
 object of the same type as the input containing year to date growth rate
 
+## Details
+
+The growth rate is the percent change of the to-date average from the
+same date a year earlier. An NA makes the rest of its period NA.
+
 ## Examples
 
 ``` r

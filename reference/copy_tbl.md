@@ -1,6 +1,6 @@
-# Copy a data frame to clipboard (only works on MacOS)
+# Copy time series to the clipboard as a tab-separated table (macOS only)
 
-Copy a data frame to clipboard (only works on MacOS)
+Copy time series to the clipboard as a tab-separated table (macOS only)
 
 ## Usage
 
@@ -12,15 +12,16 @@ copy_tbl(x, dec = 2)
 
 - x:
 
-  tibble (or data frame) to be copied
+  a ts-boxable object; it is copied in wide form, one column per series
 
 - dec:
 
-  number of decimals to round numeric columns to (default: 2)
+  number of decimals to round to (default: 2)
 
 ## Value
 
-copy_tbl() returns the input x invisibly
+the copied table invisibly, a tibble of text with numbers rounded to
+`dec` decimals
 
 ## Examples
 

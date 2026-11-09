@@ -22,7 +22,8 @@ QtoA(ser_in, aggr = "mean")
 ## Value
 
 converted xts series (freq = a). A name ending in `.Q`, `_Q`, `.SOLQ` or
-`_SOLQ` gets the annual ending; other names are kept.
+`_SOLQ` gets the annual ending; other names are kept. Years with fewer
+than four quarters are dropped.
 
 ## Examples
 

@@ -71,8 +71,9 @@ one by one.</p></dd>
 
 <dt id="arg-freq">freq<a class="anchor" aria-label="anchor" href="#arg-freq"></a></dt>
 <dd><p>NULL (default) keeps the source's frequency; "month" averages
-daily or weekly data to months, keeping complete months only (the
-current month is dropped)</p></dd>
+daily or weekly data to months and drops the current calendar month. A
+month at either end of the data with only some days is still averaged,
+so set <code>start</code> to the first of a month.</p></dd>
 
 
 <dt id="arg-start">start<a class="anchor" aria-label="anchor" href="#arg-start"></a></dt>
@@ -83,7 +84,10 @@ current month is dropped)</p></dd>
 <dt id="arg-filters">filters<a class="anchor" aria-label="anchor" href="#arg-filters"></a></dt>
 <dd><p>named list of further query parameters. e-Stat: the table's
 category codes, e.g. <code>list(cdTab = "1", cdCat01 = "0001", cdArea = "00000")</code>. EIA: <code>route</code> (e.g. "steo" or "aeo/2025"), <code>frequency</code>
-("monthly", "annual") and facets such as <code>scenario = "ref2025"</code>.</p></dd>
+("monthly", "annual") and facets such as <code>scenario = "ref2025"</code>; EIA
+returns at most 5,000 observations per series. FRED: added to the
+request as query parameters, e.g. <code>list(units = "pc1")</code>. StatCan and
+Bank of Canada: ignored.</p></dd>
 
 
 <dt id="arg-format">format<a class="anchor" aria-label="anchor" href="#arg-format"></a></dt>

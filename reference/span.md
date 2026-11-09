@@ -16,11 +16,18 @@ span(x, start = NULL, end = NULL, template = NULL, extend = FALSE)
 
 - start:
 
-  start date (see examples)
+  start date, in any form
+  [`to_ymd()`](https://uhero.github.io/fcutils/reference/to_ymd.md)
+  reads
 
 - end:
 
-  end date (see examples)
+  end date, in any form
+  [`to_ymd()`](https://uhero.github.io/fcutils/reference/to_ymd.md)
+  reads. A year, quarter or month given as `end` is included in full, as
+  in [`p()`](https://uhero.github.io/fcutils/reference/p.md): on monthly
+  data `span(x, 2010, 2010)` keeps January to December 2010. A day is
+  kept as is.
 
 - template:
 
@@ -28,8 +35,8 @@ span(x, start = NULL, end = NULL, template = NULL, extend = FALSE)
 
 - extend:
 
-  logical. If true, the start and end values are allowed to extend the
-  series (by adding NA values).
+  logical. If TRUE, a `start` before the data or an `end` after them
+  pads the series with NA.
 
 ## Value
 
@@ -112,4 +119,13 @@ quarterly_data_example |>
 #> #   E_ELSE_HI <dbl>, EMA_HI <dbl>, EAD_HI <dbl>, EED_HI <dbl>, EHC_HI <dbl>,
 #> #   EAF_HI <dbl>, EAFAC_HI <dbl>, EAFFD_HI <dbl>, EOS_HI <dbl>, EGV_HI <dbl>,
 #> #   EGVFD_HI <dbl>, EGVST_HI <dbl>, EGVSTEDNS_HI <dbl>, EGVLC_HI <dbl>
+# a year as end includes all of it
+monthly_data_example |>
+  span(2010, 2010) |>
+  tail(2)
+#> # A tibble: 2 × 4
+#>   time       VISNS_HI VAPNS_HI VADCNS_HI
+#>   <date>        <dbl>    <dbl>     <dbl>
+#> 1 2010-11-01     553.     608.      165.
+#> 2 2010-12-01     634.     689.      204.
 ```

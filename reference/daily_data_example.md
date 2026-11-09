@@ -1,6 +1,6 @@
-# daily data for examples
+# Daily data for examples
 
-daily data for examples
+Daily data for examples
 
 ## Usage
 
@@ -10,7 +10,8 @@ daily_data_example
 
 ## Format
 
-tibble of daily data
+wide tibble of daily Hawaii visitor arrivals (VISPNS_HI, VAPNS_HI), 1
+September 2020 to 25 March 2022
 
 ## Source
 
@@ -18,7 +19,7 @@ author
 
 ## References
 
-[uhero.hawaii.edu](https://uhero.github.io/fcutils/reference/uhero.hawaii.edu)
+<https://uhero.hawaii.edu>
 
 ## Author
 

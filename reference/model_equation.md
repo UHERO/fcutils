@@ -13,7 +13,9 @@ model_equation(model, ...)
 
 - model:
 
-  a model estimated by lm() (lm object)
+  a model from lm() or dynlm::dynlm() on quarterly data. The residuals
+  must be named by date (for example, rows taken from an xts), so that
+  the TSRANGE line can be built.
 
 - ...:
 
@@ -23,6 +25,14 @@ model_equation(model, ...)
 
 a character vector containing the estimated equation (1) and bimets
 components (2:5)
+
+## Details
+
+Variable names are translated to bimets: DL_x becomes TSDELTALOG(x), L_x
+becomes LOG(x), D_x becomes TSDELTA(x), x.k becomes TSLAG(x, k), and
+IIS_yyyy_mm_dd becomes IIS_yyyyQq. A constant named "(Intercept)", "c"
+or "CONST" becomes b0. TSRANGE is written as year and quarter, from the
+first and last residual dates.
 
 ## Examples
 
@@ -40,7 +50,7 @@ model_equation(dfm)
 # L(uk, 1:3)3 + 0.37480999 * L(log(uk), c(5:6, 12))5 - 0.22709846 * L(log(uk), c(5:6, 12))6 +
 # 1.62340449 * L(log(uk), c(5:6, 12))12"
 # (2) "BEHAVIORAL> uk"
-# (3) "TSRANGE 1990 1 2010 4"
+# (3) "TSRANGE ..." (from the residuals' dates)
 # (4) "EQ> uk = b0 + b1 * TSLAG(uk, 1) + b2 * TSLAG(uk, 2) + b3 * TSLAG(uk, 3) + b4 *
 # TSLAG(LOG(uk), 5) + b5 * TSLAG(LOG(uk), 6) + b6 * TSLAG(LOG(uk), 12)"
 # (5) "COEFF> b0 b1 b2 b3 b4 b5 b6"
@@ -50,7 +60,7 @@ model_equation(dfm)
 # (1) "d(log(uk)) = 0.1018542 - 0.2379287 * L(uk, c(1, 11, 12))1 + 0.0368355 *
 # L(uk, c(1, 11, 12))11 + 0.1689896 * L(uk, c(1, 11, 12))12"
 # (2) "BEHAVIORAL> uk"
-# (3) "TSRANGE 1990 1 2010 4"
+# (3) "TSRANGE ..." (from the residuals' dates)
 # (4) "EQ> TSDELTA(LOG(uk)) = b0 + b1 * TSLAG(uk, 1) + b2 * TSLAG(uk, 11) + b3 * TSLAG(uk, 12)"
 # (5) "COEFF> b0 b1 b2 b3"
 }

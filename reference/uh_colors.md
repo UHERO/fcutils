@@ -18,7 +18,7 @@ author
 
 ## References
 
-[uhero.hawaii.edu](https://uhero.github.io/fcutils/reference/uhero.hawaii.edu)
+<https://uhero.hawaii.edu>
 
 ## Author
 

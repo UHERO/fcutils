@@ -69,7 +69,8 @@
 
 <dt id="arg-ids">ids<a class="anchor" aria-label="anchor" href="#arg-ids"></a></dt>
 <dd><p>a character vector with series names to be extended (default: NULL,
-in which case all series common to x and y are extended)</p></dd>
+in which case all series common to x and y are extended). Names not in
+both x and y are skipped.</p></dd>
 
 
 <dt id="arg-method">method<a class="anchor" aria-label="anchor" href="#arg-method"></a></dt>
@@ -89,8 +90,9 @@ after its last observation, "backward" only before its first</p></dd>
 <dd><p>how series in x find their partner in y: "name" (default)
 needs the same name; "stem" compares names without a final frequency or
 solution ending (<code>_A</code>, <code>_Q</code>, <code>_M</code>, <code>_SOLA</code>, <code>_SOLQ</code>, <code>_SOLM</code>, or the same
-with <code>.</code>), so <code>UR_AT_US_A</code> pairs with <code>UR_AT_US_SOLQ</code>. A single series in
-x always pairs with a single series in y. The result keeps x's names.</p></dd>
+with <code>.</code>), so <code>UR_AT_US_Q</code> pairs with <code>UR_AT_US_SOLQ</code>. A single series in
+x always pairs with a single series in y. The result keeps x's names. x
+and y must have the same frequency; chain() does not convert or check it.</p></dd>
 
 
 <dt id="arg-verbose">verbose<a class="anchor" aria-label="anchor" href="#arg-verbose"></a></dt>
@@ -99,7 +101,8 @@ x always pairs with a single series in y. The result keeps x's names.</p></dd>
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p>object of the same type as the input with extended series</p>
+    <p>object of the same type as x with extended series. Series in y
+with no partner in x are dropped.</p>
     </div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
@@ -108,60 +111,40 @@ To forecast one series from assumptions or a path, use <code><a href="extend.htm
 "Which function" there.</p>
 <p>This function performs a similar operation to <code><a href="https://docs.ropensci.org/tsbox/reference/ts_bind.html" class="external-link">tsbox::ts_chain()</a></code>,
 but for multiple series. x and y are linked at x's first observation (going
-backward) and its last (going forward); y needs a value at those dates.
-The default, method "ratio" with direction "both", is <code><a href="https://docs.ropensci.org/tsbox/reference/ts_bind.html" class="external-link">tsbox::ts_chain()</a></code>.</p>
+backward) and its last (going forward). With <code>method = "diff"</code> or a single
+direction, y needs a value at those dates, or chain() stops. The default,
+method "ratio" with direction "both", is <code><a href="https://docs.ropensci.org/tsbox/reference/ts_bind.html" class="external-link">tsbox::ts_chain()</a></code>: if y lacks a
+value at those dates, it links at the nearest date where both have one.</p>
     </div>
 
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="va">quarterly_data_example</span> <span class="op">|&gt;</span></span></span>
-<span class="r-in"><span>  <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">time</span> <span class="op">&lt;</span> <span class="fu"><a href="https://rdrr.io/r/base/as.Date.html" class="external-link">as.Date</a></span><span class="op">(</span><span class="st">"2000-01-01"</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span></span>
-<span class="r-in"><span>  <span class="fu">chain</span><span class="op">(</span><span class="va">quarterly_data_example</span>, ids <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"E_NF_HI"</span>, <span class="st">"ECT_HI"</span><span class="op">)</span><span class="op">)</span></span></span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Extending the following series: </span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> E_NF_HI, ECT_HI</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 109 × 31</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    time       E_NF_HI ECT_HI EMN_HI EWT_HI ERT_HI E_TRADE_HI E_TU_HI ETWTANS_HI</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;date&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 1</span> 1998-01-01    531.   23.3   15.9   15.9   65.2       81.0    27.9       9.97</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 2</span> 1998-04-01    531.   23.0   15.8   15.9   64.6       80.6    27.9      10.0 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 3</span> 1998-07-01    533.   23.0   15.8   15.9   64.2       80.1    27.6      10.1 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 4</span> 1998-10-01    531.   23.1   15.8   16     64.2       80.2    27.3      10   </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 5</span> 1999-01-01    530.   22.8   15.8   15.8   64.1       79.8    27.0       9.73</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 6</span> 1999-04-01    533.   22.9   15.9   15.8   64.8       80.6    27.4       9.97</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 7</span> 1999-07-01    537.   22.9   16.1   15.8   65.1       81.0    27.6      10.2 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 8</span> 1999-10-01    541.   23.3   16.3   16.0   65.9       82.0    27.9      10.3 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 9</span> 2000-01-01    544.   24.3   <span style="color: #BB0000;">NA</span>     <span style="color: #BB0000;">NA</span>     <span style="color: #BB0000;">NA</span>         <span style="color: #BB0000;">NA</span>      <span style="color: #BB0000;">NA</span>        <span style="color: #BB0000;">NA</span>   </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">10</span> 2000-04-01    551.   25.0   <span style="color: #BB0000;">NA</span>     <span style="color: #BB0000;">NA</span>     <span style="color: #BB0000;">NA</span>         <span style="color: #BB0000;">NA</span>      <span style="color: #BB0000;">NA</span>        <span style="color: #BB0000;">NA</span>   </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># ℹ 99 more rows</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># ℹ 22 more variables: ETWNS_HI &lt;dbl&gt;, EUT_HI &lt;dbl&gt;, EIF_HI &lt;dbl&gt;,</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;">#   EFI_HI &lt;dbl&gt;, E_FIR_HI &lt;dbl&gt;, ERE_HI &lt;dbl&gt;, EPS_HI &lt;dbl&gt;, E_PBS_HI &lt;dbl&gt;,</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;">#   E_ELSE_HI &lt;dbl&gt;, EMA_HI &lt;dbl&gt;, EAD_HI &lt;dbl&gt;, EED_HI &lt;dbl&gt;, EHC_HI &lt;dbl&gt;,</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;">#   EAF_HI &lt;dbl&gt;, EAFAC_HI &lt;dbl&gt;, EAFFD_HI &lt;dbl&gt;, EOS_HI &lt;dbl&gt;, EGV_HI &lt;dbl&gt;,</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;">#   EGVFD_HI &lt;dbl&gt;, EGVST_HI &lt;dbl&gt;, EGVSTEDNS_HI &lt;dbl&gt;, EGVLC_HI &lt;dbl&gt;</span></span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="co"># extend two of the series; the others stay as they were</span></span></span>
 <span class="r-in"><span><span class="va">quarterly_data_example</span> <span class="op">|&gt;</span></span></span>
 <span class="r-in"><span>  <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">time</span> <span class="op">&lt;</span> <span class="fu"><a href="https://rdrr.io/r/base/as.Date.html" class="external-link">as.Date</a></span><span class="op">(</span><span class="st">"2000-01-01"</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span></span>
-<span class="r-in"><span>  <span class="fu">chain</span><span class="op">(</span><span class="va">quarterly_data_example</span><span class="op">)</span></span></span>
+<span class="r-in"><span>  <span class="fu">chain</span><span class="op">(</span><span class="va">quarterly_data_example</span>, ids <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"E_NF_HI"</span>, <span class="st">"ECT_HI"</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span></span>
+<span class="r-in"><span>  <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="va">time</span>, <span class="va">E_NF_HI</span>, <span class="va">ECT_HI</span>, <span class="va">EMN_HI</span><span class="op">)</span> <span class="op">|&gt;</span></span></span>
+<span class="r-in"><span>  <span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">tail</a></span><span class="op">(</span><span class="fl">3</span><span class="op">)</span></span></span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Extending the following series: </span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> E_NF_HI, ECT_HI, EMN_HI, EWT_HI, ERT_HI, E_TRADE_HI, E_TU_HI, ETWTANS_HI, ETWNS_HI, EUT_HI, EIF_HI, EFI_HI, E_FIR_HI, ERE_HI, EPS_HI, E_PBS_HI, E_ELSE_HI, EMA_HI, EAD_HI, EED_HI, EHC_HI, EAF_HI, EAFAC_HI, EAFFD_HI, EOS_HI, EGV_HI, EGVFD_HI, EGVST_HI, EGVSTEDNS_HI, EGVLC_HI</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 109 × 31</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    time       E_NF_HI ECT_HI EMN_HI EWT_HI ERT_HI E_TRADE_HI E_TU_HI ETWTANS_HI</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;date&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 1</span> 1998-01-01    531.   23.3   15.9   15.9   65.2       81.0    27.9       9.97</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 2</span> 1998-04-01    531.   23.0   15.8   15.9   64.6       80.6    27.9      10.0 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 3</span> 1998-07-01    533.   23.0   15.8   15.9   64.2       80.1    27.6      10.1 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 4</span> 1998-10-01    531.   23.1   15.8   16     64.2       80.2    27.3      10   </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 5</span> 1999-01-01    530.   22.8   15.8   15.8   64.1       79.8    27.0       9.73</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 6</span> 1999-04-01    533.   22.9   15.9   15.8   64.8       80.6    27.4       9.97</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 7</span> 1999-07-01    537.   22.9   16.1   15.8   65.1       81.0    27.6      10.2 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 8</span> 1999-10-01    541.   23.3   16.3   16.0   65.9       82.0    27.9      10.3 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 9</span> 2000-01-01    544.   24.3   16.3   16.2   66.0       82.3    28.0      10.4 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">10</span> 2000-04-01    551.   25.0   16.4   16.2   66.0       82.3    28.1      10.6 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># ℹ 99 more rows</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># ℹ 22 more variables: ETWNS_HI &lt;dbl&gt;, EUT_HI &lt;dbl&gt;, EIF_HI &lt;dbl&gt;,</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;">#   EFI_HI &lt;dbl&gt;, E_FIR_HI &lt;dbl&gt;, ERE_HI &lt;dbl&gt;, EPS_HI &lt;dbl&gt;, E_PBS_HI &lt;dbl&gt;,</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;">#   E_ELSE_HI &lt;dbl&gt;, EMA_HI &lt;dbl&gt;, EAD_HI &lt;dbl&gt;, EED_HI &lt;dbl&gt;, EHC_HI &lt;dbl&gt;,</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;">#   EAF_HI &lt;dbl&gt;, EAFAC_HI &lt;dbl&gt;, EAFFD_HI &lt;dbl&gt;, EOS_HI &lt;dbl&gt;, EGV_HI &lt;dbl&gt;,</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;">#   EGVFD_HI &lt;dbl&gt;, EGVST_HI &lt;dbl&gt;, EGVSTEDNS_HI &lt;dbl&gt;, EGVLC_HI &lt;dbl&gt;</span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> E_NF_HI, ECT_HI</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 3 × 4</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   time       E_NF_HI ECT_HI EMN_HI</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;date&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">1</span> 2024-07-01    640.   39.6     <span style="color: #BB0000;">NA</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">2</span> 2024-10-01    643.   39.1     <span style="color: #BB0000;">NA</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">3</span> 2025-01-01    648.   39.4     <span style="color: #BB0000;">NA</span></span>
+<span class="r-in"><span><span class="co"># extend all of them</span></span></span>
+<span class="r-in"><span><span class="va">quarterly_data_example</span> <span class="op">|&gt;</span></span></span>
+<span class="r-in"><span>  <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">time</span> <span class="op">&lt;</span> <span class="fu"><a href="https://rdrr.io/r/base/as.Date.html" class="external-link">as.Date</a></span><span class="op">(</span><span class="st">"2000-01-01"</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span></span>
+<span class="r-in"><span>  <span class="fu">chain</span><span class="op">(</span><span class="va">quarterly_data_example</span>, verbose <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span> <span class="op">|&gt;</span></span></span>
+<span class="r-in"><span>  <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="va">time</span>, <span class="va">E_NF_HI</span>, <span class="va">ECT_HI</span>, <span class="va">EMN_HI</span><span class="op">)</span> <span class="op">|&gt;</span></span></span>
+<span class="r-in"><span>  <span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">tail</a></span><span class="op">(</span><span class="fl">3</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 3 × 4</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   time       E_NF_HI ECT_HI EMN_HI</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;date&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">1</span> 2024-07-01    640.   39.6   12.8</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">2</span> 2024-10-01    643.   39.1   13.0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">3</span> 2025-01-01    648.   39.4   13.2</span>
 <span class="r-in"><span><span class="co"># continue an annual history with the changes of a forecast</span></span></span>
 <span class="r-in"><span><span class="va">hist</span> <span class="op">&lt;-</span> <span class="fu"><a href="make_xts.html">make_xts</a></span><span class="op">(</span><span class="fl">2020</span>, val <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">8.1</span>, <span class="fl">5.4</span>, <span class="fl">3.6</span>, <span class="fl">3.6</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="va">fcst</span> <span class="op">&lt;-</span> <span class="fu"><a href="make_xts.html">make_xts</a></span><span class="op">(</span><span class="fl">2022</span>, val <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">3.5</span>, <span class="fl">3.7</span>, <span class="fl">4.0</span>, <span class="fl">4.2</span>, <span class="fl">4.3</span><span class="op">)</span><span class="op">)</span></span></span>
@@ -178,17 +161,18 @@ The default, method "ratio" with direction "both", is <code><a href="https://doc
 <span class="r-out co"><span class="r-pr">#&gt;</span> 2026-01-01   4.2</span>
 <span class="r-in"><span><span class="co"># pair series by name stem: UR_A with UR_SOLA, LF_A with LF_SOLA</span></span></span>
 <span class="r-in"><span><span class="va">hist</span> <span class="op">&lt;-</span> <span class="fu"><a href="make_xts.html">make_xts</a></span><span class="op">(</span><span class="fl">2020</span>, val <span class="op">=</span> <span class="fu">tibble</span><span class="fu">::</span><span class="fu"><a href="https://tibble.tidyverse.org/reference/tibble.html" class="external-link">tibble</a></span><span class="op">(</span>UR_A <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">8.1</span>, <span class="fl">5.4</span>, <span class="fl">3.6</span><span class="op">)</span>, LF_A <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">160</span>, <span class="fl">161</span>, <span class="fl">164</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="va">fcst</span> <span class="op">&lt;-</span> <span class="fu"><a href="make_xts.html">make_xts</a></span><span class="op">(</span><span class="fl">2022</span>, val <span class="op">=</span> <span class="fu">tibble</span><span class="fu">::</span><span class="fu"><a href="https://tibble.tidyverse.org/reference/tibble.html" class="external-link">tibble</a></span><span class="op">(</span>UR_SOLA <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">3.6</span>, <span class="fl">3.8</span>, <span class="fl">4.1</span><span class="op">)</span>, LF_SOLA <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">165</span>, <span class="fl">166</span>, <span class="fl">168</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">fcst</span> <span class="op">&lt;-</span> <span class="fu"><a href="make_xts.html">make_xts</a></span><span class="op">(</span><span class="fl">2022</span>, val <span class="op">=</span> <span class="fu">tibble</span><span class="fu">::</span><span class="fu"><a href="https://tibble.tidyverse.org/reference/tibble.html" class="external-link">tibble</a></span><span class="op">(</span>UR_SOLA <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">4.0</span>, <span class="fl">4.4</span>, <span class="fl">4.9</span><span class="op">)</span>, LF_SOLA <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">165</span>, <span class="fl">166</span>, <span class="fl">168</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu">chain</span><span class="op">(</span><span class="va">hist</span>, <span class="va">fcst</span>, match <span class="op">=</span> <span class="st">"stem"</span>, direction <span class="op">=</span> <span class="st">"forward"</span><span class="op">)</span></span></span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Extending the following series: </span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> UR_A, LF_A</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>            UR_A     LF_A</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2020-01-01  8.1 160.0000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2021-01-01  5.4 161.0000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2022-01-01  3.6 164.0000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2023-01-01  3.8 164.9939</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2024-01-01  4.1 166.9818</span>
-<span class="r-in"><span><span class="co"># a method per series: changes for the rate, growth for the level</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2020-01-01 8.10 160.0000</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2021-01-01 5.40 161.0000</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2022-01-01 3.60 164.0000</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2023-01-01 3.96 164.9939</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2024-01-01 4.41 166.9818</span>
+<span class="r-in"><span><span class="co"># a method per series: changes for the rate (3.6 + 0.4, + 0.5), growth for</span></span></span>
+<span class="r-in"><span><span class="co"># the level</span></span></span>
 <span class="r-in"><span><span class="fu">chain</span><span class="op">(</span><span class="va">hist</span>, <span class="va">fcst</span>, match <span class="op">=</span> <span class="st">"stem"</span>, direction <span class="op">=</span> <span class="st">"forward"</span>, method <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>UR_A <span class="op">=</span> <span class="st">"diff"</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Extending the following series: </span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> UR_A, LF_A</span>
@@ -196,8 +180,8 @@ The default, method "ratio" with direction "both", is <code><a href="https://doc
 <span class="r-out co"><span class="r-pr">#&gt;</span> 2020-01-01  8.1 160.0000</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 2021-01-01  5.4 161.0000</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 2022-01-01  3.6 164.0000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2023-01-01  3.8 164.9939</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2024-01-01  4.1 166.9818</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2023-01-01  4.0 164.9939</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2024-01-01  4.5 166.9818</span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

@@ -24,16 +24,18 @@ gen_table(
 
 - tbl_start:
 
-  start period for table
+  start period for table (default: 10 years before today)
 
 - tbl_end:
 
-  end period for table
+  end period for table (default: 2 years after today)
 
 - percent:
 
-  what type of percent should be added ("none", "pc" (default), "pcy",
-  "pca")
+  the growth rate shown with each series: "pc" (default, period on
+  period), "pcy" (year on year), "pca" (annualized) or "none". Any other
+  value shows levels only. Growth is computed before the table is cut,
+  so the first period shown has a growth rate.
 
 - time_across:
 
@@ -42,16 +44,17 @@ gen_table(
 
 - tbl_height:
 
-  the height of the table in px (default 800)
+  the height of the html table in px (default 800)
 
 - save_loc:
 
   file path for saving table incl. extension ("html" or "csv") (default
-  NULL)
+  NULL, no file). Other extensions write nothing.
 
 ## Value
 
-table formatted for output
+a tibble of the table, values rounded to 2 decimals and series sorted by
+name. It is returned also when a file is saved.
 
 ## Examples
 
@@ -146,11 +149,11 @@ gen_table(quarterly_data_example, percent = "pcy", time_across = FALSE)
 if (FALSE) { # interactive()
 gen_table(quarterly_data_example,
   percent = "pcy",
-  time_across = FALSE, save_loc = "~/Downloads/temp.csv"
+  time_across = FALSE, save_loc = file.path(tempdir(), "temp.csv")
 )
 gen_table(quarterly_data_example,
   percent = "pcy", time_across = TRUE,
-  save_loc = "~/Downloads/temp.html"
+  save_loc = file.path(tempdir(), "temp.html")
 )
 }
 ```

@@ -21,7 +21,9 @@ ma(x, order)
 
 ## Value
 
-object of the same type as the input containing moving average
+object of the same type as the input containing moving average. The
+first `order - 1` periods are NA, and an NA inside the window gives NA.
+The window counts observations, not dates.
 
 ## Examples
 

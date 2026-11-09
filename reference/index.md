@@ -27,7 +27,7 @@
   : Create xts and fill with values
 
 - [`addf()`](https://uhero.github.io/fcutils/reference/addf.md) : Create
-  xts addfactor
+  an add-factor
 
 - [`extend()`](https://uhero.github.io/fcutils/reference/extend.md) :
   Extend a series past its last observation
@@ -68,11 +68,9 @@
 ## Frequency conversion and interpolation
 
 - [`agg()`](https://uhero.github.io/fcutils/reference/agg.md) :
-  Aggregate univariate or multivariate time series from low to high
-  frequency
+  Aggregate time series to a lower frequency
 - [`fagg()`](https://uhero.github.io/fcutils/reference/fagg.md) :
-  Aggregate univariate or multivariate fiscal time series from low to
-  high frequency
+  Aggregate time series to fiscal years or quarters
 - [`disagg()`](https://uhero.github.io/fcutils/reference/disagg.md) :
   Disaggregate univariate or multivariate time series from low to high
   frequency
@@ -86,18 +84,18 @@
   Aggregate from quarterly to annual frequency (superseded by
   tsbox::ts_frequency())
 - [`sum_pattern`](https://uhero.github.io/fcutils/reference/sum_pattern.md)
-  : pattern in series names that should be aggregate as sum
+  : Pattern in series names that should be aggregated as sum
 
 ## Growth rates and transformations
 
 - [`pcmp()`](https://uhero.github.io/fcutils/reference/pcmp.md) :
   Calculate multi-period average growth
 - [`pc_to_pca()`](https://uhero.github.io/fcutils/reference/pc_to_pca.md)
-  : Convert quarterly growth to annualized growth
+  : Convert growth per period to annualized growth
 - [`pca_to_pc()`](https://uhero.github.io/fcutils/reference/pca_to_pc.md)
-  : Convert annualized growth to quarterly growth
+  : Convert annualized growth to growth per period
 - [`cagr()`](https://uhero.github.io/fcutils/reference/cagr.md) :
-  Calculate compund annual growth
+  Calculate compound annual growth
 - [`yoy_to_lev()`](https://uhero.github.io/fcutils/reference/yoy_to_lev.md)
   : Extend a series using year over year growth (deprecated)
 - [`ma()`](https://uhero.github.io/fcutils/reference/ma.md) : Backward
@@ -151,7 +149,8 @@
   Check if a data frame is in wide format
 
 - [`copy_tbl()`](https://uhero.github.io/fcutils/reference/copy_tbl.md)
-  : Copy a data frame to clipboard (only works on MacOS)
+  : Copy time series to the clipboard as a tab-separated table (macOS
+  only)
 
 - [`set_attr_tslist()`](https://uhero.github.io/fcutils/reference/set_attr_tslist.md)
   : Set class attribute to tslist
@@ -193,11 +192,11 @@
 ## Example data
 
 - [`daily_data_example`](https://uhero.github.io/fcutils/reference/daily_data_example.md)
-  : daily data for examples
+  : Daily data for examples
 - [`monthly_data_example`](https://uhero.github.io/fcutils/reference/monthly_data_example.md)
-  : monthly data for examples
+  : Monthly data for examples
 - [`quarterly_data_example`](https://uhero.github.io/fcutils/reference/quarterly_data_example.md)
-  : quarterly data for examples
+  : Quarterly data for examples
 
 ## Helpers
 

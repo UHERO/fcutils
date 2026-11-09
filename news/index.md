@@ -17,8 +17,16 @@
   `extend(hist_lev, path = yoy_gr, type = "growth", growth = "pcy")`,
   which gives the same result.
 - [`interpol()`](https://uhero.github.io/fcutils/reference/interpol.md)
+  takes `match`: “position” (default, as before) pairs series with
+  pattern series in order; “name” and “stem” pair them by name, as in
+  [`chain()`](https://uhero.github.io/fcutils/reference/chain.md).
+- [`interpol()`](https://uhero.github.io/fcutils/reference/interpol.md)
   takes `interp = "stine"`: without a pattern, it fills gaps inside a
   series along a Stineman spline instead of a straight line.
+- [`addf()`](https://uhero.github.io/fcutils/reference/addf.md) takes
+  `interp = "stine"` with points given as formulas: a smooth curve
+  through the points that eases off zero and back, the same curve
+  `extend(interp = "stine")` draws from a zero history.
 - `span(x)` without dates fits x to the bank: it cuts x at the bank’s
   start and end and pads it with NA to both.
 - The help pages of
@@ -35,6 +43,73 @@
   for example `"1 year"`. The default, `"drop"`, leaves results
   unchanged. The “Growth rates, tables and plots” article has an
   example.
+
+### Bug fixes
+
+- `extend(type = "chain", method = "diff")` follows the shifted path as
+  is. It compounded the path’s growth, which lost the sign of a path
+  that reaches zero or below and gave NA after a history ending at zero.
+  With `smooth`, or with `method = "ratio"`, a path at or below zero is
+  now an error.
+
+- [`extend()`](https://uhero.github.io/fcutils/reference/extend.md)
+  stops on an anchor that is not the first day of a period within the
+  bank, as [`addf()`](https://uhero.github.io/fcutils/reference/addf.md)
+  does. Such an anchor used to be moved to the next period or ignored
+  without a message.
+
+- `extend(hold_last = FALSE)` carries the last anchor forward with
+  `interp = "linear"`, as it did with `"stine"`; the values after it
+  were NA.
+
+- [`write_tsd()`](https://uhero.github.io/fcutils/reference/write_tsd.md)
+  writes an NA inside a series as the TSD missing value, 1.000000E+0015,
+  as the older
+  [`write_tsd()`](https://uhero.github.io/fcutils/reference/write_tsd.md)
+  in forecastr’s util_funs.R does. It dropped it, which moved every
+  later value one period early.
+
+- `plot_fc(table_start = NULL, table_end = NULL)` shows the whole data,
+  as documented; it stopped with an error.
+
+- [`rename_udaman()`](https://uhero.github.io/fcutils/reference/rename_udaman.md)
+  takes the location just before the frequency, so `SH_JP__HON_M`
+  becomes `SH_JP@HON.M` (was `SH_JP@JP.M`).
+
+- [`extract_data()`](https://uhero.github.io/fcutils/reference/extract_data.md)
+  renames only the AR lag columns (`ar1`, `ar2`, …); it also changed
+  “ar” inside other regressor names.
+
+- [`span()`](https://uhero.github.io/fcutils/reference/span.md) includes
+  an end year, quarter or month in full, as
+  [`p()`](https://uhero.github.io/fcutils/reference/p.md) does: on
+  monthly data `span(x, 2010, 2010)` keeps all of 2010 (it kept only
+  January), and on quarterly data all four quarters (it kept only Q1).
+  An end given as a day is unchanged.
+
+- [`plot_2ax()`](https://uhero.github.io/fcutils/reference/plot_2ax.md)
+  plots a single series on the left axis; it stopped with an error.
+
+- [`index_to_base()`](https://uhero.github.io/fcutils/reference/index_to_base.md)
+  needs `base_per`. Its default, today’s date, failed for any data that
+  end before today.
+
+### Documentation
+
+- Help pages checked against the code. Among the corrections:
+  `pcmp(x, 4)` is the average quarterly growth over a year (year on year
+  is `pcmp(x, 4, 4)`); `yoy_gr = FALSE` in the plots is growth on the
+  previous period, not annualized;
+  [`index_to_base()`](https://uhero.github.io/fcutils/reference/index_to_base.md)
+  with one date sets that period, not the year, to the base;
+  [`span()`](https://uhero.github.io/fcutils/reference/span.md) reads an
+  end year or quarter as its first day;
+  [`interpol()`](https://uhero.github.io/fcutils/reference/interpol.md)
+  matches pattern series by position; `%+=%` binds more tightly than
+  `/`;
+  [`set_udaman_token()`](https://uhero.github.io/fcutils/reference/set_udaman_token.md)
+  sets the token for the session only. Examples print only the rows that
+  matter.
 
 ## fcutils 0.1.4
 

@@ -218,11 +218,13 @@ series used below are:</p>
 <div class="section level2">
 <h2 id="dates">Dates<a class="anchor" aria-label="anchor" href="#dates"></a>
 </h2>
-<p>Wherever a function takes a date, <code><a href="../reference/to_ymd.html">to_ymd()</a></code> reads it. A
-year, a quarter or a day can be a number or a string; as a number, a
-quarter is either a decimal (<code>2024.3</code>) or six digits
-(<code>202403</code>). A month must be a string, because R stores
-<code>2024.10</code> and <code>2024.1</code> as the same number.</p>
+<p>Most functions read dates with <code><a href="../reference/to_ymd.html">to_ymd()</a></code>;
+<code><a href="../reference/pm.html">pm()</a></code>, <code><a href="../reference/pq.html">pq()</a></code> and <code><a href="../reference/py.html">py()</a></code> are older and
+take only their own format. A year, a quarter or a day can be a number
+or a string; as a number, a quarter is either a decimal
+(<code>2024.3</code>) or six digits (<code>202403</code>). A month must
+be a string, because R stores <code>2024.10</code> and
+<code>2024.1</code> as the same number.</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/to_ymd.html">to_ymd</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"2024"</span>, <span class="st">"2024Q3"</span>, <span class="st">"2024M10"</span>, <span class="st">"2024-10-15"</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] "2024-01-01" "2024-07-01" "2024-10-01" "2024-10-15"</span></span>
@@ -238,9 +240,10 @@ full:</p>
 <span><span class="co">#&gt; 2024-04-01 636.4715</span></span>
 <span><span class="co">#&gt; 2024-07-01 639.7316</span></span>
 <span><span class="co">#&gt; 2024-10-01 643.2565</span></span></code></pre></div>
-<p><code><a href="../reference/span.html">span()</a></code> cuts any format to a range.
+<p><code><a href="../reference/span.html">span()</a></code> cuts any format to a range and, like
+<code><a href="../reference/p.html">p()</a></code>, includes an end year or quarter in full.
 <code><a href="../reference/find_start.html">find_start()</a></code> and <code><a href="../reference/find_end.html">find_end()</a></code> give the first and
-last date with a value:</p>
+last date with a value, one per series:</p>
 <div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/span.html">span</a></span><span class="op">(</span><span class="va">q</span>, <span class="fl">2024</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fl">3</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 3 × 3</span></span></span>
@@ -252,7 +255,7 @@ last date with a value:</p>
 <span><span class="fu"><a href="../reference/find_end.html">find_end</a></span><span class="op">(</span><span class="va">q</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] "2025-01-01" "2025-01-01"</span></span></code></pre></div>
 <p>With <code>extend = TRUE</code>, <code><a href="../reference/span.html">span()</a></code> also pads a
-series with NA out to the end of the range:</p>
+series with NA out to the start and end of the range:</p>
 <div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/span.html">span</a></span><span class="op">(</span><span class="va">x</span>, <span class="fl">2024.4</span>, <span class="fl">2025.4</span>, extend <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span><span class="co">#&gt;             E_NF_HI</span></span>
@@ -266,9 +269,13 @@ cuts the series at the bank’s start and end and pads it with NA to both.
 Use it to put a series made some other way, such as an annual average
 from <code><a href="../reference/agg.html">agg()</a></code>, on the same dates as the rest of the bank:</p>
 <div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/span.html">span</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu">tsbox</span><span class="fu">::</span><span class="fu"><a href="https://docs.ropensci.org/tsbox/reference/ts_summary.html" class="external-link">ts_summary</a></span><span class="op">(</span><span class="op">)</span></span>
-<span><span class="co">#&gt;        id obs    diff freq      start        end</span></span>
-<span><span class="co">#&gt; 1 span(x) 109 3 month    4 1998-01-01 2025-01-01</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="va">fitted</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/span.html">span</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/range.html" class="external-link">range</a></span><span class="op">(</span><span class="fu">zoo</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/zoo/man/index.html" class="external-link">index</a></span><span class="op">(</span><span class="va">fitted</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="co">#&gt; [1] "1990-01-01" "2035-10-01"</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">tail</a></span><span class="op">(</span><span class="va">fitted</span>, <span class="fl">2</span><span class="op">)</span></span>
+<span><span class="co">#&gt;            E_NF_HI</span></span>
+<span><span class="co">#&gt; 2035-07-01      NA</span></span>
+<span><span class="co">#&gt; 2035-10-01      NA</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="getting-data">Getting data<a class="anchor" aria-label="anchor" href="#getting-data"></a>

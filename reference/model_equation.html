@@ -52,7 +52,9 @@
 
 
 <dl><dt id="arg-model">model<a class="anchor" aria-label="anchor" href="#arg-model"></a></dt>
-<dd><p>a model estimated by lm() (lm object)</p></dd>
+<dd><p>a model from lm() or dynlm::dynlm() on quarterly data. The
+residuals must be named by date (for example, rows taken from an xts),
+so that the TSRANGE line can be built.</p></dd>
 
 
 <dt id="arg--">...<a class="anchor" aria-label="anchor" href="#arg--"></a></dt>
@@ -62,6 +64,14 @@
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
     <p>a character vector containing the estimated equation (1) and bimets components (2:5)</p>
+    </div>
+    <div class="section level2">
+    <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
+    <p>Variable names are translated to bimets: DL_x becomes
+TSDELTALOG(x), L_x becomes LOG(x), D_x becomes TSDELTA(x), x.k becomes
+TSLAG(x, k), and IIS_yyyy_mm_dd becomes IIS_yyyyQq. A constant named
+"(Intercept)", "c" or "CONST" becomes b0. TSRANGE is written as year and
+quarter, from the first and last residual dates.</p>
     </div>
 
     <div class="section level2">
@@ -79,7 +89,7 @@
 <span class="r-in"><span><span class="co"># L(uk, 1:3)3 + 0.37480999 * L(log(uk), c(5:6, 12))5 - 0.22709846 * L(log(uk), c(5:6, 12))6 +</span></span></span>
 <span class="r-in"><span><span class="co"># 1.62340449 * L(log(uk), c(5:6, 12))12"</span></span></span>
 <span class="r-in"><span><span class="co"># (2) "BEHAVIORAL&gt; uk"</span></span></span>
-<span class="r-in"><span><span class="co"># (3) "TSRANGE 1990 1 2010 4"</span></span></span>
+<span class="r-in"><span><span class="co"># (3) "TSRANGE ..." (from the residuals' dates)</span></span></span>
 <span class="r-in"><span><span class="co"># (4) "EQ&gt; uk = b0 + b1 * TSLAG(uk, 1) + b2 * TSLAG(uk, 2) + b3 * TSLAG(uk, 3) + b4 *</span></span></span>
 <span class="r-in"><span><span class="co"># TSLAG(LOG(uk), 5) + b5 * TSLAG(LOG(uk), 6) + b6 * TSLAG(LOG(uk), 12)"</span></span></span>
 <span class="r-in"><span><span class="co"># (5) "COEFF&gt; b0 b1 b2 b3 b4 b5 b6"</span></span></span>
@@ -89,7 +99,7 @@
 <span class="r-in"><span><span class="co"># (1) "d(log(uk)) = 0.1018542 - 0.2379287 * L(uk, c(1, 11, 12))1 + 0.0368355 *</span></span></span>
 <span class="r-in"><span><span class="co"># L(uk, c(1, 11, 12))11 + 0.1689896 * L(uk, c(1, 11, 12))12"</span></span></span>
 <span class="r-in"><span><span class="co"># (2) "BEHAVIORAL&gt; uk"</span></span></span>
-<span class="r-in"><span><span class="co"># (3) "TSRANGE 1990 1 2010 4"</span></span></span>
+<span class="r-in"><span><span class="co"># (3) "TSRANGE ..." (from the residuals' dates)</span></span></span>
 <span class="r-in"><span><span class="co"># (4) "EQ&gt; TSDELTA(LOG(uk)) = b0 + b1 * TSLAG(uk, 1) + b2 * TSLAG(uk, 11) + b3 * TSLAG(uk, 12)"</span></span></span>
 <span class="r-in"><span><span class="co"># (5) "COEFF&gt; b0 b1 b2 b3"</span></span></span>
 <span class="r-in"><span><span class="op">}</span></span></span>

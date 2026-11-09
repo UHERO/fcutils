@@ -12,24 +12,25 @@ get_var(ser_in, env = parent.frame())
 
 - ser_in:
 
-  a variable name (character string with substituted expressions)
+  a name with glue expressions in braces, such as "Eser_i_cnty_i". The
+  expressions are evaluated in the global environment.
 
 - env:
 
-  environment where the expression should be evaluated
+  environment in which the resulting name is looked up
 
 ## Value
 
-variable
+the object with that name
 
 ## Examples
 
 ``` r
-if (FALSE) { # interactive()
 ser_i <- "_NF"
 cnty_i <- "HI"
-quarterly_data_example |>
-  tsbox::ts_long() |>
-  tsbox::ts_xts() %$% get_var("E{ser_i}_{cnty_i}")
-}
+q <- conv_xts(quarterly_data_example)
+with(as.list(q), get_var("E{ser_i}_{cnty_i}")) |> tail(2)
+#> Error: Failed to evaluate glue component {ser_i}
+#> Caused by error:
+#> ! object 'ser_i' not found
 ```

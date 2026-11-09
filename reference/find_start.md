@@ -16,7 +16,8 @@ find_start(x)
 
 ## Value
 
-dates associated with first observation
+a Date vector with one date per series, in the order of the series in x,
+without names
 
 ## Examples
 

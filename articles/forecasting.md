@@ -206,8 +206,8 @@ round(tsbox::ts_c(share = paths$stine, adj = adj, adjusted = share_fc)[p(2025.4,
 
 The first ramp climbs from 0 in 2026Q1 to 0.3 in 2027Q4, by 0.3 / 7 =
 0.043 points a quarter. The second starts at 0.3 in 2028Q1 and falls
-back to 0 by 2029Q4. Before and after the ramps `adj` is zero, so the
-adjusted share still meets the 6.0 anchor in 2029Q4.
+back to 0 by 2029Q4, so the adjusted share meets the 6.0 anchor there.
+Before 2026Q1 and after 2029Q4, `adj` is zero.
 
 The dates can also be strings (`"2026Q1"`), and the same add-factor can
 be written as points joined by straight lines:
@@ -221,6 +221,23 @@ ramps <- tibble::tribble(
 )
 addf(2026.1 ~ 0, 2027.4 ~ 0.3, 2028.1 ~ 0.3, 2029.4 ~ 0)
 ```
+
+Points also take `interp = "stine"`, which joins them with a smooth
+curve that eases off zero and back, like the spline in
+[`extend()`](https://uhero.github.io/fcutils/reference/extend.md):
+
+``` r
+
+adj_paths <- tsbox::ts_c(
+  linear = adj,
+  stine = addf(2026.1 ~ 0, 2027.4 ~ 0.3, 2028.1 ~ 0.3, 2029.4 ~ 0, interp = "stine")
+)
+tsbox::ts_plot(adj_paths[p(2025, 2030.4)], title = "Add-factor, points")
+```
+
+![Add-factor from 2025 to 2030: straight ramps up to 0.3 and back down,
+and a smooth curve through the same points that leaves and returns to
+zero gradually.](forecasting_files/figure-html/unnamed-chunk-10-1.png)
 
 Construction jobs follow from the adjusted share and the total. Because
 the share and the total both span the bank, ordinary arithmetic lines
@@ -365,14 +382,15 @@ that it grows at the old forecast’s 1%, starting from the new 2025Q1
 level of 647.9 rather than the 639.7 the old forecast had reached. The
 other 29 series are updated the same way.
 
-If the names differ in their endings, such as `UR_AT_US_A` (annual) and
-`UR_AT_US_SOLQ` (quarterly model output), `match = "stem"` pairs them on
-the part before the ending. For rates such as the unemployment rate,
-`method = "diff"` continues with the change in points instead of the
-growth rate. A bank that mixes levels and rates takes one method per
-series, by name: `method = c(UR_AT_US = "diff", FFR_AT_US = "diff")`,
-with “ratio” for the rest. `direction = "backward"` extends a short
-history back in time with the growth of a longer series.
+If the names differ in their endings, such as `UR_AT_US_Q` (quarterly
+history) and `UR_AT_US_SOLQ` (quarterly model output), `match = "stem"`
+pairs them on the part before the ending. For rates such as the
+unemployment rate, `method = "diff"` continues with the change in points
+instead of the growth rate. A bank that mixes levels and rates takes one
+method per series, by name:
+`method = c(UR_AT_US = "diff", FFR_AT_US = "diff")`, with “ratio” for
+the rest. `direction = "backward"` extends a short history back in time
+with the growth of a longer series.
 
 ## Annual results
 

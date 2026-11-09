@@ -16,12 +16,12 @@ yoy_to_lev(yoy_gr, hist_lev, smooth_span = 0)
 
 - yoy_gr:
 
-  ts-boxable object containing year over year growth rates
+  ts-boxable object with year-over-year growth rates (in percent) for
+  the forecast and at least the last year of history
 
 - hist_lev:
 
-  ts-boxable object containing the history in levels for forecast and at
-  least one year of history (in percent)
+  ts-boxable object with the history in levels
 
 - smooth_span:
 

@@ -1,7 +1,6 @@
-# Aggregate univariate or multivariate fiscal time series from low to high frequency
+# Aggregate time series to fiscal years or quarters
 
-Aggregate univariate or multivariate fiscal time series from low to high
-frequency
+Fiscal years run from July to June.
 
 ## Usage
 
@@ -13,7 +12,7 @@ fagg(x, conv_type = "mean", target_freq = "year", na_rm = FALSE)
 
 - x:
 
-  a tx-boxable object at a high frequency (e.g. monthly or quarterly)
+  a ts-boxable object at a high frequency (e.g. monthly or quarterly)
 
 - conv_type:
 

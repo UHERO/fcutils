@@ -21,23 +21,24 @@ jobs <- q$E_NF_HI
 
 ## Growth rates
 
-`pcmp(x, lag, comp_freq)` (percent change, compounded) is the percent
-change over `lag` periods. With `comp_freq = 4`, the change is
-compounded four times, which turns a quarterly change into an annual
-pace. One function covers the usual measures for a quarterly series:
+`pcmp(x, lag, comp_freq)` (percent change, compounded) is the average
+growth per period over the last `lag` periods, compounded `comp_freq`
+times. With `comp_freq = 4`, quarterly growth becomes an annual rate, so
+`pcmp(x, 4, 4)` is the growth over a year. One function covers the usual
+measures for a quarterly series:
 
 ``` r
 
 gr <- tsbox::ts_c(
   q_q = pcmp(jobs, lag = 1),                     # quarter on quarter
   q_q_ann = pcmp(jobs, lag = 1, comp_freq = 4),  # annualized
-  y_y = pcmp(jobs, lag = 4),                     # year on year
+  y_y = pcmp(jobs, lag = 4, comp_freq = 4),      # year on year
   ten_yr_ann = pcmp(jobs, lag = 40, comp_freq = 4)  # average over 10 years
 )
 round(tail(gr, 2), 2)
 #>             q_q q_q_ann  y_y ten_yr_ann
-#> 2024-10-01 0.55    2.22 0.45       0.18
-#> 2025-01-01 0.72    2.92 0.43       0.21
+#> 2024-10-01 0.55    2.22 1.81       0.18
+#> 2025-01-01 0.72    2.92 1.73       0.21
 ```
 
 [`pc_to_pca()`](https://uhero.github.io/fcutils/reference/pc_to_pca.md)
@@ -64,19 +65,21 @@ Series of different size are hard to compare as levels. Total jobs are
 about six times accommodation and food services jobs.
 `index_to_base(x, base_per)` divides each series by its value in a base
 period and multiplies by 100. Both series then equal 100 in the base
-period, and the index shows the percent above or below the base. A year
-or two dates as the base set the average over that period to 100. Here
-the two series against 2019, through the 2020 pandemic:
+period, and the index shows the percent above or below the base. With
+one date, the first period on or after it is the base. With two dates,
+the average over that span is set to 100, so `c(2019.1, 2019.4)` takes
+the 2019 average as the base. Here the two series against 2019, through
+the 2020 pandemic:
 
 ``` r
 
-idx <- index_to_base(q[, c("E_NF_HI", "EAF_HI")], 2019)
+idx <- index_to_base(q[, c("E_NF_HI", "EAF_HI")], c(2019.1, 2019.4))
 round(idx[p(2019.4, 2020.3)], 1)
 #>            E_NF_HI EAF_HI
-#> 2019-10-01   100.3  100.1
-#> 2020-01-01   100.4  100.3
-#> 2020-04-01    78.2   45.8
-#> 2020-07-01    79.5   45.1
+#> 2019-10-01   100.3  100.0
+#> 2020-01-01   100.3  100.3
+#> 2020-04-01    78.1   45.8
+#> 2020-07-01    79.4   45.1
 ```
 
 ## Period to date
@@ -95,7 +98,7 @@ earlier.
 | `ytd_gr(x)` | calendar year | % change of the year so far on a year earlier |
 | [`fytd_agg()`](https://uhero.github.io/fcutils/reference/fytd_agg.md), [`fytd_gr()`](https://uhero.github.io/fcutils/reference/fytd_gr.md) | fiscal year | the same for the fiscal year |
 | [`mtd_agg()`](https://uhero.github.io/fcutils/reference/mtd_agg.md), [`mtd_gr()`](https://uhero.github.io/fcutils/reference/mtd_gr.md) | month | the same within each month, for daily data |
-| `ptd_agg(x, per)`, `ptd_gr(x, per)` | `per`: “year”, “quarter”, “month” | the general form |
+| `ptd_agg(x, per)`, `ptd_gr(x, per)` | `per`: “year”, “quarter”, “month”, “week”, “day” | the general form |
 
 Visitor arrivals in early 2025:
 
@@ -234,12 +237,12 @@ plot_fc(
 
 `rate = TRUE` shows the change in points instead of the percent change,
 for rates such as the unemployment rate, and `yoy_gr = FALSE` shows
-annualized growth instead of year on year.
+growth on the previous period instead of year on year.
 
 [`plot_1()`](https://uhero.github.io/fcutils/reference/plot_1.md) plots
 one or more series with the growth of the first, and
 [`plot_2ax()`](https://uhero.github.io/fcutils/reference/plot_2ax.md)
-puts the second series on its own axis.
+puts the first series on the left axis and the rest on the right.
 [`plot_comp_2()`](https://uhero.github.io/fcutils/reference/plot_comp_2.md)
 shows several series in two panels, levels and growth.
 [`plot_comp_3()`](https://uhero.github.io/fcutils/reference/plot_comp_3.md)

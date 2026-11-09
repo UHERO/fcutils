@@ -65,7 +65,9 @@
 
 
 <dt id="arg-base-date">base_date<a class="anchor" aria-label="anchor" href="#arg-base-date"></a></dt>
-<dd><p>base period for the indexed series ("YYYY-MM-DD")</p></dd>
+<dd><p>base period for the index panel, where the index equals 1
+("YYYY-MM-DD"; default 10 years before today). It works as <code>base_per</code> in
+<code><a href="index_to_base.html">index_to_base()</a></code>: the first observation on or after the date.</p></dd>
 
 
 <dt id="arg-rng-start">rng_start<a class="anchor" aria-label="anchor" href="#arg-rng-start"></a></dt>
@@ -85,7 +87,8 @@
 
 
 <dt id="arg-yoy-gr">yoy_gr<a class="anchor" aria-label="anchor" href="#arg-yoy-gr"></a></dt>
-<dd><p>year-over-year (default) or annualized growth</p></dd>
+<dd><p>TRUE (default) for growth on the same period a year earlier,
+FALSE for growth on the previous period</p></dd>
 
 
 <dt id="arg-gr-bar">gr_bar<a class="anchor" aria-label="anchor" href="#arg-gr-bar"></a></dt>
@@ -94,7 +97,8 @@
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p>a list with three dygraph plots (level, index, growth)</p>
+    <p>a browsable htmltools tag list with three dygraph plots (level,
+index, growth)</p>
     </div>
 
     <div class="section level2">

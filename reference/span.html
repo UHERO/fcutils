@@ -56,11 +56,14 @@
 
 
 <dt id="arg-start">start<a class="anchor" aria-label="anchor" href="#arg-start"></a></dt>
-<dd><p>start date (see examples)</p></dd>
+<dd><p>start date, in any form <code><a href="to_ymd.html">to_ymd()</a></code> reads</p></dd>
 
 
 <dt id="arg-end">end<a class="anchor" aria-label="anchor" href="#arg-end"></a></dt>
-<dd><p>end date (see examples)</p></dd>
+<dd><p>end date, in any form <code><a href="to_ymd.html">to_ymd()</a></code> reads. A year, quarter or month
+given as <code>end</code> is included in full, as in <code><a href="p.html">p()</a></code>: on monthly data
+<code>span(x, 2010, 2010)</code> keeps January to December 2010. A day is kept as
+is.</p></dd>
 
 
 <dt id="arg-template">template<a class="anchor" aria-label="anchor" href="#arg-template"></a></dt>
@@ -68,7 +71,8 @@
 
 
 <dt id="arg-extend">extend<a class="anchor" aria-label="anchor" href="#arg-extend"></a></dt>
-<dd><p>logical. If true, the start and end values are allowed to extend the series (by adding NA values).</p></dd>
+<dd><p>logical. If TRUE, a <code>start</code> before the data or an <code>end</code> after
+them pads the series with NA.</p></dd>
 
 </dl></div>
     <div class="section level2">
@@ -152,6 +156,15 @@ and end and padded with NA to both (<code>extend</code> is ignored).</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;">#   E_ELSE_HI &lt;dbl&gt;, EMA_HI &lt;dbl&gt;, EAD_HI &lt;dbl&gt;, EED_HI &lt;dbl&gt;, EHC_HI &lt;dbl&gt;,</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;">#   EAF_HI &lt;dbl&gt;, EAFAC_HI &lt;dbl&gt;, EAFFD_HI &lt;dbl&gt;, EOS_HI &lt;dbl&gt;, EGV_HI &lt;dbl&gt;,</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;">#   EGVFD_HI &lt;dbl&gt;, EGVST_HI &lt;dbl&gt;, EGVSTEDNS_HI &lt;dbl&gt;, EGVLC_HI &lt;dbl&gt;</span></span>
+<span class="r-in"><span><span class="co"># a year as end includes all of it</span></span></span>
+<span class="r-in"><span><span class="va">monthly_data_example</span> <span class="op">|&gt;</span></span></span>
+<span class="r-in"><span>  <span class="fu">span</span><span class="op">(</span><span class="fl">2010</span>, <span class="fl">2010</span><span class="op">)</span> <span class="op">|&gt;</span></span></span>
+<span class="r-in"><span>  <span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">tail</a></span><span class="op">(</span><span class="fl">2</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 2 × 4</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   time       VISNS_HI VAPNS_HI VADCNS_HI</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;date&gt;</span>        <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">1</span> 2010-11-01     553.     608.      165.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">2</span> 2010-12-01     634.     689.      204.</span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

@@ -1,6 +1,6 @@
-# Calculate compund annual growth
+# Calculate compound annual growth
 
-Calculate compund annual growth
+Calculate compound annual growth
 
 ## Usage
 
@@ -17,8 +17,10 @@ cagr(x)
 
 ## Value
 
-a tibble with a single row containing the compound annual growth between
-the first and last period of x (in percent)
+a tibble with one row: `years_elapsed`, the years between the first and
+last dates in x, and for each series its compound annual growth over
+that span (in percent). A series that starts later or ends earlier than
+the others gets NA.
 
 ## Examples
 

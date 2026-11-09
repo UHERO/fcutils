@@ -40,7 +40,8 @@ plot_1(
 
 - yoy_gr:
 
-  year-over-year (default) or annualized growth
+  TRUE (default) for growth on the same period a year earlier, FALSE for
+  growth on the previous period
 
 - gr_1:
 
@@ -48,7 +49,7 @@ plot_1(
 
 ## Value
 
-a dygraph plot
+a browsable htmltools tag list holding the dygraph plots
 
 ## Examples
 

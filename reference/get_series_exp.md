@@ -49,22 +49,22 @@ get_series_exp(
 
 - save_loc:
 
-  file path for saving data incl. extension ("html" or "csv") (default
-  NULL)
+  path of a CSV file to write (default NULL: no file). The file always
+  holds the wide table, whatever `format` is.
 
 ## Value
 
-time and data for all series combined in a tibble
+the series in the format chosen by `format`
 
 ## Details
 
 This function requires permission to access UDAMAN. Store the udaman
 token in the .Renviron file using the following format: udaman_token =
-"-ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890=" Or using
-fcutils::set_udaman_token("-ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890=") Or
-store the udaman token among your credentials (e.g. keychain) using
-keyring: keyring::key_set_with_value(service = "udaman_token", password
-= "-ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890=")
+"-ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890=" Or run set_udaman_token(key) to
+set it for the current session only. Or store the udaman token among
+your credentials (e.g. keychain) using keyring:
+keyring::key_set_with_value(service = "udaman_token", password =
+"-ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890=")
 
 ## Examples
 

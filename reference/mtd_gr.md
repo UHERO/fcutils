@@ -19,6 +19,11 @@ mtd_gr(x)
 object of the same type as the input containing month to date growth
 rate
 
+## Details
+
+The growth rate is the percent change of the month-to-date average from
+the same date a year earlier. An NA makes the rest of its month NA.
+
 ## Examples
 
 ``` r

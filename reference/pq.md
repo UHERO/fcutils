@@ -12,15 +12,18 @@ pq(dat1 = "", dat2 = "")
 
 - dat1:
 
-  date of period start (string: yyyyQq or yyyy.q)
+  date of period start (yyyyQq or yyyy.q, as string or number)
 
 - dat2:
 
-  date of period end (string: yyyyQq or yyyy.q)
+  date of period end (yyyyQq or yyyy.q, as string or number)
 
 ## Value
 
-string containing date range
+string containing date range. It ends on the first day of dat2, so on
+monthly data `pq(2010.1, 2010.4)` stops at October.
+[`p()`](https://uhero.github.io/fcutils/reference/p.md) includes the end
+period in full.
 
 ## Examples
 

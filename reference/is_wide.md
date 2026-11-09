@@ -16,8 +16,10 @@ is_wide(x)
 
 ## Value
 
-returns TRUE for wide format data frame (time and value columns), FALSE
-otherwise
+TRUE for a data frame with a `time` column and numeric value columns
+only, FALSE for a long data frame or any object that is not a data
+frame. A data frame without a `time` column, or without a numeric
+column, stops with an error.
 
 ## Examples
 
@@ -28,10 +30,9 @@ monthly_data_example |>
   tsbox::ts_long() |>
   is_wide()
 #> [1] FALSE
-dat_in <- monthly_data_example |>
+monthly_data_example |>
   tsbox::ts_long() |>
-  tsbox::ts_tslist()
-wide_df <- is_wide(dat_in)
-x_mod <- if (wide_df) tsbox::ts_long(dat_in) else tsbox::ts_tbl(dat_in)
-ans <- if (wide_df) tsbox::ts_wide(x_mod) else tsbox::copy_class(x_mod, dat_in)
+  tsbox::ts_tslist() |>
+  is_wide()
+#> [1] FALSE
 ```

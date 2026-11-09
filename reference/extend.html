@@ -92,20 +92,22 @@ annual)</p></dd>
 
 <dt id="arg-at">at<a class="anchor" aria-label="anchor" href="#arg-at"></a></dt>
 <dd><p>dates of the anchors, in any form <code><a href="to_ymd.html">to_ymd()</a></code> reads
-(<code>c(2026.4, 2028.4)</code>, <code>c("2026Q4", "2028")</code>)</p></dd>
+(<code>c(2026.4, 2028.4)</code>, <code>c("2026Q4", "2028")</code>). Each must be the first day
+of a period of x within the bank, or extend() stops.</p></dd>
 
 
 <dt id="arg-val">val<a class="anchor" aria-label="anchor" href="#arg-val"></a></dt>
-<dd><p>anchor values (by name, like <code>at</code>): a numeric vector the length of <code>at</code>; a named
+<dd><p>anchor values, given by name: a numeric vector the length of <code>at</code>; a named
 numeric vector whose names are the dates (<code>c("2026Q4" = 4.3)</code>), with
 <code>at = NULL</code>; or a series (e.g. from <code><a href="make_xts.html">make_xts()</a></code>), whose observations are
-the anchors</p></dd>
+the anchors (<code>at</code> is then ignored)</p></dd>
 
 
 <dt id="arg-path">path<a class="anchor" aria-label="anchor" href="#arg-path"></a></dt>
 <dd><p>instead of anchors, a series that sets the forecast: the
 level (<code>type = "level"</code>), the growth rate in percent (<code>type = "growth"</code>),
-or a level whose growth or changes continue x (<code>type = "chain"</code>)</p></dd>
+or a level whose growth or changes continue x (<code>type = "chain"</code>). The
+forecast ends where the path ends.</p></dd>
 
 
 <dt id="arg-type">type<a class="anchor" aria-label="anchor" href="#arg-type"></a></dt>
@@ -121,7 +123,7 @@ quarter that grew 1%); "pcy", the year-over-year rate</p></dd>
 <dt id="arg-method">method<a class="anchor" aria-label="anchor" href="#arg-method"></a></dt>
 <dd><p>for <code>type = "chain"</code>: "ratio" (default) continues x with
 the growth of <code>path</code>, for levels; "diff" with its changes, for rates
-(the same words as in <code><a href="chain.html">chain()</a></code>)</p></dd>
+(the same words as in <code><a href="chain.html">chain()</a></code>). Ignored for other types.</p></dd>
 
 
 <dt id="arg-interp">interp<a class="anchor" aria-label="anchor" href="#arg-interp"></a></dt>
@@ -136,22 +138,25 @@ observation of x). Values of x after <code>last</code> are replaced.</p></dd>
 
 <dt id="arg-hold-last">hold_last<a class="anchor" aria-label="anchor" href="#arg-hold-last"></a></dt>
 <dd><p>if TRUE (default), the last anchor is held to the end of
-the bank. If FALSE, the interpolation itself runs to the last anchor and
-its value is then carried forward.</p></dd>
+the bank, so a spline flattens into it. If FALSE, the interpolation runs
+only to the last anchor and its value is then carried forward. With
+<code>interp = "linear"</code> both give the same result.</p></dd>
 
 
 <dt id="arg-smooth">smooth<a class="anchor" aria-label="anchor" href="#arg-smooth"></a></dt>
 <dd><p>NULL, or a list with <code>span</code> and optionally <code>from</code> and <code>to</code>:
-smooth the forecast with loess before compounding (the period growth
-rate for "growth" and "chain", the level for "level"). <code>from</code> defaults
-to the first period after <code>last</code>.</p></dd>
+smooth the forecast with loess before compounding (the growth rate for
+"growth", year over year with <code>growth = "pcy"</code>; the period growth rate
+for "chain"; the level for "level"). <code>from</code> defaults to the first period
+after <code>last</code>, <code>to</code> to the end of the forecast.</p></dd>
 
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
     <p>an object of the same type as x, from the bank start to the bank
 end (<code>getOption("fcutils.bnk_start")</code>, <code>getOption("fcutils.bnk_end")</code>),
-empty before x's first observation</p>
+empty before x's first observation. With a <code>path</code>, the forecast ends
+where the path ends.</p>
     </div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
@@ -160,7 +165,9 @@ extend a series back in time, use <code><a href="chain.html">chain()</a></code> 
 below.</p><ul><li><p><code>type = "level"</code>: history up to <code>last</code>, then the anchors, with the gaps
 interpolated, including between the last history value and the first
 anchor. Anchors dated at or before <code>last</code> are dropped with a message,
-since history takes precedence.</p></li>
+since history takes precedence. With a <code>path</code> instead, the forecast is
+the path's values after <code>last</code>, unadjusted, so it can jump at the seam;
+use <code>type = "chain"</code> to join it to history.</p></li>
 <li><p><code>type = "growth"</code>: the same applied to the growth rate of x; the level
 is then compounded from history. With <code>growth = "pca"</code> the line starts
 from the annualized growth at <code>last</code> and each period grows from the one
@@ -171,7 +178,11 @@ this needs a full year of history and repeats last year's
 within-year pattern.</p></li>
 <li><p><code>type = "chain"</code>: <code>path</code> after <code>last</code>, joined to x at <code>last</code>: scaled to
 meet it (<code>method = "ratio"</code>) or shifted by a constant
-(<code>method = "diff"</code>).</p></li>
+(<code>method = "diff"</code>). The path needs a value at <code>last</code>. "ratio" compounds
+the path's growth, so the path must stay above zero. "diff" uses the
+shifted path as is, so it suits rates that reach zero or below; with
+<code>smooth</code>, it compounds the smoothed growth of the shifted path, which
+must then stay above zero.</p></li>
 </ul><p>Linear interpolation weighs the gaps by time, the spline by position.</p>
 <p><strong>Which function.</strong> All of these continue a series from data:</p><ul><li><p>levels at some dates: <code>extend(type = "level")</code>;</p></li>
 <li><p>growth rates at some dates, or a growth path, period-on-period or
@@ -194,49 +205,8 @@ decimal dates.</p>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/options.html" class="external-link">options</a></span><span class="op">(</span>fcutils.bnk_start <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/as.Date.html" class="external-link">as.Date</a></span><span class="op">(</span><span class="st">"2015-01-01"</span><span class="op">)</span>, fcutils.bnk_end <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/as.Date.html" class="external-link">as.Date</a></span><span class="op">(</span><span class="st">"2035-12-31"</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="va">ur</span> <span class="op">&lt;-</span> <span class="fu"><a href="make_xts.html">make_xts</a></span><span class="op">(</span><span class="fl">2024.1</span>, val <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">3.8</span>, <span class="fl">4.0</span>, <span class="fl">4.2</span>, <span class="fl">4.1</span>, <span class="fl">4.1</span>, <span class="fl">4.2</span>, <span class="fl">4.3</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="co"># the unemployment rate through two anchors, then held</span></span></span>
-<span class="r-in"><span><span class="fu">extend</span><span class="op">(</span><span class="va">ur</span>, <span class="fl">2026.4</span> <span class="op">~</span> <span class="fl">4.4</span>, <span class="fl">2028.4</span> <span class="op">~</span> <span class="fl">4.0</span>, interp <span class="op">=</span> <span class="st">"stine"</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu">extend</span><span class="op">(</span><span class="va">ur</span>, <span class="fl">2026.4</span> <span class="op">~</span> <span class="fl">4.4</span>, <span class="fl">2028.4</span> <span class="op">~</span> <span class="fl">4.0</span>, interp <span class="op">=</span> <span class="st">"stine"</span><span class="op">)</span><span class="op">[</span><span class="fu"><a href="p.html">p</a></span><span class="op">(</span><span class="fl">2025.2</span>, <span class="fl">2029.1</span><span class="op">)</span><span class="op">]</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>               value</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2015-01-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2015-04-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2015-07-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2015-10-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2016-01-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2016-04-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2016-07-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2016-10-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2017-01-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2017-04-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2017-07-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2017-10-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2018-01-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2018-04-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2018-07-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2018-10-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2019-01-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2019-04-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2019-07-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2019-10-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2020-01-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2020-04-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2020-07-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2020-10-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2021-01-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2021-04-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2021-07-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2021-10-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2022-01-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2022-04-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2022-07-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2022-10-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2023-01-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2023-04-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2023-07-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2023-10-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2024-01-01 3.800000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2024-04-01 4.000000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2024-07-01 4.200000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2024-10-01 4.100000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2025-01-01 4.100000</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 2025-04-01 4.200000</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 2025-07-01 4.300000</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 2025-10-01 4.331334</span>
@@ -253,338 +223,18 @@ decimal dates.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 2028-07-01 4.016612</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 2028-10-01 4.000000</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 2029-01-01 4.000000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2029-04-01 4.000000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2029-07-01 4.000000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2029-10-01 4.000000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2030-01-01 4.000000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2030-04-01 4.000000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2030-07-01 4.000000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2030-10-01 4.000000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2031-01-01 4.000000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2031-04-01 4.000000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2031-07-01 4.000000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2031-10-01 4.000000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2032-01-01 4.000000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2032-04-01 4.000000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2032-07-01 4.000000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2032-10-01 4.000000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2033-01-01 4.000000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2033-04-01 4.000000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2033-07-01 4.000000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2033-10-01 4.000000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2034-01-01 4.000000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2034-04-01 4.000000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2034-07-01 4.000000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2034-10-01 4.000000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2035-01-01 4.000000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2035-04-01 4.000000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2035-07-01 4.000000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2035-10-01 4.000000</span>
-<span class="r-in"><span><span class="fu">extend</span><span class="op">(</span><span class="va">ur</span>, <span class="st">"2026Q4"</span> <span class="op">~</span> <span class="fl">4.4</span>, <span class="st">"2028Q4"</span> <span class="op">~</span> <span class="fl">4.0</span>, interp <span class="op">=</span> <span class="st">"stine"</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>               value</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2015-01-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2015-04-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2015-07-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2015-10-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2016-01-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2016-04-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2016-07-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2016-10-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2017-01-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2017-04-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2017-07-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2017-10-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2018-01-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2018-04-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2018-07-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2018-10-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2019-01-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2019-04-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2019-07-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2019-10-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2020-01-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2020-04-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2020-07-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2020-10-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2021-01-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2021-04-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2021-07-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2021-10-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2022-01-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2022-04-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2022-07-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2022-10-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2023-01-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2023-04-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2023-07-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2023-10-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2024-01-01 3.800000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2024-04-01 4.000000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2024-07-01 4.200000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2024-10-01 4.100000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2025-01-01 4.100000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2025-04-01 4.200000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2025-07-01 4.300000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2025-10-01 4.331334</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2026-01-01 4.354364</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2026-04-01 4.372436</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2026-07-01 4.387309</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2026-10-01 4.400000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2027-01-01 4.389365</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2027-04-01 4.343685</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2027-07-01 4.276535</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2027-10-01 4.200000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2028-01-01 4.124880</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2028-04-01 4.060852</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2028-07-01 4.016612</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2028-10-01 4.000000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2029-01-01 4.000000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2029-04-01 4.000000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2029-07-01 4.000000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2029-10-01 4.000000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2030-01-01 4.000000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2030-04-01 4.000000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2030-07-01 4.000000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2030-10-01 4.000000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2031-01-01 4.000000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2031-04-01 4.000000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2031-07-01 4.000000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2031-10-01 4.000000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2032-01-01 4.000000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2032-04-01 4.000000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2032-07-01 4.000000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2032-10-01 4.000000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2033-01-01 4.000000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2033-04-01 4.000000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2033-07-01 4.000000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2033-10-01 4.000000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2034-01-01 4.000000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2034-04-01 4.000000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2034-07-01 4.000000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2034-10-01 4.000000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2035-01-01 4.000000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2035-04-01 4.000000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2035-07-01 4.000000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2035-10-01 4.000000</span>
-<span class="r-in"><span><span class="co"># the same with at and val</span></span></span>
-<span class="r-in"><span><span class="fu">extend</span><span class="op">(</span><span class="va">ur</span>, at <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">2026.4</span>, <span class="fl">2028.4</span><span class="op">)</span>, val <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">4.4</span>, <span class="fl">4.0</span><span class="op">)</span>, interp <span class="op">=</span> <span class="st">"stine"</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>               value</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2015-01-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2015-04-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2015-07-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2015-10-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2016-01-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2016-04-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2016-07-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2016-10-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2017-01-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2017-04-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2017-07-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2017-10-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2018-01-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2018-04-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2018-07-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2018-10-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2019-01-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2019-04-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2019-07-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2019-10-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2020-01-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2020-04-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2020-07-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2020-10-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2021-01-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2021-04-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2021-07-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2021-10-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2022-01-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2022-04-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2022-07-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2022-10-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2023-01-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2023-04-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2023-07-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2023-10-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2024-01-01 3.800000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2024-04-01 4.000000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2024-07-01 4.200000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2024-10-01 4.100000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2025-01-01 4.100000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2025-04-01 4.200000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2025-07-01 4.300000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2025-10-01 4.331334</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2026-01-01 4.354364</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2026-04-01 4.372436</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2026-07-01 4.387309</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2026-10-01 4.400000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2027-01-01 4.389365</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2027-04-01 4.343685</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2027-07-01 4.276535</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2027-10-01 4.200000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2028-01-01 4.124880</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2028-04-01 4.060852</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2028-07-01 4.016612</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2028-10-01 4.000000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2029-01-01 4.000000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2029-04-01 4.000000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2029-07-01 4.000000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2029-10-01 4.000000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2030-01-01 4.000000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2030-04-01 4.000000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2030-07-01 4.000000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2030-10-01 4.000000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2031-01-01 4.000000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2031-04-01 4.000000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2031-07-01 4.000000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2031-10-01 4.000000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2032-01-01 4.000000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2032-04-01 4.000000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2032-07-01 4.000000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2032-10-01 4.000000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2033-01-01 4.000000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2033-04-01 4.000000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2033-07-01 4.000000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2033-10-01 4.000000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2034-01-01 4.000000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2034-04-01 4.000000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2034-07-01 4.000000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2034-10-01 4.000000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2035-01-01 4.000000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2035-04-01 4.000000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2035-07-01 4.000000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2035-10-01 4.000000</span>
-<span class="r-in"><span><span class="co"># the same with the anchors as a named vector</span></span></span>
-<span class="r-in"><span><span class="fu">extend</span><span class="op">(</span><span class="va">ur</span>, val <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"2026Q4"</span> <span class="op">=</span> <span class="fl">4.4</span>, <span class="st">"2028Q4"</span> <span class="op">=</span> <span class="fl">4.0</span><span class="op">)</span>, interp <span class="op">=</span> <span class="st">"stine"</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>               value</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2015-01-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2015-04-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2015-07-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2015-10-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2016-01-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2016-04-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2016-07-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2016-10-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2017-01-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2017-04-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2017-07-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2017-10-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2018-01-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2018-04-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2018-07-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2018-10-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2019-01-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2019-04-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2019-07-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2019-10-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2020-01-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2020-04-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2020-07-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2020-10-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2021-01-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2021-04-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2021-07-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2021-10-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2022-01-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2022-04-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2022-07-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2022-10-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2023-01-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2023-04-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2023-07-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2023-10-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2024-01-01 3.800000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2024-04-01 4.000000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2024-07-01 4.200000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2024-10-01 4.100000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2025-01-01 4.100000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2025-04-01 4.200000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2025-07-01 4.300000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2025-10-01 4.331334</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2026-01-01 4.354364</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2026-04-01 4.372436</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2026-07-01 4.387309</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2026-10-01 4.400000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2027-01-01 4.389365</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2027-04-01 4.343685</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2027-07-01 4.276535</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2027-10-01 4.200000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2028-01-01 4.124880</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2028-04-01 4.060852</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2028-07-01 4.016612</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2028-10-01 4.000000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2029-01-01 4.000000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2029-04-01 4.000000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2029-07-01 4.000000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2029-10-01 4.000000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2030-01-01 4.000000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2030-04-01 4.000000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2030-07-01 4.000000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2030-10-01 4.000000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2031-01-01 4.000000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2031-04-01 4.000000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2031-07-01 4.000000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2031-10-01 4.000000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2032-01-01 4.000000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2032-04-01 4.000000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2032-07-01 4.000000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2032-10-01 4.000000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2033-01-01 4.000000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2033-04-01 4.000000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2033-07-01 4.000000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2033-10-01 4.000000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2034-01-01 4.000000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2034-04-01 4.000000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2034-07-01 4.000000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2034-10-01 4.000000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2035-01-01 4.000000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2035-04-01 4.000000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2035-07-01 4.000000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2035-10-01 4.000000</span>
+<span class="r-in"><span><span class="co"># the same with quoted dates, with at and val, or with a named vector</span></span></span>
+<span class="r-in"><span><span class="va">u1</span> <span class="op">&lt;-</span> <span class="fu">extend</span><span class="op">(</span><span class="va">ur</span>, <span class="st">"2026Q4"</span> <span class="op">~</span> <span class="fl">4.4</span>, <span class="st">"2028Q4"</span> <span class="op">~</span> <span class="fl">4.0</span>, interp <span class="op">=</span> <span class="st">"stine"</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">u2</span> <span class="op">&lt;-</span> <span class="fu">extend</span><span class="op">(</span><span class="va">ur</span>, at <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">2026.4</span>, <span class="fl">2028.4</span><span class="op">)</span>, val <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">4.4</span>, <span class="fl">4.0</span><span class="op">)</span>, interp <span class="op">=</span> <span class="st">"stine"</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">u3</span> <span class="op">&lt;-</span> <span class="fu">extend</span><span class="op">(</span><span class="va">ur</span>, val <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"2026Q4"</span> <span class="op">=</span> <span class="fl">4.4</span>, <span class="st">"2028Q4"</span> <span class="op">=</span> <span class="fl">4.0</span><span class="op">)</span>, interp <span class="op">=</span> <span class="st">"stine"</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/all.equal.html" class="external-link">all.equal</a></span><span class="op">(</span><span class="va">u1</span>, <span class="va">u2</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] TRUE</span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/all.equal.html" class="external-link">all.equal</a></span><span class="op">(</span><span class="va">u1</span>, <span class="va">u3</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] TRUE</span>
 <span class="r-in"><span><span class="co"># a price level whose annualized inflation falls from 3% to 2%</span></span></span>
 <span class="r-in"><span><span class="va">cpi</span> <span class="op">&lt;-</span> <span class="fu"><a href="make_xts.html">make_xts</a></span><span class="op">(</span><span class="fl">2024.1</span>, val <span class="op">=</span> <span class="fl">100</span> <span class="op">*</span> <span class="fl">1.0075</span><span class="op">^</span><span class="op">(</span><span class="fl">0</span><span class="op">:</span><span class="fl">6</span><span class="op">)</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="fu">extend</span><span class="op">(</span><span class="va">cpi</span>, at <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">2026.1</span>, <span class="fl">2027.4</span><span class="op">)</span>, val <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">3</span>, <span class="fl">2</span><span class="op">)</span>, type <span class="op">=</span> <span class="st">"growth"</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu">extend</span><span class="op">(</span><span class="va">cpi</span>, at <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">2026.1</span>, <span class="fl">2027.4</span><span class="op">)</span>, val <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">3</span>, <span class="fl">2</span><span class="op">)</span>, type <span class="op">=</span> <span class="st">"growth"</span><span class="op">)</span><span class="op">[</span><span class="fu"><a href="p.html">p</a></span><span class="op">(</span><span class="fl">2025.2</span>, <span class="fl">2028.4</span><span class="op">)</span><span class="op">]</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>               value</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2015-01-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2015-04-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2015-07-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2015-10-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2016-01-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2016-04-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2016-07-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2016-10-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2017-01-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2017-04-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2017-07-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2017-10-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2018-01-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2018-04-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2018-07-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2018-10-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2019-01-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2019-04-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2019-07-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2019-10-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2020-01-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2020-04-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2020-07-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2020-10-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2021-01-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2021-04-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2021-07-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2021-10-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2022-01-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2022-04-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2022-07-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2022-10-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2023-01-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2023-04-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2023-07-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2023-10-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2024-01-01 100.0000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2024-04-01 100.7500</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2024-07-01 101.5056</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2024-10-01 102.2669</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2025-01-01 103.0339</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 2025-04-01 103.8067</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 2025-07-01 104.5852</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 2025-10-01 105.3653</span>
@@ -600,78 +250,10 @@ decimal dates.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 2028-04-01 111.8015</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 2028-07-01 112.3563</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 2028-10-01 112.9140</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2029-01-01 113.4743</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2029-04-01 114.0375</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2029-07-01 114.6035</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2029-10-01 115.1722</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2030-01-01 115.7438</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2030-04-01 116.3183</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2030-07-01 116.8955</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2030-10-01 117.4757</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2031-01-01 118.0587</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2031-04-01 118.6446</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2031-07-01 119.2334</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2031-10-01 119.8252</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2032-01-01 120.4199</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2032-04-01 121.0175</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2032-07-01 121.6181</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2032-10-01 122.2217</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2033-01-01 122.8283</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2033-04-01 123.4379</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2033-07-01 124.0505</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2033-10-01 124.6661</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2034-01-01 125.2848</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2034-04-01 125.9066</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2034-07-01 126.5315</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2034-10-01 127.1595</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2035-01-01 127.7905</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2035-04-01 128.4248</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2035-07-01 129.0621</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2035-10-01 129.7026</span>
 <span class="r-in"><span><span class="co"># the same with year-over-year inflation</span></span></span>
-<span class="r-in"><span><span class="fu">extend</span><span class="op">(</span><span class="va">cpi</span>, at <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">2026.1</span>, <span class="fl">2027.4</span><span class="op">)</span>, val <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">3</span>, <span class="fl">2</span><span class="op">)</span>, type <span class="op">=</span> <span class="st">"growth"</span>, growth <span class="op">=</span> <span class="st">"pcy"</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu">extend</span><span class="op">(</span><span class="va">cpi</span>, at <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">2026.1</span>, <span class="fl">2027.4</span><span class="op">)</span>, val <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">3</span>, <span class="fl">2</span><span class="op">)</span>, type <span class="op">=</span> <span class="st">"growth"</span>,</span></span>
+<span class="r-in"><span>  growth <span class="op">=</span> <span class="st">"pcy"</span><span class="op">)</span><span class="op">[</span><span class="fu"><a href="p.html">p</a></span><span class="op">(</span><span class="fl">2025.2</span>, <span class="fl">2028.4</span><span class="op">)</span><span class="op">]</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>               value</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2015-01-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2015-04-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2015-07-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2015-10-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2016-01-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2016-04-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2016-07-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2016-10-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2017-01-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2017-04-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2017-07-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2017-10-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2018-01-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2018-04-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2018-07-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2018-10-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2019-01-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2019-04-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2019-07-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2019-10-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2020-01-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2020-04-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2020-07-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2020-10-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2021-01-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2021-04-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2021-07-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2021-10-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2022-01-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2022-04-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2022-07-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2022-10-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2023-01-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2023-04-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2023-07-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2023-10-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2024-01-01 100.0000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2024-04-01 100.7500</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2024-07-01 101.5056</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2024-10-01 102.2669</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2025-01-01 103.0339</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 2025-04-01 103.8067</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 2025-07-01 104.5852</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 2025-10-01 105.3523</span>
@@ -687,79 +269,10 @@ decimal dates.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 2028-04-01 111.4005</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 2028-07-01 111.9241</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 2028-10-01 112.4277</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2029-01-01 113.0931</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2029-04-01 113.6285</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2029-07-01 114.1626</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2029-10-01 114.6763</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2030-01-01 115.3549</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2030-04-01 115.9011</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2030-07-01 116.4458</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2030-10-01 116.9698</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2031-01-01 117.6620</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2031-04-01 118.2191</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2031-07-01 118.7747</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2031-10-01 119.3092</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2032-01-01 120.0153</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2032-04-01 120.5835</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2032-07-01 121.1502</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2032-10-01 121.6954</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2033-01-01 122.4156</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2033-04-01 122.9952</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2033-07-01 123.5732</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2033-10-01 124.1293</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2034-01-01 124.8639</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2034-04-01 125.4551</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2034-07-01 126.0447</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2034-10-01 126.6119</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2035-01-01 127.3612</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2035-04-01 127.9642</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2035-07-01 128.5656</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2035-10-01 129.1441</span>
 <span class="r-in"><span><span class="co"># history continued with the growth of a projection on another level</span></span></span>
 <span class="r-in"><span><span class="va">proj</span> <span class="op">&lt;-</span> <span class="fu"><a href="make_xts.html">make_xts</a></span><span class="op">(</span><span class="fl">2020.1</span>, val <span class="op">=</span> <span class="fl">50</span> <span class="op">*</span> <span class="fl">1.01</span><span class="op">^</span><span class="op">(</span><span class="fl">0</span><span class="op">:</span><span class="fl">63</span><span class="op">)</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="fu">extend</span><span class="op">(</span><span class="va">cpi</span>, path <span class="op">=</span> <span class="va">proj</span>, type <span class="op">=</span> <span class="st">"chain"</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu">extend</span><span class="op">(</span><span class="va">cpi</span>, path <span class="op">=</span> <span class="va">proj</span>, type <span class="op">=</span> <span class="st">"chain"</span><span class="op">)</span><span class="op">[</span><span class="fu"><a href="p.html">p</a></span><span class="op">(</span><span class="fl">2025.2</span>, <span class="fl">2026.4</span><span class="op">)</span><span class="op">]</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>               value</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2015-01-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2015-04-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2015-07-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2015-10-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2016-01-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2016-04-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2016-07-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2016-10-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2017-01-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2017-04-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2017-07-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2017-10-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2018-01-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2018-04-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2018-07-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2018-10-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2019-01-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2019-04-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2019-07-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2019-10-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2020-01-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2020-04-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2020-07-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2020-10-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2021-01-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2021-04-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2021-07-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2021-10-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2022-01-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2022-04-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2022-07-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2022-10-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2023-01-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2023-04-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2023-07-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2023-10-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2024-01-01 100.0000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2024-04-01 100.7500</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2024-07-01 101.5056</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2024-10-01 102.2669</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2025-01-01 103.0339</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 2025-04-01 103.8067</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 2025-07-01 104.5852</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 2025-10-01 105.6311</span>
@@ -767,87 +280,10 @@ decimal dates.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 2026-04-01 107.7543</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 2026-07-01 108.8318</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 2026-10-01 109.9201</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2027-01-01 111.0193</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2027-04-01 112.1295</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2027-07-01 113.2508</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2027-10-01 114.3833</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2028-01-01 115.5272</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2028-04-01 116.6824</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2028-07-01 117.8492</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2028-10-01 119.0277</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2029-01-01 120.2180</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2029-04-01 121.4202</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2029-07-01 122.6344</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2029-10-01 123.8607</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2030-01-01 125.0994</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2030-04-01 126.3503</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2030-07-01 127.6138</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2030-10-01 128.8900</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2031-01-01 130.1789</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2031-04-01 131.4807</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2031-07-01 132.7955</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2031-10-01 134.1234</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2032-01-01 135.4647</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2032-04-01 136.8193</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2032-07-01 138.1875</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2032-10-01 139.5694</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2033-01-01 140.9651</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2033-04-01 142.3747</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2033-07-01 143.7985</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2033-10-01 145.2365</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2034-01-01 146.6888</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2034-04-01 148.1557</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2034-07-01 149.6373</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2034-10-01 151.1336</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2035-01-01 152.6450</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2035-04-01 154.1714</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2035-07-01 155.7131</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2035-10-01 157.2703</span>
-<span class="r-in"><span><span class="co"># a rate continued with the changes of a projection</span></span></span>
+<span class="r-in"><span><span class="co"># a rate continued with the changes of a projection, which ends in 2028Q4</span></span></span>
 <span class="r-in"><span><span class="fu">extend</span><span class="op">(</span><span class="va">ur</span>, path <span class="op">=</span> <span class="fu"><a href="make_xts.html">make_xts</a></span><span class="op">(</span><span class="fl">2024.1</span>, val <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="fl">4</span>, <span class="fl">5</span>, length.out <span class="op">=</span> <span class="fl">20</span><span class="op">)</span><span class="op">)</span>,</span></span>
-<span class="r-in"><span>  type <span class="op">=</span> <span class="st">"chain"</span>, method <span class="op">=</span> <span class="st">"diff"</span><span class="op">)</span></span></span>
+<span class="r-in"><span>  type <span class="op">=</span> <span class="st">"chain"</span>, method <span class="op">=</span> <span class="st">"diff"</span><span class="op">)</span><span class="op">[</span><span class="fu"><a href="p.html">p</a></span><span class="op">(</span><span class="fl">2025.2</span>, <span class="fl">2029.2</span><span class="op">)</span><span class="op">]</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>               value</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2015-01-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2015-04-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2015-07-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2015-10-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2016-01-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2016-04-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2016-07-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2016-10-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2017-01-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2017-04-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2017-07-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2017-10-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2018-01-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2018-04-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2018-07-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2018-10-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2019-01-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2019-04-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2019-07-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2019-10-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2020-01-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2020-04-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2020-07-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2020-10-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2021-01-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2021-04-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2021-07-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2021-10-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2022-01-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2022-04-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2022-07-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2022-10-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2023-01-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2023-04-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2023-07-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2023-10-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2024-01-01 3.800000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2024-04-01 4.000000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2024-07-01 4.200000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2024-10-01 4.100000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2025-01-01 4.100000</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 2025-04-01 4.200000</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 2025-07-01 4.300000</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 2025-10-01 4.352632</span>
@@ -865,32 +301,6 @@ decimal dates.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 2028-10-01 4.984211</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 2029-01-01       NA</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 2029-04-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2029-07-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2029-10-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2030-01-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2030-04-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2030-07-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2030-10-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2031-01-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2031-04-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2031-07-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2031-10-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2032-01-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2032-04-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2032-07-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2032-10-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2033-01-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2033-04-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2033-07-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2033-10-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2034-01-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2034-04-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2034-07-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2034-10-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2035-01-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2035-04-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2035-07-01       NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2035-10-01       NA</span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

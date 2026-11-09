@@ -15,7 +15,10 @@ write_tsd(x, file, descriptions = NULL)
 
 - x:
 
-  a ts-boxable object (monthly, quarterly or annual)
+  a ts-boxable object (monthly, quarterly or annual). Other frequencies
+  are written as annual without warning. Leading and trailing NAs of
+  each series are dropped; NAs inside a series are written as
+  1.000000E+0015, the TSD missing value.
 
 - file:
 
@@ -31,15 +34,14 @@ write_tsd(x, file, descriptions = NULL)
 
 ## Value
 
-nothing (silently save the contents of the tsd file to a user defined
-location)
+the text written to `file`, invisibly
 
 ## Examples
 
 ``` r
 if (FALSE) { # interactive()
-quarterly_data_example |> write_tsd("out.tsd")
+quarterly_data_example |> write_tsd(file.path(tempdir(), "out.tsd"))
 quarterly_data_example |>
-  write_tsd("out.tsd", descriptions = c(E_NF_HI = "Nonfarm payroll jobs"))
+  write_tsd(file.path(tempdir(), "out.tsd"), descriptions = c(E_NF_HI = "Nonfarm payroll jobs"))
 }
 ```

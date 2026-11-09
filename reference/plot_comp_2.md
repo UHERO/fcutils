@@ -40,7 +40,8 @@ plot_comp_2(
 
 - yoy_gr:
 
-  year-over-year (default) or annualized growth
+  TRUE (default) for growth on the same period a year earlier, FALSE for
+  growth on the previous period
 
 - gr_bar:
 
@@ -48,7 +49,7 @@ plot_comp_2(
 
 ## Value
 
-a list with two dygraph plots (level, growth)
+a browsable htmltools tag list with two dygraph plots (level, growth)
 
 ## Examples
 

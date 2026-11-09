@@ -167,12 +167,15 @@ the column is called `E_NF_HI`. The series used below are:
 
 ## Dates
 
-Wherever a function takes a date,
-[`to_ymd()`](https://uhero.github.io/fcutils/reference/to_ymd.md) reads
-it. A year, a quarter or a day can be a number or a string; as a number,
-a quarter is either a decimal (`2024.3`) or six digits (`202403`). A
-month must be a string, because R stores `2024.10` and `2024.1` as the
-same number.
+Most functions read dates with
+[`to_ymd()`](https://uhero.github.io/fcutils/reference/to_ymd.md);
+[`pm()`](https://uhero.github.io/fcutils/reference/pm.md),
+[`pq()`](https://uhero.github.io/fcutils/reference/pq.md) and
+[`py()`](https://uhero.github.io/fcutils/reference/py.md) are older and
+take only their own format. A year, a quarter or a day can be a number
+or a string; as a number, a quarter is either a decimal (`2024.3`) or
+six digits (`202403`). A month must be a string, because R stores
+`2024.10` and `2024.1` as the same number.
 
 ``` r
 
@@ -197,11 +200,13 @@ x[p(2024.2, 2024)]
 ```
 
 [`span()`](https://uhero.github.io/fcutils/reference/span.md) cuts any
-format to a range.
+format to a range and, like
+[`p()`](https://uhero.github.io/fcutils/reference/p.md), includes an end
+year or quarter in full.
 [`find_start()`](https://uhero.github.io/fcutils/reference/find_start.md)
 and
 [`find_end()`](https://uhero.github.io/fcutils/reference/find_end.md)
-give the first and last date with a value:
+give the first and last date with a value, one per series:
 
 ``` r
 
@@ -218,7 +223,7 @@ find_end(q)
 
 With `extend = TRUE`,
 [`span()`](https://uhero.github.io/fcutils/reference/span.md) also pads
-a series with NA out to the end of the range:
+a series with NA out to the start and end of the range:
 
 ``` r
 
@@ -241,9 +246,13 @@ dates as the rest of the bank:
 
 ``` r
 
-span(x) |> tsbox::ts_summary()
-#>        id obs    diff freq      start        end
-#> 1 span(x) 109 3 month    4 1998-01-01 2025-01-01
+fitted <- span(x)
+range(zoo::index(fitted))
+#> [1] "1990-01-01" "2035-10-01"
+tail(fitted, 2)
+#>            E_NF_HI
+#> 2035-07-01      NA
+#> 2035-10-01      NA
 ```
 
 ## Getting data

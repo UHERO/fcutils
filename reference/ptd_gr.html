@@ -70,6 +70,12 @@ for ytd per = "year" (default), for mtd per = "month")</p></dd>
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
     <p>object of the same type as the input containing period to date growth rate</p>
     </div>
+    <div class="section level2">
+    <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
+    <p>The growth rate is the percent change of the period-to-date average
+from the same date <code>lag_length</code> earlier. Weeks start on Sunday. An NA makes
+the rest of its period NA.</p>
+    </div>
 
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
@@ -98,57 +104,33 @@ for ytd per = "year" (default), for mtd per = "month")</p></dd>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">4</span> 2025-01-01     36.0</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">5</span> 2025-02-01     22.0</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">6</span> 2025-03-01     13.2</span>
-<span class="r-in"><span><span class="co"># don't use lag_length = "1 year" with weekly data</span></span></span>
+<span class="r-in"><span><span class="co"># with per = "week", compare with 52 weeks back so the same weekdays line</span></span></span>
+<span class="r-in"><span><span class="co"># up; "1 year" back lands on a different weekday</span></span></span>
 <span class="r-in"><span><span class="va">daily_data_example</span> <span class="op">|&gt;</span></span></span>
-<span class="r-in"><span>  <span class="fu">ptd_gr</span><span class="op">(</span><span class="st">"week"</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 206 × 3</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    time       VISPNS_HI VAPNS_HI</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;date&gt;</span>         <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 1</span> 2021-09-01     <span style="text-decoration: underline;">1</span>848.     657.</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 2</span> 2021-09-02     <span style="text-decoration: underline;">2</span>200.     772.</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 3</span> 2021-09-03     <span style="text-decoration: underline;">2</span>280.     830.</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 4</span> 2021-09-04     <span style="text-decoration: underline;">2</span>330.     947.</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 5</span> 2021-09-05     <span style="text-decoration: underline;">1</span>946.     863.</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 6</span> 2021-09-06     <span style="text-decoration: underline;">2</span>696.    <span style="text-decoration: underline;">1</span>217.</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 7</span> 2021-09-07     <span style="text-decoration: underline;">2</span>147.    <span style="text-decoration: underline;">1</span>043.</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 8</span> 2021-09-08     <span style="text-decoration: underline;">2</span>137.    <span style="text-decoration: underline;">1</span>064.</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 9</span> 2021-09-09     <span style="text-decoration: underline;">2</span>287.    <span style="text-decoration: underline;">1</span>076.</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">10</span> 2021-09-10     <span style="text-decoration: underline;">2</span>242.    <span style="text-decoration: underline;">1</span>055.</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># ℹ 196 more rows</span></span>
-<span class="r-in"><span><span class="co"># lag_length = "52 weeks" instead</span></span></span>
-<span class="r-in"><span><span class="va">daily_data_example</span> <span class="op">|&gt;</span></span></span>
-<span class="r-in"><span>  <span class="fu">ptd_gr</span><span class="op">(</span><span class="st">"week"</span>, <span class="st">"52 weeks"</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 207 × 3</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    time       VISPNS_HI VAPNS_HI</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;date&gt;</span>         <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 1</span> 2021-08-31     <span style="text-decoration: underline;">1</span>558.     601.</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 2</span> 2021-09-01     <span style="text-decoration: underline;">1</span>999.     720.</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 3</span> 2021-09-02     <span style="text-decoration: underline;">2</span>131.     794.</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 4</span> 2021-09-03     <span style="text-decoration: underline;">2</span>244.     925.</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 5</span> 2021-09-04     <span style="text-decoration: underline;">2</span>358.     986.</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 6</span> 2021-09-05     <span style="text-decoration: underline;">2</span>898.    <span style="text-decoration: underline;">1</span>220.</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 7</span> 2021-09-06     <span style="text-decoration: underline;">2</span>166.    <span style="text-decoration: underline;">1</span>045.</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 8</span> 2021-09-07     <span style="text-decoration: underline;">2</span>096.    <span style="text-decoration: underline;">1</span>077.</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 9</span> 2021-09-08     <span style="text-decoration: underline;">2</span>195.    <span style="text-decoration: underline;">1</span>062.</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">10</span> 2021-09-09     <span style="text-decoration: underline;">2</span>180.    <span style="text-decoration: underline;">1</span>043.</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># ℹ 197 more rows</span></span>
+<span class="r-in"><span>  <span class="fu">ptd_gr</span><span class="op">(</span><span class="st">"week"</span>, <span class="st">"52 weeks"</span><span class="op">)</span> <span class="op">|&gt;</span></span></span>
+<span class="r-in"><span>  <span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">tail</a></span><span class="op">(</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 6 × 3</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   time       VISPNS_HI VAPNS_HI</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;date&gt;</span>         <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">1</span> 2022-03-20      47.1     69.1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">2</span> 2022-03-21      54.9     75.1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">3</span> 2022-03-22      57.7     77.9</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">4</span> 2022-03-23      54.9     74.6</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">5</span> 2022-03-24      51.7     70.1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">6</span> 2022-03-25      49.0     67.7</span>
 <span class="r-in"><span><span class="co"># and use lag_length = "364 days" with daily data</span></span></span>
 <span class="r-in"><span><span class="va">daily_data_example</span> <span class="op">|&gt;</span></span></span>
-<span class="r-in"><span>  <span class="fu">ptd_gr</span><span class="op">(</span><span class="st">"day"</span>, <span class="st">"364 days"</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 207 × 3</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    time       VISPNS_HI VAPNS_HI</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;date&gt;</span>         <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 1</span> 2021-08-31     <span style="text-decoration: underline;">1</span>536.     572.</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 2</span> 2021-09-01     <span style="text-decoration: underline;">3</span>190      995.</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 3</span> 2021-09-02     <span style="text-decoration: underline;">2</span>741.    <span style="text-decoration: underline;">1</span>063.</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 4</span> 2021-09-03     <span style="text-decoration: underline;">2</span>844.    <span style="text-decoration: underline;">1</span>663.</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 5</span> 2021-09-04     <span style="text-decoration: underline;">3</span>025.    <span style="text-decoration: underline;">1</span>342.</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 6</span> 2021-09-05     <span style="text-decoration: underline;">2</span>898.    <span style="text-decoration: underline;">1</span>220.</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 7</span> 2021-09-06     <span style="text-decoration: underline;">1</span>666.     910.</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 8</span> 2021-09-07     <span style="text-decoration: underline;">1</span>967.    <span style="text-decoration: underline;">1</span>147.</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 9</span> 2021-09-08     <span style="text-decoration: underline;">2</span>526.    <span style="text-decoration: underline;">1</span>016.</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">10</span> 2021-09-09     <span style="text-decoration: underline;">2</span>132.     979.</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># ℹ 197 more rows</span></span>
+<span class="r-in"><span>  <span class="fu">ptd_gr</span><span class="op">(</span><span class="st">"day"</span>, <span class="st">"364 days"</span><span class="op">)</span> <span class="op">|&gt;</span></span></span>
+<span class="r-in"><span>  <span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">tail</a></span><span class="op">(</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 6 × 3</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   time       VISPNS_HI VAPNS_HI</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;date&gt;</span>         <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">1</span> 2022-03-20      47.1     69.1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">2</span> 2022-03-21      63.3     81.7</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">3</span> 2022-03-22      64.4     84.6</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">4</span> 2022-03-23      47.5     64.8</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">5</span> 2022-03-24      42.1     54.2</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">6</span> 2022-03-25      37.9     57.1</span>
 <span class="r-in"><span><span class="va">daily_data_example</span> <span class="op">|&gt;</span></span></span>
 <span class="r-in"><span>  <span class="fu">tsbox</span><span class="fu">::</span><span class="fu"><a href="https://docs.ropensci.org/tsbox/reference/ts_long.html" class="external-link">ts_long</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span></span></span>
 <span class="r-in"><span>  <span class="fu">tsbox</span><span class="fu">::</span><span class="fu"><a href="https://docs.ropensci.org/tsbox/reference/ts_pick.html" class="external-link">ts_pick</a></span><span class="op">(</span><span class="st">"VAPNS_HI"</span><span class="op">)</span> <span class="op">|&gt;</span></span></span>

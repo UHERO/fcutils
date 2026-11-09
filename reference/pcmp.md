@@ -25,8 +25,18 @@ pcmp(x, lag = 4, comp_freq = 1)
 
 ## Value
 
-object of the same type as the input ontaining the average growth of x
+object of the same type as the input containing the average growth of x
 (in percent)
+
+## Details
+
+`pcmp()` returns
+`((x / x[lag periods earlier])^(comp_freq / lag) - 1) * 100`, the
+average growth per period over the last `lag` periods, compounded
+`comp_freq` times. On quarterly data, `pcmp(x, 1)` is quarter-on-quarter
+growth, `pcmp(x, 1, 4)` is annualized quarterly growth, `pcmp(x, 4, 4)`
+is year-on-year growth, and `pcmp(x, 4)` is the average quarterly growth
+over the past year.
 
 ## Examples
 

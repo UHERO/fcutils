@@ -62,12 +62,18 @@ for ytd per = "year" (default), for mtd per = "month")</p></dd>
 
 
 <dt id="arg-avg">avg<a class="anchor" aria-label="anchor" href="#arg-avg"></a></dt>
-<dd><p>if TRUE (default), retorn period to date average, if FALSE, return period to date sum</p></dd>
+<dd><p>if TRUE (default), return period to date average, if FALSE, return period to date sum</p></dd>
 
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
     <p>object of the same type as the input containing period to date sum or average</p>
+    </div>
+    <div class="section level2">
+    <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
+    <p><code>per</code> takes any unit <code><a href="https://lubridate.tidyverse.org/reference/round_date.html" class="external-link">lubridate::floor_date()</a></code> does, such as
+"week" or "day". Weeks start on Sunday. An NA makes the rest of its period
+NA.</p>
     </div>
 
     <div class="section level2">

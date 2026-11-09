@@ -56,26 +56,22 @@ quarterly_data_example |>
 #> #   EGVFD_HI <dbl>, EGVST_HI <dbl>, EGVSTEDNS_HI <dbl>, EGVLC_HI <dbl>
 quarterly_data_example |>
   conv_xts() |>
-  conv_wide()
-#> # A tibble: 109 × 31
-#>    time       E_NF_HI ECT_HI EMN_HI EWT_HI ERT_HI E_TRADE_HI E_TU_HI ETWTANS_HI
-#>    <date>       <dbl>  <dbl>  <dbl>  <dbl>  <dbl>      <dbl>   <dbl>      <dbl>
-#>  1 1998-01-01    531.   23.3   15.9   15.9   65.2       81.0    27.9       9.97
-#>  2 1998-04-01    531.   23.0   15.8   15.9   64.6       80.6    27.9      10.0 
-#>  3 1998-07-01    533.   23.0   15.8   15.9   64.2       80.1    27.6      10.1 
-#>  4 1998-10-01    531.   23.1   15.8   16     64.2       80.2    27.3      10   
-#>  5 1999-01-01    530.   22.8   15.8   15.8   64.1       79.8    27.0       9.73
-#>  6 1999-04-01    533.   22.9   15.9   15.8   64.8       80.6    27.4       9.97
-#>  7 1999-07-01    537.   22.9   16.1   15.8   65.1       81.0    27.6      10.2 
-#>  8 1999-10-01    541.   23.3   16.3   16.0   65.9       82.0    27.9      10.3 
-#>  9 2000-01-01    544.   24.3   16.3   16.2   66.0       82.3    28.0      10.4 
-#> 10 2000-04-01    551.   25.0   16.4   16.2   66.0       82.3    28.1      10.6 
+  conv_wide() |>
+  dplyr::select(1:4)
+#> # A tibble: 109 × 4
+#>    time       E_NF_HI ECT_HI EMN_HI
+#>    <date>       <dbl>  <dbl>  <dbl>
+#>  1 1998-01-01    531.   23.3   15.9
+#>  2 1998-04-01    531.   23.0   15.8
+#>  3 1998-07-01    533.   23.0   15.8
+#>  4 1998-10-01    531.   23.1   15.8
+#>  5 1999-01-01    530.   22.8   15.8
+#>  6 1999-04-01    533.   22.9   15.9
+#>  7 1999-07-01    537.   22.9   16.1
+#>  8 1999-10-01    541.   23.3   16.3
+#>  9 2000-01-01    544.   24.3   16.3
+#> 10 2000-04-01    551.   25.0   16.4
 #> # ℹ 99 more rows
-#> # ℹ 22 more variables: ETWNS_HI <dbl>, EUT_HI <dbl>, EIF_HI <dbl>,
-#> #   EFI_HI <dbl>, E_FIR_HI <dbl>, ERE_HI <dbl>, EPS_HI <dbl>, E_PBS_HI <dbl>,
-#> #   E_ELSE_HI <dbl>, EMA_HI <dbl>, EAD_HI <dbl>, EED_HI <dbl>, EHC_HI <dbl>,
-#> #   EAF_HI <dbl>, EAFAC_HI <dbl>, EAFFD_HI <dbl>, EOS_HI <dbl>, EGV_HI <dbl>,
-#> #   EGVFD_HI <dbl>, EGVST_HI <dbl>, EGVSTEDNS_HI <dbl>, EGVLC_HI <dbl>
 quarterly_data_example |>
   tsbox::ts_long() |>
   tsbox::ts_pick("E_NF_HI") |>

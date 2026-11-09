@@ -1,7 +1,6 @@
-# Aggregate univariate or multivariate time series from low to high frequency
+# Aggregate time series to a lower frequency
 
-Aggregate univariate or multivariate time series from low to high
-frequency
+Aggregate time series to a lower frequency
 
 ## Usage
 
@@ -20,7 +19,7 @@ agg(
 
 - x:
 
-  a tx-boxable object at a high frequency (e.g. monthly or quarterly)
+  a ts-boxable object at a high frequency (e.g. monthly or quarterly)
 
 - conv_type:
 
@@ -31,7 +30,7 @@ agg(
 
 - target_freq:
 
-  target frequency "year", "quarter", "month", "week"
+  target frequency "year" (default), "quarter", "month", "week"
 
 - na_rm:
 
@@ -54,7 +53,11 @@ agg(
     October and November, Q4 = Q3 x mean(Oct, Nov) / mean(Jul, Aug).
     Suits trending levels.
 
-  Incomplete periods before the last are always left out.
+  Incomplete periods before the last are left out. With `na_rm = TRUE`
+  every incomplete period is aggregated from the values present, so
+  `partial` has no effect. "growth" leaves the last period out when the
+  earlier period or its matching observations are missing. Any `partial`
+  other than "drop" needs conv_type "mean", "sum" or "uhero".
 
 - partial_lag:
 
@@ -117,7 +120,7 @@ monthly_data_example |>
   agg(conv_type = "uhero", target_freq = "quarter") |>
   tsbox::ts_long() |>
   disagg(conv_type = "uhero", target_freq = "month") |>
-  tsbox::ts_wide() # this is close to original data
+  tsbox::ts_wide() # keeps the quarterly averages, not the monthly pattern
 #> # A tibble: 294 × 4
 #>    time       VISNS_HI VAPNS_HI VADCNS_HI
 #>    <date>        <dbl>    <dbl>     <dbl>

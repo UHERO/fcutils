@@ -31,6 +31,12 @@ ptd_gr(x, per = "year", lag_length = "1 year")
 object of the same type as the input containing period to date growth
 rate
 
+## Details
+
+The growth rate is the percent change of the period-to-date average from
+the same date `lag_length` earlier. Weeks start on Sunday. An NA makes
+the rest of its period NA.
+
 ## Examples
 
 ``` r
@@ -59,57 +65,33 @@ monthly_data_example |>
 #> 4 2025-01-01     36.0
 #> 5 2025-02-01     22.0
 #> 6 2025-03-01     13.2
-# don't use lag_length = "1 year" with weekly data
+# with per = "week", compare with 52 weeks back so the same weekdays line
+# up; "1 year" back lands on a different weekday
 daily_data_example |>
-  ptd_gr("week")
-#> # A tibble: 206 × 3
-#>    time       VISPNS_HI VAPNS_HI
-#>    <date>         <dbl>    <dbl>
-#>  1 2021-09-01     1848.     657.
-#>  2 2021-09-02     2200.     772.
-#>  3 2021-09-03     2280.     830.
-#>  4 2021-09-04     2330.     947.
-#>  5 2021-09-05     1946.     863.
-#>  6 2021-09-06     2696.    1217.
-#>  7 2021-09-07     2147.    1043.
-#>  8 2021-09-08     2137.    1064.
-#>  9 2021-09-09     2287.    1076.
-#> 10 2021-09-10     2242.    1055.
-#> # ℹ 196 more rows
-# lag_length = "52 weeks" instead
-daily_data_example |>
-  ptd_gr("week", "52 weeks")
-#> # A tibble: 207 × 3
-#>    time       VISPNS_HI VAPNS_HI
-#>    <date>         <dbl>    <dbl>
-#>  1 2021-08-31     1558.     601.
-#>  2 2021-09-01     1999.     720.
-#>  3 2021-09-02     2131.     794.
-#>  4 2021-09-03     2244.     925.
-#>  5 2021-09-04     2358.     986.
-#>  6 2021-09-05     2898.    1220.
-#>  7 2021-09-06     2166.    1045.
-#>  8 2021-09-07     2096.    1077.
-#>  9 2021-09-08     2195.    1062.
-#> 10 2021-09-09     2180.    1043.
-#> # ℹ 197 more rows
+  ptd_gr("week", "52 weeks") |>
+  tail()
+#> # A tibble: 6 × 3
+#>   time       VISPNS_HI VAPNS_HI
+#>   <date>         <dbl>    <dbl>
+#> 1 2022-03-20      47.1     69.1
+#> 2 2022-03-21      54.9     75.1
+#> 3 2022-03-22      57.7     77.9
+#> 4 2022-03-23      54.9     74.6
+#> 5 2022-03-24      51.7     70.1
+#> 6 2022-03-25      49.0     67.7
 # and use lag_length = "364 days" with daily data
 daily_data_example |>
-  ptd_gr("day", "364 days")
-#> # A tibble: 207 × 3
-#>    time       VISPNS_HI VAPNS_HI
-#>    <date>         <dbl>    <dbl>
-#>  1 2021-08-31     1536.     572.
-#>  2 2021-09-01     3190      995.
-#>  3 2021-09-02     2741.    1063.
-#>  4 2021-09-03     2844.    1663.
-#>  5 2021-09-04     3025.    1342.
-#>  6 2021-09-05     2898.    1220.
-#>  7 2021-09-06     1666.     910.
-#>  8 2021-09-07     1967.    1147.
-#>  9 2021-09-08     2526.    1016.
-#> 10 2021-09-09     2132.     979.
-#> # ℹ 197 more rows
+  ptd_gr("day", "364 days") |>
+  tail()
+#> # A tibble: 6 × 3
+#>   time       VISPNS_HI VAPNS_HI
+#>   <date>         <dbl>    <dbl>
+#> 1 2022-03-20      47.1     69.1
+#> 2 2022-03-21      63.3     81.7
+#> 3 2022-03-22      64.4     84.6
+#> 4 2022-03-23      47.5     64.8
+#> 5 2022-03-24      42.1     54.2
+#> 6 2022-03-25      37.9     57.1
 daily_data_example |>
   tsbox::ts_long() |>
   tsbox::ts_pick("VAPNS_HI") |>

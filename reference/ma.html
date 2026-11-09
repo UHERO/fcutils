@@ -61,7 +61,9 @@
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p>object of the same type as the input containing moving average</p>
+    <p>object of the same type as the input containing moving average. The
+first <code>order - 1</code> periods are NA, and an NA inside the window gives NA.
+The window counts observations, not dates.</p>
     </div>
 
     <div class="section level2">

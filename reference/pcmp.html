@@ -65,7 +65,16 @@
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p>object of the same type as the input ontaining the average growth of x (in percent)</p>
+    <p>object of the same type as the input containing the average growth of x (in percent)</p>
+    </div>
+    <div class="section level2">
+    <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
+    <p><code>pcmp()</code> returns <code>((x / x[lag periods earlier])^(comp_freq / lag) - 1) * 100</code>,
+the average growth per period over the last <code>lag</code> periods, compounded
+<code>comp_freq</code> times. On quarterly data, <code>pcmp(x, 1)</code> is quarter-on-quarter
+growth, <code>pcmp(x, 1, 4)</code> is annualized quarterly growth, <code>pcmp(x, 4, 4)</code> is
+year-on-year growth, and <code>pcmp(x, 4)</code> is the average quarterly growth over
+the past year.</p>
     </div>
 
     <div class="section level2">

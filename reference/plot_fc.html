@@ -63,7 +63,9 @@
 
 
 <dl><dt id="arg-x">x<a class="anchor" aria-label="anchor" href="#arg-x"></a></dt>
-<dd><p>ts-boxable object to plot (min 1, max 3 time series) (e.g. current fcst, old fcst, history)</p></dd>
+<dd><p>ts-boxable object to plot (e.g. current fcst, old fcst, history).
+The first three series get their own line styles; later ones get the
+default style.</p></dd>
 
 
 <dt id="arg-rng-start">rng_start<a class="anchor" aria-label="anchor" href="#arg-rng-start"></a></dt>
@@ -79,11 +81,13 @@
 
 
 <dt id="arg-table-start">table_start<a class="anchor" aria-label="anchor" href="#arg-table-start"></a></dt>
-<dd><p>start of table range ("YYYY-MM-DD") (all data = NULL, default = rng_start)</p></dd>
+<dd><p>start of table range ("YYYY-MM-DD"; default rng_start;
+NULL for the start of the data)</p></dd>
 
 
 <dt id="arg-table-end">table_end<a class="anchor" aria-label="anchor" href="#arg-table-end"></a></dt>
-<dd><p>end of table range ("YYYY-MM-DD") (all data = NULL, default = rng_end)</p></dd>
+<dd><p>end of table range ("YYYY-MM-DD"; default rng_end; NULL
+for the end of the data)</p></dd>
 
 
 <dt id="arg-height">height<a class="anchor" aria-label="anchor" href="#arg-height"></a></dt>
@@ -95,7 +99,8 @@
 
 
 <dt id="arg-yoy-gr">yoy_gr<a class="anchor" aria-label="anchor" href="#arg-yoy-gr"></a></dt>
-<dd><p>year-over-year (default) or annualized growth</p></dd>
+<dd><p>TRUE (default) for growth on the same period a year earlier,
+FALSE for growth on the previous period</p></dd>
 
 
 <dt id="arg-rate">rate<a class="anchor" aria-label="anchor" href="#arg-rate"></a></dt>
@@ -105,7 +110,7 @@ change (for rates such as the unemployment rate; default = FALSE)</p></dd>
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p>a dygraph plot</p>
+    <p>a browsable htmltools tag list holding the dygraph plots</p>
     </div>
 
     <div class="section level2">

@@ -20,12 +20,17 @@ extract_data(model_in, y_name)
 
 ## Value
 
-an xts containing the model variables
+an xts with the dependent variable named y_name, AR lags named y_name.k
+(the lag notation model_equation() reads), indicator saturation dummies
+named IIS_yyyy_mm_dd and SIS_yyyy_mm_dd, and the other regressors as in
+the model
 
 ## Examples
 
 ``` r
 if (FALSE) { # interactive()
-# save the data associated with a gets model
+q <- conv_xts(quarterly_data_example)
+mod <- gets::arx(tsbox::ts_pc(q$E_NF_HI)["2000/2019"], ar = 1:2)
+extract_data(mod, "E_NF_HI") |> head(3)
 }
 ```

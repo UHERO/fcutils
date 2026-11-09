@@ -25,7 +25,11 @@ plot_comp_3(
 
 - base_date:
 
-  base period for the indexed series ("YYYY-MM-DD")
+  base period for the index panel, where the index equals 1
+  ("YYYY-MM-DD"; default 10 years before today). It works as `base_per`
+  in
+  [`index_to_base()`](https://uhero.github.io/fcutils/reference/index_to_base.md):
+  the first observation on or after the date.
 
 - rng_start:
 
@@ -45,7 +49,8 @@ plot_comp_3(
 
 - yoy_gr:
 
-  year-over-year (default) or annualized growth
+  TRUE (default) for growth on the same period a year earlier, FALSE for
+  growth on the previous period
 
 - gr_bar:
 
@@ -53,7 +58,8 @@ plot_comp_3(
 
 ## Value
 
-a list with three dygraph plots (level, index, growth)
+a browsable htmltools tag list with three dygraph plots (level, index,
+growth)
 
 ## Examples
 

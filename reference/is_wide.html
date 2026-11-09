@@ -57,7 +57,10 @@
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p>returns TRUE for wide format data frame (time and value columns), FALSE otherwise</p>
+    <p>TRUE for a data frame with a <code>time</code> column and numeric value
+columns only, FALSE for a long data frame or any object that is not a
+data frame. A data frame without a <code>time</code> column, or without a numeric
+column, stops with an error.</p>
     </div>
 
     <div class="section level2">
@@ -68,12 +71,11 @@
 <span class="r-in"><span>  <span class="fu">tsbox</span><span class="fu">::</span><span class="fu"><a href="https://docs.ropensci.org/tsbox/reference/ts_long.html" class="external-link">ts_long</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span></span></span>
 <span class="r-in"><span>  <span class="fu">is_wide</span><span class="op">(</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
-<span class="r-in"><span><span class="va">dat_in</span> <span class="op">&lt;-</span> <span class="va">monthly_data_example</span> <span class="op">|&gt;</span></span></span>
+<span class="r-in"><span><span class="va">monthly_data_example</span> <span class="op">|&gt;</span></span></span>
 <span class="r-in"><span>  <span class="fu">tsbox</span><span class="fu">::</span><span class="fu"><a href="https://docs.ropensci.org/tsbox/reference/ts_long.html" class="external-link">ts_long</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span></span></span>
-<span class="r-in"><span>  <span class="fu">tsbox</span><span class="fu">::</span><span class="fu"><a href="https://docs.ropensci.org/tsbox/reference/ts_ts.html" class="external-link">ts_tslist</a></span><span class="op">(</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="va">wide_df</span> <span class="op">&lt;-</span> <span class="fu">is_wide</span><span class="op">(</span><span class="va">dat_in</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="va">x_mod</span> <span class="op">&lt;-</span> <span class="kw">if</span> <span class="op">(</span><span class="va">wide_df</span><span class="op">)</span> <span class="fu">tsbox</span><span class="fu">::</span><span class="fu"><a href="https://docs.ropensci.org/tsbox/reference/ts_long.html" class="external-link">ts_long</a></span><span class="op">(</span><span class="va">dat_in</span><span class="op">)</span> <span class="kw">else</span> <span class="fu">tsbox</span><span class="fu">::</span><span class="fu"><a href="https://docs.ropensci.org/tsbox/reference/ts_ts.html" class="external-link">ts_tbl</a></span><span class="op">(</span><span class="va">dat_in</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="va">ans</span> <span class="op">&lt;-</span> <span class="kw">if</span> <span class="op">(</span><span class="va">wide_df</span><span class="op">)</span> <span class="fu">tsbox</span><span class="fu">::</span><span class="fu"><a href="https://docs.ropensci.org/tsbox/reference/ts_long.html" class="external-link">ts_wide</a></span><span class="op">(</span><span class="va">x_mod</span><span class="op">)</span> <span class="kw">else</span> <span class="fu">tsbox</span><span class="fu">::</span><span class="fu"><a href="https://docs.ropensci.org/tsbox/reference/copy_class.html" class="external-link">copy_class</a></span><span class="op">(</span><span class="va">x_mod</span>, <span class="va">dat_in</span><span class="op">)</span></span></span>
+<span class="r-in"><span>  <span class="fu">tsbox</span><span class="fu">::</span><span class="fu"><a href="https://docs.ropensci.org/tsbox/reference/ts_ts.html" class="external-link">ts_tslist</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span></span></span>
+<span class="r-in"><span>  <span class="fu">is_wide</span><span class="op">(</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] FALSE</span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

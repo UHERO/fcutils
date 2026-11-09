@@ -17,7 +17,8 @@ AtoQ(ser_in, aggr = "mean")
 
 - aggr:
 
-  interpolation method: aggregate via mean (default) or sum
+  "mean" (default): the quarters average to the annual value; any other
+  value: they sum to it
 
 ## Value
 

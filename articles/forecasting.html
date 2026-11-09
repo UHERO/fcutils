@@ -256,8 +256,8 @@ Side by side:</p>
 <span><span class="co">#&gt; 2030-01-01 6.000 0.000    6.000</span></span></code></pre></div>
 <p>The first ramp climbs from 0 in 2026Q1 to 0.3 in 2027Q4, by 0.3 / 7 =
 0.043 points a quarter. The second starts at 0.3 in 2028Q1 and falls
-back to 0 by 2029Q4. Before and after the ramps <code>adj</code> is
-zero, so the adjusted share still meets the 6.0 anchor in 2029Q4.</p>
+back to 0 by 2029Q4, so the adjusted share meets the 6.0 anchor there.
+Before 2026Q1 and after 2029Q4, <code>adj</code> is zero.</p>
 <p>The dates can also be strings (<code>"2026Q1"</code>), and the same
 add-factor can be written as points joined by straight lines:</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
@@ -267,10 +267,20 @@ add-factor can be written as points joined by straight lines:</p>
 <span>  <span class="st">"2028Q1"</span>, <span class="st">"2029Q4"</span>, <span class="fl">0.3</span>,   <span class="fl">0</span></span>
 <span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/addf.html">addf</a></span><span class="op">(</span><span class="fl">2026.1</span> <span class="op">~</span> <span class="fl">0</span>, <span class="fl">2027.4</span> <span class="op">~</span> <span class="fl">0.3</span>, <span class="fl">2028.1</span> <span class="op">~</span> <span class="fl">0.3</span>, <span class="fl">2029.4</span> <span class="op">~</span> <span class="fl">0</span><span class="op">)</span></span></code></pre></div>
+<p>Points also take <code>interp = "stine"</code>, which joins them with
+a smooth curve that eases off zero and back, like the spline in
+<code><a href="../reference/extend.html">extend()</a></code>:</p>
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">adj_paths</span> <span class="op">&lt;-</span> <span class="fu">tsbox</span><span class="fu">::</span><span class="fu"><a href="https://docs.ropensci.org/tsbox/reference/ts_c.html" class="external-link">ts_c</a></span><span class="op">(</span></span>
+<span>  linear <span class="op">=</span> <span class="va">adj</span>,</span>
+<span>  stine <span class="op">=</span> <span class="fu"><a href="../reference/addf.html">addf</a></span><span class="op">(</span><span class="fl">2026.1</span> <span class="op">~</span> <span class="fl">0</span>, <span class="fl">2027.4</span> <span class="op">~</span> <span class="fl">0.3</span>, <span class="fl">2028.1</span> <span class="op">~</span> <span class="fl">0.3</span>, <span class="fl">2029.4</span> <span class="op">~</span> <span class="fl">0</span>, interp <span class="op">=</span> <span class="st">"stine"</span><span class="op">)</span></span>
+<span><span class="op">)</span></span>
+<span><span class="fu">tsbox</span><span class="fu">::</span><span class="fu"><a href="https://docs.ropensci.org/tsbox/reference/ts_plot.html" class="external-link">ts_plot</a></span><span class="op">(</span><span class="va">adj_paths</span><span class="op">[</span><span class="fu"><a href="../reference/p.html">p</a></span><span class="op">(</span><span class="fl">2025</span>, <span class="fl">2030.4</span><span class="op">)</span><span class="op">]</span>, title <span class="op">=</span> <span class="st">"Add-factor, points"</span><span class="op">)</span></span></code></pre></div>
+<p><img src="forecasting_files/figure-html/unnamed-chunk-10-1.png" class="r-plt" alt="Add-factor from 2025 to 2030: straight ramps up to 0.3 and back down, and a smooth curve through the same points that leaves and returns to zero gradually." width="700"></p>
 <p>Construction jobs follow from the adjusted share and the total.
 Because the share and the total both span the bank, ordinary arithmetic
 lines them up:</p>
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">ct_fc</span> <span class="op">&lt;-</span> <span class="va">share_fc</span> <span class="op">/</span> <span class="fl">100</span> <span class="op">*</span> <span class="va">jobs_fc</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">round</a></span><span class="op">(</span><span class="va">ct_fc</span><span class="op">[</span><span class="fu"><a href="../reference/p.html">p</a></span><span class="op">(</span><span class="fl">2025.1</span>, <span class="fl">2026.4</span><span class="op">)</span><span class="op">]</span>, <span class="fl">2</span><span class="op">)</span></span>
 <span><span class="co">#&gt;            stine</span></span>
@@ -293,7 +303,7 @@ for example because it uses a different definition. With
 of the projection, <code>path</code>, and applies it to the series from
 its last observation. Suppose an annual projection of government jobs
 for 2025–2035:</p>
-<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">gv_a</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/make_xts.html">make_xts</a></span><span class="op">(</span><span class="fl">2025</span>, val <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="fl">131</span>, by <span class="op">=</span> <span class="fl">0.8</span>, length.out <span class="op">=</span> <span class="fl">11</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 <p>The history is quarterly, so the projection must be quarterly too.
 <code><a href="../reference/disagg.html">disagg()</a></code> interpolates it to quarters whose averages equal
@@ -301,7 +311,7 @@ the annual values. Without anything to follow at the end of the series,
 the interpolation bends toward zero growth over the last year;
 <code>extend_with = "last_growth"</code> prevents that by continuing the
 series at its last growth rate before interpolating.</p>
-<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">gv_q</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/disagg.html">disagg</a></span><span class="op">(</span><span class="va">gv_a</span>, extend_with <span class="op">=</span> <span class="st">"last_growth"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">round</a></span><span class="op">(</span><span class="fu">tsbox</span><span class="fu">::</span><span class="fu"><a href="https://docs.ropensci.org/tsbox/reference/ts_c.html" class="external-link">ts_c</a></span><span class="op">(</span>annual <span class="op">=</span> <span class="va">gv_a</span>, quarterly_avg <span class="op">=</span> <span class="fu"><a href="../reference/agg.html">agg</a></span><span class="op">(</span><span class="va">gv_q</span><span class="op">)</span><span class="op">)</span><span class="op">[</span><span class="fu"><a href="../reference/p.html">p</a></span><span class="op">(</span><span class="fl">2025</span>, <span class="fl">2027</span><span class="op">)</span><span class="op">]</span>, <span class="fl">3</span><span class="op">)</span></span>
 <span><span class="co">#&gt;            annual quarterly_avg</span></span>
@@ -310,7 +320,7 @@ series at its last growth rate before interpolating.</p>
 <span><span class="co">#&gt; 2027-01-01  132.6         132.6</span></span></code></pre></div>
 <p><code><a href="../reference/extend.html">extend()</a></code> then continues the quarterly history with the
 growth of the interpolated projection:</p>
-<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">gv_fc</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/extend.html">extend</a></span><span class="op">(</span><span class="va">q</span><span class="op">$</span><span class="va">EGV_HI</span>, path <span class="op">=</span> <span class="va">gv_q</span>, type <span class="op">=</span> <span class="st">"chain"</span><span class="op">)</span></span>
 <span><span class="va">gv</span> <span class="op">&lt;-</span> <span class="fu">tsbox</span><span class="fu">::</span><span class="fu"><a href="https://docs.ropensci.org/tsbox/reference/ts_c.html" class="external-link">ts_c</a></span><span class="op">(</span>history <span class="op">=</span> <span class="va">q</span><span class="op">$</span><span class="va">EGV_HI</span>, projection <span class="op">=</span> <span class="va">gv_q</span>, forecast <span class="op">=</span> <span class="va">gv_fc</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">round</a></span><span class="op">(</span><span class="va">gv</span><span class="op">[</span><span class="fu"><a href="../reference/p.html">p</a></span><span class="op">(</span><span class="fl">2024.4</span>, <span class="fl">2025.4</span><span class="op">)</span><span class="op">]</span>, <span class="fl">2</span><span class="op">)</span></span>
@@ -323,7 +333,7 @@ growth of the interpolated projection:</p>
 <p>In 2025Q1 the projection is 2.7 thousand above history. The forecast
 starts from history and grows from quarter to quarter at the
 projection’s rate, so the gap stays the same in percent:</p>
-<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">round</a></span><span class="op">(</span><span class="fu"><a href="../reference/pcmp.html">pcmp</a></span><span class="op">(</span><span class="va">gv</span><span class="op">[</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"projection"</span>, <span class="st">"forecast"</span><span class="op">)</span><span class="op">]</span>, lag <span class="op">=</span> <span class="fl">1</span><span class="op">)</span><span class="op">[</span><span class="fu"><a href="../reference/p.html">p</a></span><span class="op">(</span><span class="fl">2025.2</span>, <span class="fl">2025.4</span><span class="op">)</span><span class="op">]</span>, <span class="fl">3</span><span class="op">)</span></span>
 <span><span class="co">#&gt;            projection forecast</span></span>
 <span><span class="co">#&gt; 2025-04-01      0.047    0.047</span></span>
@@ -348,7 +358,7 @@ observation.</p>
 2023Q4 at 1% annualized growth. <code><a href="../reference/extend.html">extend()</a></code> works on one
 series at a time. To apply it to all of them, stack the series in a long
 table, extend each group, and turn the result back into xts:</p>
-<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://dplyr.tidyverse.org" class="external-link">dplyr</a></span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">old_hist</span> <span class="op">&lt;-</span> <span class="va">q</span><span class="op">[</span><span class="fu"><a href="../reference/p.html">p</a></span><span class="op">(</span><span class="st">""</span>, <span class="fl">2023.4</span><span class="op">)</span><span class="op">]</span></span>
@@ -361,7 +371,7 @@ table, extend each group, and turn the result back into xts:</p>
 <p><code><a href="../reference/chain.html">chain()</a></code> then pairs each series in the new history
 <code>q</code> with the series of the same name in
 <code>old_fc</code>:</p>
-<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">new_fc</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/chain.html">chain</a></span><span class="op">(</span><span class="va">q</span>, <span class="va">old_fc</span>, direction <span class="op">=</span> <span class="st">"forward"</span>, verbose <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
 <span><span class="va">compare</span> <span class="op">&lt;-</span> <span class="fu">tsbox</span><span class="fu">::</span><span class="fu"><a href="https://docs.ropensci.org/tsbox/reference/ts_c.html" class="external-link">ts_c</a></span><span class="op">(</span>old <span class="op">=</span> <span class="va">old_fc</span><span class="op">$</span><span class="va">E_NF_HI</span>, new <span class="op">=</span> <span class="va">new_fc</span><span class="op">$</span><span class="va">E_NF_HI</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">round</a></span><span class="op">(</span><span class="va">compare</span><span class="op">[</span><span class="fu"><a href="../reference/p.html">p</a></span><span class="op">(</span><span class="fl">2023.3</span>, <span class="fl">2025.3</span><span class="op">)</span><span class="op">]</span>, <span class="fl">2</span><span class="op">)</span></span>
@@ -380,12 +390,13 @@ From 2024Q1 to 2025Q1 the new forecast is the new history, and after
 that it grows at the old forecast’s 1%, starting from the new 2025Q1
 level of 647.9 rather than the 639.7 the old forecast had reached. The
 other 29 series are updated the same way.</p>
-<p>If the names differ in their endings, such as <code>UR_AT_US_A</code>
-(annual) and <code>UR_AT_US_SOLQ</code> (quarterly model output),
-<code>match = "stem"</code> pairs them on the part before the ending.
-For rates such as the unemployment rate, <code>method = "diff"</code>
-continues with the change in points instead of the growth rate. A bank
-that mixes levels and rates takes one method per series, by name:
+<p>If the names differ in their endings, such as <code>UR_AT_US_Q</code>
+(quarterly history) and <code>UR_AT_US_SOLQ</code> (quarterly model
+output), <code>match = "stem"</code> pairs them on the part before the
+ending. For rates such as the unemployment rate,
+<code>method = "diff"</code> continues with the change in points instead
+of the growth rate. A bank that mixes levels and rates takes one method
+per series, by name:
 <code>method = c(UR_AT_US = "diff", FFR_AT_US = "diff")</code>, with
 “ratio” for the rest. <code>direction = "backward"</code> extends a
 short history back in time with the growth of a longer series.</p>
@@ -399,7 +410,7 @@ so a year with three quarters of data has no value. Jobs are a count at
 a point in time, so the average is right. For flows, such as visitor
 arrivals, the annual figure is the total, so use
 <code>conv_type = "sum"</code>:</p>
-<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">fc</span> <span class="op">&lt;-</span> <span class="fu">tsbox</span><span class="fu">::</span><span class="fu"><a href="https://docs.ropensci.org/tsbox/reference/ts_c.html" class="external-link">ts_c</a></span><span class="op">(</span>E_NF_HI <span class="op">=</span> <span class="va">jobs_fc</span>, ECT_HI <span class="op">=</span> <span class="va">ct_fc</span>, EGV_HI <span class="op">=</span> <span class="va">gv_fc</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">round</a></span><span class="op">(</span><span class="fu"><a href="../reference/agg.html">agg</a></span><span class="op">(</span><span class="va">fc</span><span class="op">)</span><span class="op">[</span><span class="fu"><a href="../reference/p.html">p</a></span><span class="op">(</span><span class="fl">2024</span>, <span class="fl">2028</span><span class="op">)</span><span class="op">]</span>, <span class="fl">1</span><span class="op">)</span></span>
 <span><span class="co">#&gt;            E_NF_HI ECT_HI EGV_HI</span></span>

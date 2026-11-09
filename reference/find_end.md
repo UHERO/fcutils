@@ -20,7 +20,8 @@ find_end(x, last_day = FALSE)
 
 ## Value
 
-date associated with last observation
+a Date vector with one date per series, in the order of the series in x,
+without names
 
 ## Examples
 

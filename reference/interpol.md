@@ -9,6 +9,7 @@ interpol(
   incomplete,
   pattern = NULL,
   extend_range = FALSE,
+  match = c("position", "name", "stem"),
   interp = c("linear", "stine")
 )
 ```
@@ -21,14 +22,27 @@ interpol(
 
 - pattern:
 
-  a ts-boxable object no missing values, or NULL (default) to fill the
-  gaps inside each series by `interp`
+  a ts-boxable object at the same frequency, or NULL (default) to fill
+  the gaps inside each series by `interp`. `match` sets how pattern
+  series pair with the series in `incomplete`; with "position", a single
+  pattern series serves every series, with a warning. `interpol()`
+  prints the mapping it uses.
 
 - extend_range:
 
-  logical. If TRUE, uses a full_join to potentially extend the date
-  range. If FALSE (default), uses a left_join to only fill NAs within
-  the original date range.
+  logical. If TRUE, the result covers every date of either input, and
+  each series is continued along its pattern over the added dates. If
+  FALSE (default), the result keeps the dates of `incomplete`.
+
+- match:
+
+  how series in `incomplete` find their pattern: "position" (default)
+  pairs them in order; "name" needs the same name; "stem" compares names
+  without a final frequency or solution ending, as in
+  [`chain()`](https://uhero.github.io/fcutils/reference/chain.md), so
+  `VISNS_HI_Q` pairs with `VISNS_HI_M`. With "name" or "stem", every
+  series needs a partner, or interpol() stops. A single series in each
+  always pairs.
 
 - interp:
 
@@ -36,7 +50,7 @@ interpol(
   line, "stine" along a Stineman spline through the observed values,
   which bends smoothly without overshooting them (as in
   [`extend()`](https://uhero.github.io/fcutils/reference/extend.md)).
-  Not used with a pattern.
+  With a pattern only "linear" is allowed; "stine" is an error.
 
 ## Value
 
@@ -44,14 +58,17 @@ interpolated object of the same type as the input
 
 ## Details
 
-the function aligns two sets of time series by date and then
-interpolates the first set using the second set as a pattern. Without a
-pattern, missing values between a series' first and last observation are
-filled by `interp` (by position, so each period counts the same);
-missing dates in a regular series are added first, and leading and
-trailing gaps stay empty. extend_range has no effect then. The time-span
-of the pattern has to match or be larger than the time-span of the
-incomplete data.
+With a pattern, a gap inside a series follows the pattern's growth from
+the last known value, plus a correction that grows linearly across the
+gap so the path ends on the next known value. A gap at the start or end
+of a series follows the pattern's growth from the nearest known value.
+Where the pattern is NA, or does not cover a gap's end points, the gap
+stays NA.
+
+Without a pattern, missing values between a series' first and last
+observation are filled by `interp` (by position, so each period counts
+the same); missing dates in a regular series are added first, and
+leading and trailing gaps stay empty. extend_range has no effect then.
 
 ## Examples
 
@@ -83,24 +100,25 @@ monthly_data_example |>
     value = dplyr::if_else(time > "2021-01-01" & time < "2022-01-01",
     NA_real_, value)
   )|>
-  interpol(monthly_data_example, extend_range = TRUE)
-#> The mapping betwen interpolated series and pattern series is the following:
+  interpol(monthly_data_example, extend_range = TRUE) |>
+  span("2020-11-01", "2022-02-01")
+#> The mapping between interpolated series and pattern series is the following:
 #>  VISNS_HI_I  VAPNS_HI_I VADCNS_HI_I 
 #>  VISNS_HI_P  VAPNS_HI_P VADCNS_HI_P 
-#> # A tibble: 885 × 3
+#> # A tibble: 48 × 3
 #>    id       time       value
 #>    <chr>    <date>     <dbl>
-#>  1 VISNS_HI 2000-09-01  539.
-#>  2 VISNS_HI 2000-10-01  567.
-#>  3 VISNS_HI 2000-11-01  535.
-#>  4 VISNS_HI 2000-12-01  584.
-#>  5 VISNS_HI 2001-01-01  558.
-#>  6 VISNS_HI 2001-02-01  554.
-#>  7 VISNS_HI 2001-03-01  618.
-#>  8 VISNS_HI 2001-04-01  558.
-#>  9 VISNS_HI 2001-05-01  528.
-#> 10 VISNS_HI 2001-06-01  597.
-#> # ℹ 875 more rows
+#>  1 VISNS_HI 2020-11-01  184.
+#>  2 VISNS_HI 2020-12-01  237.
+#>  3 VISNS_HI 2021-01-01  172.
+#>  4 VISNS_HI 2021-02-01  235.
+#>  5 VISNS_HI 2021-03-01  440.
+#>  6 VISNS_HI 2021-04-01  485.
+#>  7 VISNS_HI 2021-05-01  630.
+#>  8 VISNS_HI 2021-06-01  792.
+#>  9 VISNS_HI 2021-07-01  880.
+#> 10 VISNS_HI 2021-08-01  723.
+#> # ℹ 38 more rows
 monthly_data_example |>
   tsbox::ts_long() |>
   dplyr::mutate(
@@ -122,23 +140,29 @@ monthly_data_example |>
         )
       )
   ) %>%
-  # no interpolation where pattern has NAs
-  tsbox::ts_wide()
-#> The mapping betwen interpolated series and pattern series is the following:
+  # no interpolation where pattern has NAs (April to August 2021)
+  tsbox::ts_wide() |>
+  span("2020-11-01", "2022-02-01")
+#> The mapping between interpolated series and pattern series is the following:
 #>  VISNS_HI_I  VAPNS_HI_I VADCNS_HI_I 
 #>  VISNS_HI_P  VAPNS_HI_P VADCNS_HI_P 
-#> # A tibble: 295 × 4
+#> # A tibble: 16 × 4
 #>    time       VISNS_HI VAPNS_HI VADCNS_HI
 #>    <date>        <dbl>    <dbl>     <dbl>
-#>  1 2000-09-01     539.     546.      146.
-#>  2 2000-10-01     567.     604.      153.
-#>  3 2000-11-01     535.     577.      154.
-#>  4 2000-12-01     584.     617.      181.
-#>  5 2001-01-01     558.     578.      182.
-#>  6 2001-02-01     554.     559.      176.
-#>  7 2001-03-01     618.     636.      173.
-#>  8 2001-04-01     558.     594.      155.
-#>  9 2001-05-01     528.     586.      142.
-#> 10 2001-06-01     597.     672.      183.
-#> # ℹ 285 more rows
+#>  1 2020-11-01     184.     226.      76.2
+#>  2 2020-12-01     237.     289.      94.7
+#>  3 2021-01-01     172.     227.      80.8
+#>  4 2021-02-01     235.     272.      90.7
+#>  5 2021-03-01     440.     492.     137. 
+#>  6 2021-04-01      NA       NA       NA  
+#>  7 2021-05-01      NA       NA       NA  
+#>  8 2021-06-01      NA       NA       NA  
+#>  9 2021-07-01      NA       NA       NA  
+#> 10 2021-08-01      NA       NA       NA  
+#> 11 2021-09-01     505.     597.     154. 
+#> 12 2021-10-01     551.     660.     165. 
+#> 13 2021-11-01     614.     714.     191. 
+#> 14 2021-12-01     753.     838.     247. 
+#> 15 2022-01-01     574.     662.     201. 
+#> 16 2022-02-01     620.     676.     206. 
 ```

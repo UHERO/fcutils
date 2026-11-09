@@ -1,6 +1,6 @@
-# quarterly data for examples
+# Quarterly data for examples
 
-quarterly data for examples
+Quarterly data for examples
 
 ## Usage
 
@@ -10,7 +10,8 @@ quarterly_data_example
 
 ## Format
 
-tibble of quarterly data
+wide tibble of 30 Hawaii payroll jobs series (E_NF_HI, ECT_HI, ...),
+1998Q1 to 2025Q1
 
 ## Source
 
@@ -18,7 +19,7 @@ author
 
 ## References
 
-[uhero.hawaii.edu](https://uhero.github.io/fcutils/reference/uhero.hawaii.edu)
+<https://uhero.hawaii.edu>
 
 ## Author
 

@@ -24,25 +24,25 @@ ytd_agg(x, avg = TRUE)
 object of the same type as the input containing year to date sum or
 average
 
+## Details
+
+An NA makes the rest of its period NA.
+
 ## Examples
 
 ``` r
 monthly_data_example |>
-  ytd_agg()
-#> # A tibble: 295 × 4
-#>    time       VISNS_HI VAPNS_HI VADCNS_HI
-#>    <date>        <dbl>    <dbl>     <dbl>
-#>  1 2000-09-01     539.     546.      146.
-#>  2 2000-10-01     553.     575.      149.
-#>  3 2000-11-01     547.     576.      151.
-#>  4 2000-12-01     556.     586.      158.
-#>  5 2001-01-01     558.     578.      182.
-#>  6 2001-02-01     556.     569.      179.
-#>  7 2001-03-01     577.     591.      177.
-#>  8 2001-04-01     572.     592.      171.
-#>  9 2001-05-01     563.     591.      165.
-#> 10 2001-06-01     569.     604.      168.
-#> # ℹ 285 more rows
+  ytd_agg() |>
+  tail()
+#> # A tibble: 6 × 4
+#>   time       VISNS_HI VAPNS_HI VADCNS_HI
+#>   <date>        <dbl>    <dbl>     <dbl>
+#> 1 2024-10-01     803.     927.      227.
+#> 2 2024-11-01     800.     922.      226.
+#> 3 2024-12-01     809.     930.      229.
+#> 4 2025-01-01     792.     900.      245.
+#> 5 2025-02-01     776.     862.      241.
+#> 6 2025-03-01     819.     905.      242.
 monthly_data_example |>
   tsbox::ts_long() |>
   tsbox::ts_pick("VISNS_HI") |>

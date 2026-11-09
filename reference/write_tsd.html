@@ -61,7 +61,10 @@ the frequency, and then its values, five to a line.</p>
 
 
 <dl><dt id="arg-x">x<a class="anchor" aria-label="anchor" href="#arg-x"></a></dt>
-<dd><p>a ts-boxable object (monthly, quarterly or annual)</p></dd>
+<dd><p>a ts-boxable object (monthly, quarterly or annual). Other
+frequencies are written as annual without warning. Leading and trailing
+NAs of each series are dropped; NAs inside a series are written as
+1.000000E+0015, the TSD missing value.</p></dd>
 
 
 <dt id="arg-file">file<a class="anchor" aria-label="anchor" href="#arg-file"></a></dt>
@@ -78,16 +81,15 @@ name fills the header line.</p></dd>
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p>nothing (silently save the contents of the tsd file to a user defined
-location)</p>
+    <p>the text written to <code>file</code>, invisibly</p>
     </div>
 
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span> <span class="co"># interactive()</span></span></span>
-<span class="r-in"><span><span class="va">quarterly_data_example</span> <span class="op">|&gt;</span> <span class="fu">write_tsd</span><span class="op">(</span><span class="st">"out.tsd"</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">quarterly_data_example</span> <span class="op">|&gt;</span> <span class="fu">write_tsd</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempdir</a></span><span class="op">(</span><span class="op">)</span>, <span class="st">"out.tsd"</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="va">quarterly_data_example</span> <span class="op">|&gt;</span></span></span>
-<span class="r-in"><span>  <span class="fu">write_tsd</span><span class="op">(</span><span class="st">"out.tsd"</span>, descriptions <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>E_NF_HI <span class="op">=</span> <span class="st">"Nonfarm payroll jobs"</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-in"><span>  <span class="fu">write_tsd</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempdir</a></span><span class="op">(</span><span class="op">)</span>, <span class="st">"out.tsd"</span><span class="op">)</span>, descriptions <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>E_NF_HI <span class="op">=</span> <span class="st">"Nonfarm payroll jobs"</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">}</span></span></span>
 </code></pre></div>
     </div>

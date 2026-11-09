@@ -1,6 +1,11 @@
-# pattern in series names that should be aggregate as sum
+# Pattern in series names that should be aggregated as sum
 
-pattern in series names that should be aggregate as sum
+A regular expression matched against upper-cased series names when
+`conv_type = "uhero"` in
+[`agg()`](https://uhero.github.io/fcutils/reference/agg.md),
+[`fagg()`](https://uhero.github.io/fcutils/reference/fagg.md) and
+[`disagg()`](https://uhero.github.io/fcutils/reference/disagg.md).
+Matching series are aggregated by sum, all others by mean.
 
 ## Usage
 
@@ -18,7 +23,7 @@ author
 
 ## References
 
-[uhero.hawaii.edu](https://uhero.github.io/fcutils/reference/uhero.hawaii.edu)
+<https://uhero.hawaii.edu>
 
 ## Author
 

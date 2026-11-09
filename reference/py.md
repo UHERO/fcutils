@@ -20,7 +20,10 @@ py(dat1 = "", dat2 = "")
 
 ## Value
 
-string containing date range
+string containing date range. It ends on January 1 of dat2, so on
+quarterly or monthly data it keeps only the first period of dat2.
+[`p()`](https://uhero.github.io/fcutils/reference/p.md) includes the end
+year in full.
 
 ## Examples
 

@@ -44,3 +44,7 @@ the result of the new function
 | `fytd_cum()` | [`fytd_agg()`](https://uhero.github.io/fcutils/reference/fytd_agg.md) |
 | `mtd_cum()` | [`mtd_agg()`](https://uhero.github.io/fcutils/reference/mtd_agg.md) |
 | `ptd_cum()` | [`ptd_agg()`](https://uhero.github.io/fcutils/reference/ptd_agg.md) |
+
+[`yoy_to_lev()`](https://uhero.github.io/fcutils/reference/yoy_to_lev.md)
+was deprecated in fcutils 0.1.5 and has its own help page. Use
+`extend(hist_lev, path = yoy_gr, type = "growth", growth = "pcy")`.

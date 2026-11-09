@@ -23,8 +23,9 @@ plot_fc(
 
 - x:
 
-  ts-boxable object to plot (min 1, max 3 time series) (e.g. current
-  fcst, old fcst, history)
+  ts-boxable object to plot (e.g. current fcst, old fcst, history). The
+  first three series get their own line styles; later ones get the
+  default style.
 
 - rng_start:
 
@@ -40,12 +41,13 @@ plot_fc(
 
 - table_start:
 
-  start of table range ("YYYY-MM-DD") (all data = NULL, default =
-  rng_start)
+  start of table range ("YYYY-MM-DD"; default rng_start; NULL for the
+  start of the data)
 
 - table_end:
 
-  end of table range ("YYYY-MM-DD") (all data = NULL, default = rng_end)
+  end of table range ("YYYY-MM-DD"; default rng_end; NULL for the end of
+  the data)
 
 - height:
 
@@ -57,7 +59,8 @@ plot_fc(
 
 - yoy_gr:
 
-  year-over-year (default) or annualized growth
+  TRUE (default) for growth on the same period a year earlier, FALSE for
+  growth on the previous period
 
 - rate:
 
@@ -66,7 +69,7 @@ plot_fc(
 
 ## Value
 
-a dygraph plot
+a browsable htmltools tag list holding the dygraph plots
 
 ## Examples
 
