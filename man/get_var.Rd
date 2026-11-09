@@ -8,7 +8,7 @@ get_var(ser_in, env = parent.frame())
 }
 \arguments{
 \item{ser_in}{a name with glue expressions in braces, such as
-"E{ser_i}_{cnty_i}". The expressions are evaluated in the global
+\code{"E{ser_i}_{cnty_i}"}. The expressions are evaluated in the global
 environment.}
 
 \item{env}{environment in which the resulting name is looked up}
