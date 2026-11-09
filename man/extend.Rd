@@ -11,11 +11,13 @@ extend(
   val = NULL,
   path = NULL,
   type = c("level", "growth", "chain"),
+  growth = c("pca", "pcy"),
+  method = c("ratio", "diff"),
   interp = c("linear", "stine"),
   last = NULL,
   hold_last = TRUE,
-  join = c("ratio", "shift"),
-  smooth = NULL
+  smooth = NULL,
+  join = NULL
 )
 }
 \arguments{
@@ -35,11 +37,18 @@ numeric vector whose names are the dates (\code{c("2026Q4" = 4.3)}), with
 the anchors}
 
 \item{path}{instead of anchors, a series that sets the forecast: the
-level (\code{type = "level"}), the annualized growth rate in percent
-(\code{type = "growth"}), or a level whose growth continues x
-(\code{type = "chain"})}
+level (\code{type = "level"}), the growth rate in percent (\code{type = "growth"}),
+or a level whose growth or changes continue x (\code{type = "chain"})}
 
 \item{type}{"level", "growth" or "chain" (see details)}
+
+\item{growth}{for \code{type = "growth"}, how anchors and \code{path} state growth:
+"pca" (default), the period-on-period rate annualized (4.0 for a
+quarter that grew 1\%); "pcy", the year-over-year rate}
+
+\item{method}{for \code{type = "chain"}: "ratio" (default) continues x with
+the growth of \code{path}, for levels; "diff" with its changes, for rates
+(the same words as in \code{\link[=chain]{chain()}})}
 
 \item{interp}{interpolation between anchors: "linear" or "stine" (the
 Stineman spline: smooth turns without overshooting)}
@@ -51,14 +60,12 @@ observation of x). Values of x after \code{last} are replaced.}
 the bank. If FALSE, the interpolation itself runs to the last anchor and
 its value is then carried forward.}
 
-\item{join}{for \code{type = "chain"}: "ratio" (default) uses the growth of
-\code{path} as it is; "shift" first moves \code{path} by a constant so that it
-meets x at \code{last}, then uses the growth of the shifted path}
-
 \item{smooth}{NULL, or a list with \code{span} and optionally \code{from} and \code{to}:
 smooth the forecast with loess before compounding (the period growth
 rate for "growth" and "chain", the level for "level"). \code{from} defaults
 to the first period after \code{last}.}
+
+\item{join}{deprecated: use \code{method} ("shift" is now "diff")}
 }
 \value{
 an object of the same type as x, from the bank start to the bank
@@ -66,25 +73,50 @@ end (\code{getOption("fcutils.bnk_start")}, \code{getOption("fcutils.bnk_end")})
 empty before x's first observation
 }
 \description{
-Continues a single series from \code{last} to the end of the bank, in one of
-three ways: the series runs through anchor values (\code{type = "level"}), its
-growth rate runs through anchors and the level is compounded
-(\code{type = "growth"}), or it continues with the growth of another series
+Forecasts a single series: continues it from \code{last} to the end of the
+bank, in one of three ways. The series runs through anchor values
+(\code{type = "level"}); its growth rate runs through anchors, or follows a
+growth path, and the level is compounded (\code{type = "growth"}); or it
+continues with the growth or the changes of another series
 (\code{type = "chain"}).
 }
 \details{
+To join two sources of the same data, several series at once, or to
+extend a series back in time, use \code{\link[=chain]{chain()}} instead. See "Which function"
+below.
 \itemize{
 \item \code{type = "level"}: history up to \code{last}, then the anchors, with the gaps
 interpolated, including between the last history value and the first
 anchor. Anchors dated at or before \code{last} are dropped with a message,
 since history takes precedence.
-\item \code{type = "growth"}: the same applied to the annualized growth rate of x;
-the level is then compounded from its value at \code{last}. Growth is
-annualized at the series' frequency (4 for quarters, 12 for months).
-\item \code{type = "chain"}: the level of \code{path} after \code{last}, scaled to meet x.
+\item \code{type = "growth"}: the same applied to the growth rate of x; the level
+is then compounded from history. With \code{growth = "pca"} the line starts
+from the annualized growth at \code{last} and each period grows from the one
+before (annualized at the series' frequency: 4 for quarters, 12 for
+months). With \code{growth = "pcy"} it starts from the year-over-year growth
+at \code{last}, and each period grows from the same period a year earlier;
+this needs a full year of history and repeats last year's
+within-year pattern.
+\item \code{type = "chain"}: \code{path} after \code{last}, joined to x at \code{last}: scaled to
+meet it (\code{method = "ratio"}) or shifted by a constant
+(\code{method = "diff"}).
 }
 
 Linear interpolation weighs the gaps by time, the spline by position.
+
+\strong{Which function.} All of these continue a series from data:
+\itemize{
+\item levels at some dates: \code{extend(type = "level")};
+\item growth rates at some dates, or a growth path, period-on-period or
+year-over-year: \code{extend(type = "growth", growth = "pca"/"pcy")};
+\item another series' path (a projection, a model forecast), for one series:
+\code{extend(type = "chain", method = "ratio"/"diff")};
+\item two sources of the same data to join, many series at once (each with
+its own method), or a series to extend back in time: \code{\link[=chain]{chain()}}.
+}
+
+extend() returns the series on the bank; chain() keeps the span of its
+inputs.
 
 Anchors can be given in four ways: formulas (\code{2026.4 ~ 4.4}), \code{at} and
 \code{val}, a named vector (\code{val = c("2026Q4" = 4.4)}), or a series. Decimal
@@ -105,7 +137,12 @@ extend(ur, val = c("2026Q4" = 4.4, "2028Q4" = 4.0), interp = "stine")
 # a price level whose annualized inflation falls from 3\% to 2\%
 cpi <- make_xts(2024.1, val = 100 * 1.0075^(0:6))
 extend(cpi, at = c(2026.1, 2027.4), val = c(3, 2), type = "growth")
+# the same with year-over-year inflation
+extend(cpi, at = c(2026.1, 2027.4), val = c(3, 2), type = "growth", growth = "pcy")
 # history continued with the growth of a projection on another level
 proj <- make_xts(2020.1, val = 50 * 1.01^(0:63))
 extend(cpi, path = proj, type = "chain")
+# a rate continued with the changes of a projection
+extend(ur, path = make_xts(2024.1, val = seq(4, 5, length.out = 20)),
+  type = "chain", method = "diff")
 }

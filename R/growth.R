@@ -194,7 +194,12 @@ cagr <- function(x) {
 }
 
 
-#' Extend a series using year over year growth
+#' Extend a series using year over year growth (deprecated)
+#'
+#' Deprecated in fcutils 0.1.5: use
+#' `extend(hist_lev, path = yoy_gr, type = "growth", growth = "pcy")`, which
+#' does the same, puts the result on the bank, and takes year-over-year
+#' anchors as well as a path. yoy_to_lev() still works but warns.
 #'
 #' @param yoy_gr ts-boxable object containing year over year growth rates
 #' @param hist_lev ts-boxable object containing the history in levels
@@ -224,6 +229,12 @@ cagr <- function(x) {
 #' res2 <- yoy_to_lev(gr, lev |> dplyr::filter(time <= "2010-01-01"), 1/8)
 #' tsbox::ts_plot(lev, res1, res2)
 yoy_to_lev <- function(yoy_gr, hist_lev, smooth_span = 0) {
+  .Deprecated(
+    msg = paste(
+      "yoy_to_lev() is deprecated; use",
+      "extend(hist_lev, path = yoy_gr, type = \"growth\", growth = \"pcy\")."
+    )
+  )
   # convert to long format and return additional details
   yoy_gr_mod <- conv_long(yoy_gr, ser_info = TRUE)
   hist_lev_mod <- conv_long(hist_lev, ser_info = TRUE)

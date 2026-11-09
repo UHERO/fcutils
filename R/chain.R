@@ -76,6 +76,24 @@ chain_1 <- function(a, b, method, direction) {
   dplyr::arrange(out, .data$time)
 }
 
+#' Method for each series (used by `chain()`)
+#'
+#' @param method one of "ratio", "diff" (or the default vector), or a named
+#'   vector of them by series name
+#' @return a function of a series name returning its method
+#' @noRd
+chain_methods <- function(method) {
+  if (is.null(names(method))) {
+    method <- match.arg(method, c("ratio", "diff"))
+    return(function(id) method)
+  }
+  bad <- setdiff(method, c("ratio", "diff"))
+  if (length(bad) > 0) {
+    stop('chain(): method must be "ratio" or "diff"', call. = FALSE)
+  }
+  function(id) if (id %in% names(method)) method[[id]] else "ratio"
+}
+
 #' Extend "ts-boxable" objects by chaining (extension of `tsbox::ts_chain()`)
 #'
 #' @param x a "ts-boxable" object to be extended
@@ -84,7 +102,9 @@ chain_1 <- function(a, b, method, direction) {
 #' in which case all series common to x and y are extended)
 #' @param method "ratio" (default) scales y so that it meets x, which keeps
 #' y's growth rates (for levels); "diff" shifts y by a constant, which keeps
-#' y's changes (for rates such as the unemployment rate)
+#' y's changes (for rates such as the unemployment rate). Either one method
+#' for all series, or a named vector giving the method by series name in x,
+#' `c(UR_AT_US = "diff", FFR_AT_US = "diff")`; series not named use "ratio".
 #' @param direction "both" (default) extends x at both ends, "forward" only
 #' after its last observation, "backward" only before its first
 #' @param match how series in x find their partner in y: "name" (default)
@@ -97,7 +117,11 @@ chain_1 <- function(a, b, method, direction) {
 #' @return object of the same type as the input with extended series
 #' @export
 #'
-#' @details This function performs a similar operation to `tsbox::ts_chain()`,
+#' @details chain() joins data: two sources of the same series, or two banks.
+#' To forecast one series from assumptions or a path, use [extend()]; see
+#' "Which function" there.
+#'
+#' This function performs a similar operation to `tsbox::ts_chain()`,
 #' but for multiple series. x and y are linked at x's first observation (going
 #' backward) and its last (going forward); y needs a value at those dates.
 #' The default, method "ratio" with direction "both", is `tsbox::ts_chain()`.
@@ -117,6 +141,8 @@ chain_1 <- function(a, b, method, direction) {
 #' hist <- make_xts(2020, val = tibble::tibble(UR_A = c(8.1, 5.4, 3.6), LF_A = c(160, 161, 164)))
 #' fcst <- make_xts(2022, val = tibble::tibble(UR_SOLA = c(3.6, 3.8, 4.1), LF_SOLA = c(165, 166, 168)))
 #' chain(hist, fcst, match = "stem", direction = "forward")
+#' # a method per series: changes for the rate, growth for the level
+#' chain(hist, fcst, match = "stem", direction = "forward", method = c(UR_A = "diff"))
 chain <- function(
   x,
   y,
@@ -126,12 +152,20 @@ chain <- function(
   match = c("name", "stem"),
   verbose = TRUE
 ) {
-  method <- match.arg(method)
+  method_of <- chain_methods(method)
   direction <- match.arg(direction)
   match <- match.arg(match)
   # doubles throughout: chained values replace x's in place, which fails
   # for an integer column
   x_wide <- conv_wide(x) %>% dplyr::mutate(dplyr::across(-"time", as.double))
+  unknown <- setdiff(names(method), colnames(x_wide))
+  if (length(unknown) > 0) {
+    stop(
+      "chain(): method names series not in x: ",
+      stringr::str_flatten(unknown, collapse = ", "),
+      call. = FALSE
+    )
+  }
   y_wide <- conv_wide(y) %>% dplyr::mutate(dplyr::across(-"time", as.double))
   y_wide <- match_names(x_wide, y_wide, match)
 
@@ -189,7 +223,7 @@ chain <- function(
         value = chained_x[[y_col]]
       ) %>%
         tidyr::drop_na(),
-      method = method,
+      method = method_of(stringr::str_remove(x_col, "\\.x$")),
       direction = direction
     )
     chained_x[[x_col]] <- chained$value[match(chained_x$time, chained$time)]

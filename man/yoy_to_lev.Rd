@@ -2,7 +2,7 @@
 % Please edit documentation in R/growth.R
 \name{yoy_to_lev}
 \alias{yoy_to_lev}
-\title{Extend a series using year over year growth}
+\title{Extend a series using year over year growth (deprecated)}
 \usage{
 yoy_to_lev(yoy_gr, hist_lev, smooth_span = 0)
 }
@@ -20,7 +20,10 @@ trigger warning, if time series too short.}
 object of the same type as hist_lev extended with year over year growth
 }
 \description{
-Extend a series using year over year growth
+Deprecated in fcutils 0.1.5: use
+\code{extend(hist_lev, path = yoy_gr, type = "growth", growth = "pcy")}, which
+does the same, puts the result on the bank, and takes year-over-year
+anchors as well as a path. yoy_to_lev() still works but warns.
 }
 \details{
 This function only works for univariate time series and requires

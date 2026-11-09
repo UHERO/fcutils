@@ -24,7 +24,9 @@ in which case all series common to x and y are extended)}
 
 \item{method}{"ratio" (default) scales y so that it meets x, which keeps
 y's growth rates (for levels); "diff" shifts y by a constant, which keeps
-y's changes (for rates such as the unemployment rate)}
+y's changes (for rates such as the unemployment rate). Either one method
+for all series, or a named vector giving the method by series name in x,
+\code{c(UR_AT_US = "diff", FFR_AT_US = "diff")}; series not named use "ratio".}
 
 \item{direction}{"both" (default) extends x at both ends, "forward" only
 after its last observation, "backward" only before its first}
@@ -44,6 +46,10 @@ object of the same type as the input with extended series
 Extend "ts-boxable" objects by chaining (extension of \code{tsbox::ts_chain()})
 }
 \details{
+chain() joins data: two sources of the same series, or two banks.
+To forecast one series from assumptions or a path, use \code{\link[=extend]{extend()}}; see
+"Which function" there.
+
 This function performs a similar operation to \code{tsbox::ts_chain()},
 but for multiple series. x and y are linked at x's first observation (going
 backward) and its last (going forward); y needs a value at those dates.
@@ -64,4 +70,6 @@ chain(hist, fcst, method = "diff", direction = "forward")
 hist <- make_xts(2020, val = tibble::tibble(UR_A = c(8.1, 5.4, 3.6), LF_A = c(160, 161, 164)))
 fcst <- make_xts(2022, val = tibble::tibble(UR_SOLA = c(3.6, 3.8, 4.1), LF_SOLA = c(165, 166, 168)))
 chain(hist, fcst, match = "stem", direction = "forward")
+# a method per series: changes for the rate, growth for the level
+chain(hist, fcst, match = "stem", direction = "forward", method = c(UR_A = "diff"))
 }

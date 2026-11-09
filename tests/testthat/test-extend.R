@@ -62,14 +62,14 @@ test_that("type = 'growth' is anchor_growth()", {
   same_values(out, r$expected$cpi_growth)
 })
 
-test_that("type = 'chain', join = 'shift', smoothed, is extsol's N_AT_JP path", {
+test_that("type = 'chain', method = 'diff', smoothed, is extsol's N_AT_JP path", {
   ref_bank()
   r <- ref()
   out <- extend(
     r$inputs$n_jp,
     path = r$inputs$un_q,
     type = "chain",
-    join = "shift",
+    method = "diff",
     smooth = list(span = 0.2)
   )
   same_values(out, r$expected$n_shift_smooth)
@@ -136,4 +136,26 @@ test_that("a monthly series refuses decimal dates", {
   expect_error(extend(m, at = 2026.1, val = 1), "monthly")
   out <- extend(m, "2026M10" ~ 21)
   expect_equal(as.numeric(out["2026-10-01"]), 21)
+})
+
+test_that("growth = 'pcy' compounds year-over-year growth", {
+  q <- conv_xts(quarterly_data_example)
+  x <- q$E_NF_HI[p(, 2019.4)]
+  # actual y/y growth rebuilds the actual history
+  e <- extend(x, path = tsbox::ts_pcy(q$E_NF_HI), type = "growth", growth = "pcy")
+  expect_equal(as.numeric(e[p(2020.1, 2025.1)]), as.numeric(q$E_NF_HI[p(2020.1, 2025.1)]))
+  # y/y anchors are hit and the last is held
+  a <- tsbox::ts_pcy(extend(x, 2021.4 ~ 3, 2023.4 ~ 1, type = "growth", growth = "pcy"))
+  expect_equal(as.numeric(a[c("2021-10-01", "2023-10-01", "2030-10-01")]), c(3, 1, 1))
+  expect_error(extend(x, 2021.4 ~ 3, growth = "pcy"), "is for type")
+})
+
+test_that("method = 'diff' replaces join = 'shift', which warns", {
+  x <- conv_xts(quarterly_data_example)$E_NF_HI / 100
+  pth <- make_xts(2015.1, val = seq(4, 6, length.out = 84))
+  expect_warning(
+    old <- extend(x, path = pth, type = "chain", join = "shift"),
+    "deprecated"
+  )
+  expect_identical(extend(x, path = pth, type = "chain", method = "diff"), old)
 })
