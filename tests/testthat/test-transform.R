@@ -22,6 +22,17 @@ test_that("span() today", {
   ))
 })
 
+test_that("span() without dates fits x to the bank", {
+  withr::local_options(
+    fcutils.bnk_start = as.Date("2000-01-01"),
+    fcutils.bnk_end = as.Date("2040-12-31")
+  )
+  fitted <- span(q_xts)
+  expect_equal(zoo::index(fitted)[c(1, nrow(fitted))], as.Date(c("2000-01-01", "2040-10-01")))
+  expect_equal(fitted[zoo::index(q_xts)[zoo::index(q_xts) >= "2000-01-01"]], q_xts["2000/"], ignore_attr = TRUE)
+  expect_true(all(is.na(fitted["2030/"])))
+})
+
 test_that("pcmp() today", {
   snap(list(
     pcmp(q_wide, 20),

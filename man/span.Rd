@@ -18,12 +18,18 @@ span(x, start = NULL, end = NULL, template = NULL, extend = FALSE)
 \item{extend}{logical. If true, the start and end values are allowed to extend the series (by adding NA values).}
 }
 \value{
-filtered object of the same type as the input
+filtered object of the same type as the input. Without \code{start},
+\code{end} and \code{template}, x is fitted to the bank: cut at the bank's start
+and end and padded with NA to both (\code{extend} is ignored).
 }
 \description{
 Specify span of time series (wrapper around tsbox::ts_span())
 }
 \examples{
+options(fcutils.bnk_start = as.Date("1990-01-01"),
+  fcutils.bnk_end = as.Date("2030-12-31"))
+quarterly_data_example |>
+  span() # 1990Q1 to 2030Q4
 quarterly_data_example |>
   span(2010.1)
 quarterly_data_example |>

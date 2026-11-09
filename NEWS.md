@@ -11,6 +11,8 @@
 * `yoy_to_lev()` is deprecated; use
   `extend(hist_lev, path = yoy_gr, type = "growth", growth = "pcy")`, which
   gives the same result.
+* `span(x)` without dates fits x to the bank: it cuts x at the bank's start
+  and end and pads it with NA to both.
 * The help pages of `extend()` and `chain()`, and the "Building a forecast"
   article, say which to use when.
 * `agg()` takes `partial`, to estimate the last period of a series when only
