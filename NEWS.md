@@ -44,8 +44,9 @@
   period or ignored without a message.
 * `extend(hold_last = FALSE)` carries the last anchor forward with
   `interp = "linear"`, as it did with `"stine"`; the values after it were NA.
-* `write_tsd()` writes an NA inside a series as the TSD missing value. It
-  dropped it, which moved every later value one period early.
+* `write_tsd()` writes an NA inside a series as the TSD missing value,
+  1.000000E+0015, as the older `write_tsd()` in forecastr's util_funs.R
+  does. It dropped it, which moved every later value one period early.
 * `plot_fc(table_start = NULL, table_end = NULL)` shows the whole data, as
   documented; it stopped with an error.
 * `rename_udaman()` takes the location just before the frequency, so
