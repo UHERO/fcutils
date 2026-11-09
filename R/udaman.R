@@ -249,7 +249,7 @@ get_series_exp <- function(
 #' Construct a series name from variable components and retrieve the series
 #'
 #' @param ser_in a name with glue expressions in braces, such as
-#'   "E{ser_i}_{cnty_i}". The expressions are evaluated in the global
+#'   `"E{ser_i}_{cnty_i}"`. The expressions are evaluated in the global
 #'   environment.
 #' @param env environment in which the resulting name is looked up
 #'
