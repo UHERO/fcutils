@@ -79,6 +79,18 @@ test_that("interpol() today", {
   ))
 })
 
+test_that("interpol() without a pattern fills inside gaps, linear or spline", {
+  x <- make_xts("2025M1", val = c(NA, 1, 1.2, 2, NA, NA, 8, 8.5, NA))
+  lin <- as.numeric(interpol(x))
+  expect_equal(lin, c(NA, 1, 1.2, 2, 4, 6, 8, 8.5, NA))
+  sti <- as.numeric(interpol(x, interp = "stine"))
+  expect_equal(sti[c(2:4, 7:8)], c(1, 1.2, 2, 8, 8.5))
+  expect_true(is.na(sti[1]) && is.na(sti[9]))
+  expect_equal(sti[5:6], stinepack::stinterp(c(2, 3, 4, 7, 8), c(1, 1.2, 2, 8, 8.5), 5:6)$y)
+  expect_false(isTRUE(all.equal(sti[5:6], lin[5:6])))
+  expect_error(interpol(x, x, interp = "stine"), "only without a pattern")
+})
+
 test_that("chain() today", {
   early <- dplyr::filter(q_wide, time < as.Date("2000-01-01"))
   snap(list(

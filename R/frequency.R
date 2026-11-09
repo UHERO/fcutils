@@ -97,10 +97,14 @@ interpol_1 <- function(vec_incomplete, vec_pattern) {
 #'
 #' @param incomplete a ts-boxable object with NAs
 #' @param pattern a ts-boxable object no missing values, or NULL (default)
-#'   to fill the gaps inside each series along a straight line
+#'   to fill the gaps inside each series by `interp`
 #' @param extend_range logical. If TRUE, uses a full_join to potentially extend
 #'   the date range. If FALSE (default), uses a left_join to only fill NAs
 #'   within the original date range.
+#' @param interp without a pattern: "linear" (default) fills a gap along a
+#'   straight line, "stine" along a Stineman spline through the observed
+#'   values, which bends smoothly without overshooting them (as in
+#'   [extend()]). Not used with a pattern.
 #'
 #' @return interpolated object of the same type as the input
 #' @export
@@ -108,7 +112,7 @@ interpol_1 <- function(vec_incomplete, vec_pattern) {
 #' @details the function aligns two sets of time series by date and then
 #' interpolates the first set using the second set as a pattern. Without a
 #' pattern, missing values between a series' first and last observation are
-#' filled linearly (by position, so each period counts the same); missing
+#' filled by `interp` (by position, so each period counts the same); missing
 #' dates in a regular series are added first, and leading and trailing gaps
 #' stay empty. extend_range has no effect then.
 #' The time-span of the pattern has to match or be larger
@@ -118,6 +122,9 @@ interpol_1 <- function(vec_incomplete, vec_pattern) {
 #' # straight-line fill of an internal gap
 #' make_xts("2025M7", val = c(1, 2, NA, 4, 5)) |>
 #'   interpol()
+#' # a smooth fill along the curve of the neighbouring values
+#' make_xts("2025M7", val = c(1, 1.2, 2, NA, NA, 8, 8.5)) |>
+#'   interpol(interp = "stine")
 #' monthly_data_example |>
 #'   dplyr::filter(time > "2002-01-01") |>
 #'   tsbox::ts_long() |>
@@ -152,10 +159,15 @@ interpol_1 <- function(vec_incomplete, vec_pattern) {
 interpol <- function(
   incomplete,
   pattern = NULL,
-  extend_range = FALSE
+  extend_range = FALSE,
+  interp = c("linear", "stine")
 ) {
+  interp <- match.arg(interp)
   if (is.null(pattern)) {
-    return(interpol_linear(incomplete))
+    return(interpol_gaps(incomplete, interp))
+  }
+  if (interp != "linear") {
+    stop("interpol(): interp applies only without a pattern", call. = FALSE)
   }
   # convert to wide format and return additional details
   incomplete_mod <- conv_long(incomplete, ser_info = TRUE)
@@ -231,29 +243,38 @@ interpol <- function(
 }
 
 
-#' Fill gaps inside series by linear interpolation (`interpol()` without a
-#' pattern)
+#' Fill gaps inside series (`interpol()` without a pattern)
 #'
 #' @param x ts-boxable object
+#' @param interp "linear" or "stine" (Stineman spline)
 #'
 #' @return object of the same type as x; missing values between the first
-#'   and last observation of each series are filled along a straight line,
-#'   leading and trailing ones are kept
+#'   and last observation of each series are filled, leading and trailing
+#'   ones are kept
 #' @noRd
-interpol_linear <- function(x) {
+interpol_gaps <- function(x, interp) {
+  fill <- function(v) {
+    pos <- seq_along(v)
+    have <- !is.na(v)
+    if (sum(have) < 2) {
+      return(v)
+    }
+    inside <- !have & pos > min(pos[have]) & pos < max(pos[have])
+    if (!any(inside)) {
+      return(v)
+    }
+    v[inside] <- if (interp == "linear") {
+      stats::approx(pos[have], v[have], xout = pos[inside])$y
+    } else {
+      stinepack::stinterp(pos[have], v[have], pos[inside])$y
+    }
+    v
+  }
   x_mod <- conv_long(x, ser_info = TRUE)
   filled <- x_mod %>%
     tsbox::ts_regular() %>%
     dplyr::group_by(.data$id) %>%
-    dplyr::mutate(value = {
-      pos <- seq_along(.data$value)
-      have <- !is.na(.data$value)
-      if (sum(have) < 2) {
-        .data$value
-      } else {
-        stats::approx(pos[have], .data$value[have], xout = pos, rule = 1)$y
-      }
-    }) %>%
+    dplyr::mutate(value = fill(.data$value)) %>%
     dplyr::ungroup()
   reclass(filled, x_mod, x)
 }

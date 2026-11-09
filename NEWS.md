@@ -11,6 +11,8 @@
 * `yoy_to_lev()` is deprecated; use
   `extend(hist_lev, path = yoy_gr, type = "growth", growth = "pcy")`, which
   gives the same result.
+* `interpol()` takes `interp = "stine"`: without a pattern, it fills gaps
+  inside a series along a Stineman spline instead of a straight line.
 * `span(x)` without dates fits x to the bank: it cuts x at the bank's start
   and end and pads it with NA to both.
 * The help pages of `extend()` and `chain()`, and the "Building a forecast"
