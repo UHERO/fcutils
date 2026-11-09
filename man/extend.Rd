@@ -16,8 +16,7 @@ extend(
   interp = c("linear", "stine"),
   last = NULL,
   hold_last = TRUE,
-  smooth = NULL,
-  join = NULL
+  smooth = NULL
 )
 }
 \arguments{
@@ -64,8 +63,6 @@ its value is then carried forward.}
 smooth the forecast with loess before compounding (the period growth
 rate for "growth" and "chain", the level for "level"). \code{from} defaults
 to the first period after \code{last}.}
-
-\item{join}{deprecated: use \code{method} ("shift" is now "diff")}
 }
 \value{
 an object of the same type as x, from the bank start to the bank

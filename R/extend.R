@@ -43,7 +43,6 @@
 #'   smooth the forecast with loess before compounding (the period growth
 #'   rate for "growth" and "chain", the level for "level"). `from` defaults
 #'   to the first period after `last`.
-#' @param join deprecated: use `method` ("shift" is now "diff")
 #'
 #' @return an object of the same type as x, from the bank start to the bank
 #'   end (`getOption("fcutils.bnk_start")`, `getOption("fcutils.bnk_end")`),
@@ -120,21 +119,12 @@ extend <- function(
   interp = c("linear", "stine"),
   last = NULL,
   hold_last = TRUE,
-  smooth = NULL,
-  join = NULL
+  smooth = NULL
 ) {
   type <- match.arg(type)
   growth <- match.arg(growth)
   method <- match.arg(method)
   interp <- match.arg(interp)
-  if (!is.null(join)) {
-    join <- match.arg(join, c("ratio", "shift"))
-    warning(
-      "extend(): `join` is deprecated; use `method` (\"shift\" is now \"diff\").",
-      call. = FALSE
-    )
-    method <- if (join == "shift") "diff" else "ratio"
-  }
   if (growth == "pcy" && type != "growth") {
     stop("extend(): growth = \"pcy\" is for type = \"growth\"", call. = FALSE)
   }

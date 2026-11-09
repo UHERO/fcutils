@@ -150,12 +150,12 @@ test_that("growth = 'pcy' compounds year-over-year growth", {
   expect_error(extend(x, 2021.4 ~ 3, growth = "pcy"), "is for type")
 })
 
-test_that("method = 'diff' replaces join = 'shift', which warns", {
+test_that("method = 'diff' keeps the gap to the path constant in points", {
   x <- conv_xts(quarterly_data_example)$E_NF_HI / 100
   pth <- make_xts(2015.1, val = seq(4, 6, length.out = 84))
-  expect_warning(
-    old <- extend(x, path = pth, type = "chain", join = "shift"),
-    "deprecated"
-  )
-  expect_identical(extend(x, path = pth, type = "chain", method = "diff"), old)
+  fc <- extend(x, path = pth, type = "chain", method = "diff")
+  after <- p(2025.2, 2035.4)
+  gap <- as.numeric(fc[after]) - as.numeric(pth[after])
+  expect_equal(gap, rep(gap[1], length(gap)))
+  expect_equal(gap[1], as.numeric(x["2025-01-01"] - pth["2025-01-01"]))
 })

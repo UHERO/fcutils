@@ -4,8 +4,8 @@
   year-over-year rates, each period grown from the same period a year
   earlier. The default, `"pca"`, is the annualized rate as before.
 * `extend(type = "chain")` takes `method = "ratio"` or `"diff"`, the words
-  `chain()` uses. `join` is deprecated and warns; `join = "shift"` is now
-  `method = "diff"`, with the same result.
+  `chain()` uses. It replaces `join`, which is removed; `join = "shift"` is
+  now `method = "diff"`, with the same result.
 * `chain()` takes a method per series: `method = c(UR = "diff")` continues UR
   with its changes and every other series with its growth.
 * `yoy_to_lev()` is deprecated; use
