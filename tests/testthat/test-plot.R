@@ -38,3 +38,9 @@ test_that("save_plot_list() saves without pandoc and says so", {
   expect_true(file.exists(f))
   expect_true(dir.exists(file.path(dirname(f), sub("\\.html$", "_files", basename(f)))))
 })
+
+test_that("plot_2ax() plots a single series on the left axis", {
+  one <- conv_xts(quarterly_data_example)$E_NF_HI
+  expect_s3_class(plot_2ax(one), "shiny.tag.list")
+  expect_s3_class(plot_2ax(conv_xts(quarterly_data_example)[, 1:3]), "shiny.tag.list")
+})

@@ -12,7 +12,8 @@ find_end(x, last_day = FALSE)
 \item{last_day}{should the last day of period be returned (default: FALSE)}
 }
 \value{
-date associated with last observation
+a Date vector with one date per series, in the order of the series
+in x, without names
 }
 \description{
 Find the date of the last observation (NAs are dropped)

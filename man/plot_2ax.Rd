@@ -13,7 +13,9 @@ plot_2ax(
 )
 }
 \arguments{
-\item{x}{ts-boxable object to plot (e.g. time series of history, oldsol, sol)}
+\item{x}{ts-boxable object to plot. The first series goes on the left
+axis and all others on the right axis; a single series gets the left
+axis only.}
 
 \item{rng_start}{start of zoom range ("YYYY-MM-DD")}
 
@@ -24,7 +26,7 @@ plot_2ax(
 \item{width}{width of a single panel (px)}
 }
 \value{
-a dygraph plot
+a browsable htmltools tag list holding the dygraph plot
 }
 \description{
 Interactive lineplot with two axes

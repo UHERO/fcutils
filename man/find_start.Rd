@@ -10,7 +10,8 @@ find_start(x)
 \item{x}{ts-boxable object}
 }
 \value{
-dates associated with first observation
+a Date vector with one date per series, in the order of the series
+in x, without names
 }
 \description{
 Find the date of the first observation (NAs are dropped)

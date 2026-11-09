@@ -2,7 +2,7 @@
 % Please edit documentation in R/growth.R
 \name{cagr}
 \alias{cagr}
-\title{Calculate compund annual growth}
+\title{Calculate compound annual growth}
 \usage{
 cagr(x)
 }
@@ -10,11 +10,13 @@ cagr(x)
 \item{x}{ts-boxable object for which growth is calculated between first and last period}
 }
 \value{
-a tibble with a single row containing the compound annual growth between
-the first and last period of x (in percent)
+a tibble with one row: \code{years_elapsed}, the years between the
+first and last dates in x, and for each series its compound annual growth
+over that span (in percent). A series that starts later or ends earlier
+than the others gets NA.
 }
 \description{
-Calculate compund annual growth
+Calculate compound annual growth
 }
 \examples{
 quarterly_data_example |>

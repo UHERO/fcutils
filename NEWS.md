@@ -11,8 +11,14 @@
 * `yoy_to_lev()` is deprecated; use
   `extend(hist_lev, path = yoy_gr, type = "growth", growth = "pcy")`, which
   gives the same result.
+* `interpol()` takes `match`: "position" (default, as before) pairs series
+  with pattern series in order; "name" and "stem" pair them by name, as in
+  `chain()`.
 * `interpol()` takes `interp = "stine"`: without a pattern, it fills gaps
   inside a series along a Stineman spline instead of a straight line.
+* `addf()` takes `interp = "stine"` with points given as formulas: a smooth
+  curve through the points that eases off zero and back, the same curve
+  `extend(interp = "stine")` draws from a zero history.
 * `span(x)` without dates fits x to the bank: it cuts x at the bank's start
   and end and pads it with NA to both.
 * The help pages of `extend()` and `chain()`, and the "Building a forecast"
@@ -25,6 +31,48 @@
   far back `"growth"` looks: one target period by default, or for example
   `"1 year"`. The default, `"drop"`, leaves results unchanged. The "Growth
   rates, tables and plots" article has an example.
+
+## Bug fixes
+
+* `extend(type = "chain", method = "diff")` follows the shifted path as is.
+  It compounded the path's growth, which lost the sign of a path that
+  reaches zero or below and gave NA after a history ending at zero. With
+  `smooth`, or with `method = "ratio"`, a path at or below zero is now an
+  error.
+* `extend()` stops on an anchor that is not the first day of a period within
+  the bank, as `addf()` does. Such an anchor used to be moved to the next
+  period or ignored without a message.
+* `extend(hold_last = FALSE)` carries the last anchor forward with
+  `interp = "linear"`, as it did with `"stine"`; the values after it were NA.
+* `write_tsd()` writes an NA inside a series as the TSD missing value,
+  1.000000E+0015, as the older `write_tsd()` in forecastr's util_funs.R
+  does. It dropped it, which moved every later value one period early.
+* `plot_fc(table_start = NULL, table_end = NULL)` shows the whole data, as
+  documented; it stopped with an error.
+* `rename_udaman()` takes the location just before the frequency, so
+  `SH_JP__HON_M` becomes `SH_JP@HON.M` (was `SH_JP@JP.M`).
+* `extract_data()` renames only the AR lag columns (`ar1`, `ar2`, ...); it
+  also changed "ar" inside other regressor names.
+
+* `span()` includes an end year, quarter or month in full, as `p()` does:
+  on monthly data `span(x, 2010, 2010)` keeps all of 2010 (it kept only
+  January), and on quarterly data all four quarters (it kept only Q1). An
+  end given as a day is unchanged.
+* `plot_2ax()` plots a single series on the left axis; it stopped with an
+  error.
+* `index_to_base()` needs `base_per`. Its default, today's date, failed for
+  any data that end before today.
+
+## Documentation
+
+* Help pages checked against the code. Among the corrections: `pcmp(x, 4)`
+  is the average quarterly growth over a year (year on year is
+  `pcmp(x, 4, 4)`); `yoy_gr = FALSE` in the plots is growth on the previous
+  period, not annualized; `index_to_base()` with one date sets that period,
+  not the year, to the base; `span()` reads an end year or quarter as its
+  first day; `interpol()` matches pattern series by position; `%+=%` binds
+  more tightly than `/`; `set_udaman_token()` sets the token for the session
+  only. Examples print only the rows that matter.
 
 # fcutils 0.1.4
 

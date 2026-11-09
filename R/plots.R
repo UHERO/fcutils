@@ -8,10 +8,11 @@
 #' @param rng_end end of the zoom range ("YYYY-MM-DD")
 #' @param height height of a single panel (px)
 #' @param width width of a single panel (px)
-#' @param yoy_gr year-over-year (default) or annualized growth
+#' @param yoy_gr TRUE (default) for growth on the same period a year earlier,
+#'   FALSE for growth on the previous period
 #' @param gr_1 only show growth for the first series (default)
 #'
-#' @return a dygraph plot
+#' @return a browsable htmltools tag list holding the dygraph plots
 #' @export
 #'
 #' @examples
@@ -106,13 +107,15 @@ plot_1 <- function(
 
 #' Interactive lineplot with two axes
 #'
-#' @param x ts-boxable object to plot (e.g. time series of history, oldsol, sol)
+#' @param x ts-boxable object to plot. The first series goes on the left
+#'   axis and all others on the right axis; a single series gets the left
+#'   axis only.
 #' @param rng_start start of zoom range ("YYYY-MM-DD")
 #' @param rng_end end of the zoom range ("YYYY-MM-DD")
 #' @param height height of a single panel (px)
 #' @param width width of a single panel (px)
 #'
-#' @return a dygraph plot
+#' @return a browsable htmltools tag list holding the dygraph plot
 #' @export
 #'
 #' @examples
@@ -145,20 +148,24 @@ plot_2ax <- function(
       width = width
     ) %>%
     dygraphs::dyAxis("y", label = "series 1") %>%
-    dygraphs::dyAxis(
-      "y2",
-      label = "series 2+",
-      drawGrid = FALSE,
-      independentTicks = TRUE
-    ) %>%
+    dygraphs::dySeries(ser_names[1], strokeWidth = 2, axis = "y") %>%
     {
-      dygraphs::dySeries(., ser_names[1], strokeWidth = 2, axis = "y")
-    } %>%
-    {
-      if (length(ser_names[-1]) > 1) {
-        dygraphs::dyGroup(., ser_names[-1], strokeWidth = 2, axis = "y2")
+      rest <- ser_names[-1]
+      if (length(rest) == 0) {
+        .
       } else {
-        dygraphs::dySeries(., ser_names[-1], strokeWidth = 2, axis = "y2")
+        g <- dygraphs::dyAxis(
+          .,
+          "y2",
+          label = "series 2+",
+          drawGrid = FALSE,
+          independentTicks = TRUE
+        )
+        if (length(rest) > 1) {
+          dygraphs::dyGroup(g, rest, strokeWidth = 2, axis = "y2")
+        } else {
+          dygraphs::dySeries(g, rest, strokeWidth = 2, axis = "y2")
+        }
       }
     } %>%
     # dygraphs::dyOptions(colors = RColorBrewer::brewer.pal(length(ser_names), "Set1")) %>%
@@ -182,19 +189,24 @@ plot_2ax <- function(
 
 #' Interactive plot with level and growth rate for forecast series
 #'
-#' @param x ts-boxable object to plot (min 1, max 3 time series) (e.g. current fcst, old fcst, history)
+#' @param x ts-boxable object to plot (e.g. current fcst, old fcst, history).
+#'   The first three series get their own line styles; later ones get the
+#'   default style.
 #' @param rng_start start of zoom range ("YYYY-MM-DD")
 #' @param rng_end end of the zoom range ("YYYY-MM-DD")
 #' @param add_table should a data table be appended to the plot? (default = TRUE)
-#' @param table_start start of table range ("YYYY-MM-DD") (all data = NULL, default = rng_start)
-#' @param table_end end of table range ("YYYY-MM-DD") (all data = NULL, default = rng_end)
+#' @param table_start start of table range ("YYYY-MM-DD"; default rng_start;
+#'   NULL for the start of the data)
+#' @param table_end end of table range ("YYYY-MM-DD"; default rng_end; NULL
+#'   for the end of the data)
 #' @param height height of a single panel (px)
 #' @param width width of a single panel (px)
-#' @param yoy_gr year-over-year (default) or annualized growth
+#' @param yoy_gr TRUE (default) for growth on the same period a year earlier,
+#'   FALSE for growth on the previous period
 #' @param rate if TRUE, the bars show the change in points instead of the %
 #'   change (for rates such as the unemployment rate; default = FALSE)
 #'
-#' @return a dygraph plot
+#' @return a browsable htmltools tag list holding the dygraph plots
 #' @export
 #'
 #' @examples
@@ -222,8 +234,8 @@ plot_fc <- function(
 ) {
   rng_start <- to_ymd(rng_start)
   rng_end <- to_ymd(rng_end)
-  table_start <- to_ymd(table_start)
-  table_end <- to_ymd(table_end)
+  if (!is.null(table_start)) table_start <- to_ymd(table_start)
+  if (!is.null(table_end)) table_end <- to_ymd(table_end)
 
   # formatting of the date axis
   getQuarter <- 'function(d) {
@@ -357,10 +369,12 @@ plot_fc <- function(
 #' @param rng_end end of the zoom range ("YYYY-MM-DD")
 #' @param height height of a single panel (px)
 #' @param width width of a single panel (px)
-#' @param yoy_gr year-over-year (default) or annualized growth
+#' @param yoy_gr TRUE (default) for growth on the same period a year earlier,
+#'   FALSE for growth on the previous period
 #' @param gr_bar show bars or line (default) for the growth series
 #'
-#' @return a list with two dygraph plots (level, growth)
+#' @return a browsable htmltools tag list with two dygraph plots (level,
+#'   growth)
 #' @export
 #'
 #' @examples
@@ -386,15 +400,19 @@ plot_comp_2 <- function(
 #' Three-panel plot of levels, index, and growth rates
 #'
 #' @param x ts-boxable object to plot
-#' @param base_date base period for the indexed series ("YYYY-MM-DD")
+#' @param base_date base period for the index panel, where the index equals 1
+#'   ("YYYY-MM-DD"; default 10 years before today). It works as `base_per` in
+#'   [index_to_base()]: the first observation on or after the date.
 #' @param rng_start start of the zoom range ("YYYY-MM-DD")
 #' @param rng_end end of the zoom range ("YYYY-MM-DD")
 #' @param height height of a single panel (px)
 #' @param width width of a single panel (px)
-#' @param yoy_gr year-over-year (default) or annualized growth
+#' @param yoy_gr TRUE (default) for growth on the same period a year earlier,
+#'   FALSE for growth on the previous period
 #' @param gr_bar show bars or line (default) for the growth series
 #'
-#' @return a list with three dygraph plots (level, index, growth)
+#' @return a browsable htmltools tag list with three dygraph plots (level,
+#'   index, growth)
 #' @export
 #'
 #' @examples
@@ -535,7 +553,7 @@ find_pandoc <- function() {
 #' @param plot_list a list of plots generated by fcutils::plot_xxxx() functions
 #' @param save_loc location to save the plots to, including file name
 #'
-#' @return nothing (silently save the html to a user defined location)
+#' @return the path of the saved file, invisibly
 #' @export
 #'
 #' @details The page embeds its scripts with pandoc. When rmarkdown finds no
@@ -556,7 +574,7 @@ find_pandoc <- function() {
 #'   )
 #' }
 #' # specify location of the output
-#' save_loc <- stringr::str_c("~/Downloads/plots_", Sys.Date(), ".html")
+#' save_loc <- file.path(tempdir(), stringr::str_c("plots_", Sys.Date(), ".html"))
 #' # combine a list of plots into a single html
 #' @examplesIf interactive()
 #' plot_out |> save_plot_list(save_loc)
@@ -588,7 +606,7 @@ save_plot_list <- function(plot_list, save_loc) {
       "\\}</style>" = "font-family:Arial,Helvetica,sans-serif;font-size:medium;}</style>"
     )) %>%
     readr::write_lines(file = save_loc)
-  # incorporate dependecies into html
+  # incorporate dependencies into html
   rmarkdown::pandoc_self_contained_html(input = save_loc, output = save_loc)
   # check out htmlwidgets
 }

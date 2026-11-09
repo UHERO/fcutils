@@ -185,3 +185,33 @@ test_that("agg(partial = ) checks its arguments", {
     agg(x, target_freq = "quarter", partial = "growth")
   )
 })
+
+test_that("span() includes an end year or quarter in full, as p() does", {
+  m <- conv_xts(monthly_data_example)
+  expect_equal(nrow(span(m, 2010, 2010)), 12)
+  expect_equal(nrow(span(m, 2010.1, 2010.2)), 6)
+  expect_equal(span(m, 2010, 2010), m[p(2010, 2010)])
+  expect_equal(nrow(span(m, 2010, "2010-03-01")), 3)
+})
+
+test_that("interpol(match = 'name') pairs series with patterns by name", {
+  inc <- make_xts("2025M1", val = tibble::tibble(A = c(1, NA, NA, 4), B = c(1, NA, NA, 4)))
+  pat <- make_xts("2025M1", val = tibble::tibble(B = c(1, 1, 1, 1), A = c(1, 3, 3.5, 4)))
+  by_name <- quiet(interpol(inc, pat, match = "name"))
+  expect_equal(as.numeric(by_name$A), c(1, 3, 3.5, 4))
+  expect_equal(as.numeric(by_name$B), c(1, 2, 3, 4))
+  # by position, A follows B's flat pattern
+  by_pos <- quiet(interpol(inc, pat))
+  expect_equal(as.numeric(by_pos$A), c(1, 2, 3, 4))
+  # stems: A_Q pairs with A_M
+  pat_m <- pat
+  colnames(pat_m) <- c("B_M", "A_M")
+  inc_q <- inc
+  colnames(inc_q) <- c("A_Q", "B_Q")
+  expect_equal(as.numeric(quiet(interpol(inc_q, pat_m, match = "stem"))$A_Q), c(1, 3, 3.5, 4))
+  expect_error(quiet(interpol(inc, pat_m, match = "name")), "no pattern with the same name")
+})
+
+test_that("index_to_base() needs base_per", {
+  expect_error(index_to_base(quarterly_data_example), "base_per")
+})

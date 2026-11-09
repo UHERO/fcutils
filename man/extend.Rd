@@ -28,16 +28,18 @@ annual)}
 \code{2027.4 ~ target} works. An alternative to \code{at} and \code{val}.}
 
 \item{at}{dates of the anchors, in any form \code{to_ymd()} reads
-(\code{c(2026.4, 2028.4)}, \code{c("2026Q4", "2028")})}
+(\code{c(2026.4, 2028.4)}, \code{c("2026Q4", "2028")}). Each must be the first day
+of a period of x within the bank, or extend() stops.}
 
-\item{val}{anchor values (by name, like \code{at}): a numeric vector the length of \code{at}; a named
+\item{val}{anchor values, given by name: a numeric vector the length of \code{at}; a named
 numeric vector whose names are the dates (\code{c("2026Q4" = 4.3)}), with
 \code{at = NULL}; or a series (e.g. from \code{make_xts()}), whose observations are
-the anchors}
+the anchors (\code{at} is then ignored)}
 
 \item{path}{instead of anchors, a series that sets the forecast: the
 level (\code{type = "level"}), the growth rate in percent (\code{type = "growth"}),
-or a level whose growth or changes continue x (\code{type = "chain"})}
+or a level whose growth or changes continue x (\code{type = "chain"}). The
+forecast ends where the path ends.}
 
 \item{type}{"level", "growth" or "chain" (see details)}
 
@@ -47,7 +49,7 @@ quarter that grew 1\%); "pcy", the year-over-year rate}
 
 \item{method}{for \code{type = "chain"}: "ratio" (default) continues x with
 the growth of \code{path}, for levels; "diff" with its changes, for rates
-(the same words as in \code{\link[=chain]{chain()}})}
+(the same words as in \code{\link[=chain]{chain()}}). Ignored for other types.}
 
 \item{interp}{interpolation between anchors: "linear" or "stine" (the
 Stineman spline: smooth turns without overshooting)}
@@ -56,18 +58,21 @@ Stineman spline: smooth turns without overshooting)}
 observation of x). Values of x after \code{last} are replaced.}
 
 \item{hold_last}{if TRUE (default), the last anchor is held to the end of
-the bank. If FALSE, the interpolation itself runs to the last anchor and
-its value is then carried forward.}
+the bank, so a spline flattens into it. If FALSE, the interpolation runs
+only to the last anchor and its value is then carried forward. With
+\code{interp = "linear"} both give the same result.}
 
 \item{smooth}{NULL, or a list with \code{span} and optionally \code{from} and \code{to}:
-smooth the forecast with loess before compounding (the period growth
-rate for "growth" and "chain", the level for "level"). \code{from} defaults
-to the first period after \code{last}.}
+smooth the forecast with loess before compounding (the growth rate for
+"growth", year over year with \code{growth = "pcy"}; the period growth rate
+for "chain"; the level for "level"). \code{from} defaults to the first period
+after \code{last}, \code{to} to the end of the forecast.}
 }
 \value{
 an object of the same type as x, from the bank start to the bank
 end (\code{getOption("fcutils.bnk_start")}, \code{getOption("fcutils.bnk_end")}),
-empty before x's first observation
+empty before x's first observation. With a \code{path}, the forecast ends
+where the path ends.
 }
 \description{
 Forecasts a single series: continues it from \code{last} to the end of the
@@ -85,7 +90,9 @@ below.
 \item \code{type = "level"}: history up to \code{last}, then the anchors, with the gaps
 interpolated, including between the last history value and the first
 anchor. Anchors dated at or before \code{last} are dropped with a message,
-since history takes precedence.
+since history takes precedence. With a \code{path} instead, the forecast is
+the path's values after \code{last}, unadjusted, so it can jump at the seam;
+use \code{type = "chain"} to join it to history.
 \item \code{type = "growth"}: the same applied to the growth rate of x; the level
 is then compounded from history. With \code{growth = "pca"} the line starts
 from the annualized growth at \code{last} and each period grows from the one
@@ -96,7 +103,11 @@ this needs a full year of history and repeats last year's
 within-year pattern.
 \item \code{type = "chain"}: \code{path} after \code{last}, joined to x at \code{last}: scaled to
 meet it (\code{method = "ratio"}) or shifted by a constant
-(\code{method = "diff"}).
+(\code{method = "diff"}). The path needs a value at \code{last}. "ratio" compounds
+the path's growth, so the path must stay above zero. "diff" uses the
+shifted path as is, so it suits rates that reach zero or below; with
+\code{smooth}, it compounds the smoothed growth of the shifted path, which
+must then stay above zero.
 }
 
 Linear interpolation weighs the gaps by time, the spline by position.
@@ -125,21 +136,23 @@ decimal dates.
 options(fcutils.bnk_start = as.Date("2015-01-01"), fcutils.bnk_end = as.Date("2035-12-31"))
 ur <- make_xts(2024.1, val = c(3.8, 4.0, 4.2, 4.1, 4.1, 4.2, 4.3))
 # the unemployment rate through two anchors, then held
-extend(ur, 2026.4 ~ 4.4, 2028.4 ~ 4.0, interp = "stine")
-extend(ur, "2026Q4" ~ 4.4, "2028Q4" ~ 4.0, interp = "stine")
-# the same with at and val
-extend(ur, at = c(2026.4, 2028.4), val = c(4.4, 4.0), interp = "stine")
-# the same with the anchors as a named vector
-extend(ur, val = c("2026Q4" = 4.4, "2028Q4" = 4.0), interp = "stine")
+extend(ur, 2026.4 ~ 4.4, 2028.4 ~ 4.0, interp = "stine")[p(2025.2, 2029.1)]
+# the same with quoted dates, with at and val, or with a named vector
+u1 <- extend(ur, "2026Q4" ~ 4.4, "2028Q4" ~ 4.0, interp = "stine")
+u2 <- extend(ur, at = c(2026.4, 2028.4), val = c(4.4, 4.0), interp = "stine")
+u3 <- extend(ur, val = c("2026Q4" = 4.4, "2028Q4" = 4.0), interp = "stine")
+all.equal(u1, u2)
+all.equal(u1, u3)
 # a price level whose annualized inflation falls from 3\% to 2\%
 cpi <- make_xts(2024.1, val = 100 * 1.0075^(0:6))
-extend(cpi, at = c(2026.1, 2027.4), val = c(3, 2), type = "growth")
+extend(cpi, at = c(2026.1, 2027.4), val = c(3, 2), type = "growth")[p(2025.2, 2028.4)]
 # the same with year-over-year inflation
-extend(cpi, at = c(2026.1, 2027.4), val = c(3, 2), type = "growth", growth = "pcy")
+extend(cpi, at = c(2026.1, 2027.4), val = c(3, 2), type = "growth",
+  growth = "pcy")[p(2025.2, 2028.4)]
 # history continued with the growth of a projection on another level
 proj <- make_xts(2020.1, val = 50 * 1.01^(0:63))
-extend(cpi, path = proj, type = "chain")
-# a rate continued with the changes of a projection
+extend(cpi, path = proj, type = "chain")[p(2025.2, 2026.4)]
+# a rate continued with the changes of a projection, which ends in 2028Q4
 extend(ur, path = make_xts(2024.1, val = seq(4, 5, length.out = 20)),
-  type = "chain", method = "diff")
+  type = "chain", method = "diff")[p(2025.2, 2029.2)]
 }

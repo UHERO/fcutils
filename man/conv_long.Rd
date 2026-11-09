@@ -16,7 +16,9 @@ only the long format of x (default: FALSE)}
 returns a ts-boxable object in long format with \code{id}, \code{time} and
 \code{value} columns. if \code{ser_info = TRUE}, also returns the following attributes:
 \code{was_wide} is \code{TRUE} if x is a wide data frame, \code{FALSE} otherwise, and
-\code{ser_names} are the names of the series in x.
+\code{ser_names} are the names of the series in x. Missing dates inside each
+series are filled with NA rows. A single unnamed series gets the id
+"x_mod".
 }
 \description{
 Convert "ts-boxable" objects to long format (extension of \code{tsbox::ts_long()})
@@ -35,18 +37,16 @@ quarterly_data_example |>
   conv_long() |>
   tsbox::ts_tslist() |>
   conv_long()
-quarterly_data_example |>
+long <- quarterly_data_example |>
   tsbox::ts_long() |>
   tsbox::ts_xts() |>
   conv_long(ser_info = TRUE)
+attr(long, "was_wide")
+attr(long, "ser_names") |> head()
+# a single series still gets an id column
 quarterly_data_example |>
   tsbox::ts_long() |>
   tsbox::ts_pick("E_NF_HI") |>
   tsbox::ts_xts() |>
-  conv_long()
-quarterly_data_example |>
-  tsbox::ts_long() |>
-  tsbox::ts_xts() |>
-  tsbox::ts_pick("E_NF_HI") |>
   conv_long()
 }

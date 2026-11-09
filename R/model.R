@@ -1,10 +1,18 @@
 #' Parse lm() output and convert into bimets equation (GETS model development)
 #'
-#' @param model a model estimated by lm() (lm object)
+#' @param model a model from lm() or dynlm::dynlm() on quarterly data. The
+#'   residuals must be named by date (for example, rows taken from an xts),
+#'   so that the TSRANGE line can be built.
 #' @param ... arguments to format the coefficients e.g. digits = 3
 #'
 #' @return a character vector containing the estimated equation (1) and bimets components (2:5)
 #' @export
+#'
+#' @details Variable names are translated to bimets: DL_x becomes
+#' TSDELTALOG(x), L_x becomes LOG(x), D_x becomes TSDELTA(x), x.k becomes
+#' TSLAG(x, k), and IIS_yyyy_mm_dd becomes IIS_yyyyQq. A constant named
+#' "(Intercept)", "c" or "CONST" becomes b0. TSRANGE is written as year and
+#' quarter, from the first and last residual dates.
 #'
 #' @examplesIf interactive()
 #' # this function combines coefficient estimates and variable names into an equation
@@ -19,7 +27,7 @@
 #' # L(uk, 1:3)3 + 0.37480999 * L(log(uk), c(5:6, 12))5 - 0.22709846 * L(log(uk), c(5:6, 12))6 +
 #' # 1.62340449 * L(log(uk), c(5:6, 12))12"
 #' # (2) "BEHAVIORAL> uk"
-#' # (3) "TSRANGE 1990 1 2010 4"
+#' # (3) "TSRANGE ..." (from the residuals' dates)
 #' # (4) "EQ> uk = b0 + b1 * TSLAG(uk, 1) + b2 * TSLAG(uk, 2) + b3 * TSLAG(uk, 3) + b4 *
 #' # TSLAG(LOG(uk), 5) + b5 * TSLAG(LOG(uk), 6) + b6 * TSLAG(LOG(uk), 12)"
 #' # (5) "COEFF> b0 b1 b2 b3 b4 b5 b6"
@@ -29,7 +37,7 @@
 #' # (1) "d(log(uk)) = 0.1018542 - 0.2379287 * L(uk, c(1, 11, 12))1 + 0.0368355 *
 #' # L(uk, c(1, 11, 12))11 + 0.1689896 * L(uk, c(1, 11, 12))12"
 #' # (2) "BEHAVIORAL> uk"
-#' # (3) "TSRANGE 1990 1 2010 4"
+#' # (3) "TSRANGE ..." (from the residuals' dates)
 #' # (4) "EQ> TSDELTA(LOG(uk)) = b0 + b1 * TSLAG(uk, 1) + b2 * TSLAG(uk, 11) + b3 * TSLAG(uk, 12)"
 #' # (5) "COEFF> b0 b1 b2 b3"
 model_equation <- function(model, ...) {
@@ -207,16 +215,21 @@ model_equation <- function(model, ...) {
 #' @param model_in a model estimated by arx, isat, or getsm
 #' @param y_name the actual name of the y variable
 #'
-#' @return an xts containing the model variables
+#' @return an xts with the dependent variable named y_name, AR lags named
+#'   y_name.k (the lag notation model_equation() reads), indicator saturation
+#'   dummies named IIS_yyyy_mm_dd and SIS_yyyy_mm_dd, and the other regressors
+#'   as in the model
 #' @export
 #'
 #' @examplesIf interactive()
-#' # save the data associated with a gets model
+#' q <- conv_xts(quarterly_data_example)
+#' mod <- gets::arx(tsbox::ts_pc(q$E_NF_HI)["2000/2019"], ar = 1:2)
+#' extract_data(mod, "E_NF_HI") |> head(3)
 extract_data <- function(model_in, y_name) {
   data_out <- gets::eviews(model_in, print = FALSE, return = TRUE)$data %>%
     dplyr::rename_with(~y_name, .cols = 2) %>%
     dplyr::rename_with(
-      ~ stringr::str_replace(., "ar", stringr::str_glue("{y_name}."))
+      ~ stringr::str_replace(., "^ar(?=[0-9]+$)", stringr::str_glue("{y_name}."))
     ) %>%
     dplyr::rename_with(
       ~ stringr::str_replace_all(., c("iis" = "IIS_", "sis" = "SIS_"))
@@ -280,9 +293,10 @@ update_eqs <- function(model_1, model_2, eqList) {
 #' @return bimets model with tsrange set for estimation
 #' @export
 #'
-#' @details Find periods where all variables in the equation are available.
-#' Shift beginning of the sample by max_lag periods.
-#' Set the tsrange for each equation (used in estimation).
+#' @details Takes the rows where every variable in the equation has a value,
+#' starts at the (max_lag + 1)th such row and ends at the last one. Gaps
+#' inside the sample are spanned, not split. The range is written as year and
+#' quarter, so this applies to quarterly models only.
 #'
 #' @examplesIf interactive()
 #' set_tsrange(scen_model_dat, 4)
@@ -319,13 +333,14 @@ set_tsrange <- function(model_w_dat, max_lag = 4, eqns = NULL) {
 
 #' In place addition
 #'
-#' Warning: Typing x %+=% y/2 returns x <- (x + y)/2.
-#' Adding parentheses, i.e. x %+=% (y/2) solves the problem.
+#' `x %+=% y` adds y to x and stores the sum in x. `%+=%` binds more
+#' tightly than `*` and `/`, so `x %+=% y/2` sets x to x + y and halves only
+#' the returned value. Write `x %+=% (y/2)` to add half of y.
 #'
-#' @param e1 first addend (and returned sum)
+#' @param e1 first addend, replaced by the sum
 #' @param e2 second addend
 #'
-#' @return sum of the two addends replacing the values in the first addend
+#' @return the new value of e1, invisibly
 #' @export
 #'
 #' @examplesIf interactive()

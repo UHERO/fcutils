@@ -20,9 +20,10 @@ bimets model with tsrange set for estimation
 Set tsrange for behavioral equations to available data range
 }
 \details{
-Find periods where all variables in the equation are available.
-Shift beginning of the sample by max_lag periods.
-Set the tsrange for each equation (used in estimation).
+Takes the rows where every variable in the equation has a value,
+starts at the (max_lag + 1)th such row and ends at the last one. Gaps
+inside the sample are spanned, not split. The range is written as year and
+quarter, so this applies to quarterly models only.
 }
 \examples{
 \dontshow{if (interactive()) (if (getRversion() >= "3.4") withAutoprint else force)(\{ # examplesIf}

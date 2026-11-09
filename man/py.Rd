@@ -12,7 +12,9 @@ py(dat1 = "", dat2 = "")
 \item{dat2}{year of period end (string or numeric: yyyy)}
 }
 \value{
-string containing date range
+string containing date range. It ends on January 1 of dat2, so on
+quarterly or monthly data it keeps only the first period of dat2. \code{p()}
+includes the end year in full.
 }
 \description{
 Concatenate dates formatted as yyyy to obtain period

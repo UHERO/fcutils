@@ -10,7 +10,8 @@ AtoQ(ser_in, aggr = "mean")
 \arguments{
 \item{ser_in}{the xts series to be interpolated (freq = a)}
 
-\item{aggr}{interpolation method: aggregate via mean (default) or sum}
+\item{aggr}{"mean" (default): the quarters average to the annual value;
+any other value: they sum to it}
 }
 \value{
 interpolated xts series (freq = q). A name ending in \code{.A}, \verb{_A},

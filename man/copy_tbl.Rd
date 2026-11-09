@@ -2,20 +2,22 @@
 % Please edit documentation in R/export.R
 \name{copy_tbl}
 \alias{copy_tbl}
-\title{Copy a data frame to clipboard (only works on MacOS)}
+\title{Copy time series to the clipboard as a tab-separated table (macOS only)}
 \usage{
 copy_tbl(x, dec = 2)
 }
 \arguments{
-\item{x}{tibble (or data frame) to be copied}
+\item{x}{a ts-boxable object; it is copied in wide form, one column per
+series}
 
-\item{dec}{number of decimals to round numeric columns to (default: 2)}
+\item{dec}{number of decimals to round to (default: 2)}
 }
 \value{
-copy_tbl() returns the input x invisibly
+the copied table invisibly, a tibble of text with numbers rounded
+to \code{dec} decimals
 }
 \description{
-Copy a data frame to clipboard (only works on MacOS)
+Copy time series to the clipboard as a tab-separated table (macOS only)
 }
 \examples{
 \dontshow{if (interactive()) (if (getRversion() >= "3.4") withAutoprint else force)(\{ # examplesIf}

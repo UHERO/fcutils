@@ -28,7 +28,8 @@ quarterly_data_example |>
   conv_wide()
 quarterly_data_example |>
   conv_xts() |>
-  conv_wide()
+  conv_wide() |>
+  dplyr::select(1:4)
 quarterly_data_example |>
   tsbox::ts_long() |>
   tsbox::ts_pick("E_NF_HI") |>

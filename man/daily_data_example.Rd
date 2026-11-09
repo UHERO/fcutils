@@ -3,9 +3,10 @@
 \docType{data}
 \name{daily_data_example}
 \alias{daily_data_example}
-\title{daily data for examples}
+\title{Daily data for examples}
 \format{
-tibble of daily data
+wide tibble of daily Hawaii visitor arrivals (VISPNS_HI, VAPNS_HI),
+1 September 2020 to 25 March 2022
 }
 \source{
 author
@@ -14,10 +15,10 @@ author
 daily_data_example
 }
 \description{
-daily data for examples
+Daily data for examples
 }
 \references{
-\url{uhero.hawaii.edu}
+\url{https://uhero.hawaii.edu}
 }
 \author{
 Peter Fuleky \email{fuleky@hawaii.edu}

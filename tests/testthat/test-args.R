@@ -193,6 +193,23 @@ test_that("addf() points as formulas equal the ramp table", {
   expect_error(addf(2026.3, 2027.4, 1, 2, 2028.1 ~ 0), "cannot be mixed")
 })
 
+test_that("addf(interp = 'stine') eases through the points", {
+  ref_bank()
+  pts <- list(2027.4 ~ 0.3, 2028.1 ~ 0.3, 2029.4 ~ 0)
+  smooth <- do.call(addf, c(list(2026.1 ~ 0), pts, interp = "stine"))
+  # the same curve as extend() from a zero history
+  zero <- addf(per = "quarter")
+  from_extend <- do.call(
+    extend, c(list(zero), pts, last = "2026-01-01", interp = "stine")
+  )
+  expect_equal(as.numeric(smooth), as.numeric(from_extend), tolerance = 1e-12)
+  # it meets the points, starts gently and is zero outside them
+  expect_equal(as.numeric(smooth[c("2027-10-01", "2028-01-01", "2029-10-01")]), c(0.3, 0.3, 0))
+  expect_lt(as.numeric(smooth["2026-04-01"]), 0.3 / 7)
+  expect_equal(sum(abs(smooth["/2026-01-01"])) + sum(abs(smooth["2029-10-01/"])), 0)
+  expect_error(addf(2026.1, 2027.4, 0, 1, interp = "stine"), "formulas")
+})
+
 test_that("a ramp table takes decimal dates", {
   ref_bank()
   quoted <- tibble::tribble(

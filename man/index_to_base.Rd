@@ -4,13 +4,17 @@
 \alias{index_to_base}
 \title{Index series to a base period (wrapper around tsbox::ts_index())}
 \usage{
-index_to_base(x, base_per = as.character(Sys.Date()), base_value = 100)
+index_to_base(x, base_per, base_value = 100)
 }
 \arguments{
 \item{x}{ts-boxable object to be indexed}
 
-\item{base_per}{base date when the index is set to base_value (see examples).
-If two dates are provided, the mean in the range is set equal to base_value.}
+\item{base_per}{base period, in any form \code{to_ymd()} reads. With one date,
+the first observation on or after it equals \code{base_value}, so \code{2019} sets
+2019Q1 (or January 2019) to \code{base_value}. With two dates, the mean of the
+observations from the first date to the second equals \code{base_value}. A
+date stands for the first day of its period, so \code{c(2019.1, 2019.4)} covers
+2019 for quarterly data, and monthly data need \code{c("2019-01-01", "2019-12-31")}.}
 
 \item{base_value}{numeric value of the index at base_per (e.g. 1 or 100)}
 }
@@ -26,10 +30,13 @@ re-expresses a real series in the prices of another year, which this
 function does not do).
 }
 \examples{
-quarterly_data_example |>
-  index_to_base(2010.1)
-quarterly_data_example |>
-  index_to_base(c(2010.1, 2010.4))
-quarterly_data_example |>
-  index_to_base(c("2010-01-01", "2010-12-31"), 1)
+jobs <- conv_xts(quarterly_data_example)[, c("E_NF_HI", "ECT_HI")]
+# 2010Q1 = 100
+round(index_to_base(jobs, 2010.1)[p(2010.1, 2010.4)], 2)
+# the average of 2010 = 100
+idx <- index_to_base(jobs, c(2010.1, 2010.4))
+round(idx[p(2010.1, 2010.4)], 2)
+colMeans(idx[p(2010.1, 2010.4)])
+# the same with dates, and 1 as the base value
+round(index_to_base(jobs, c("2010-01-01", "2010-12-31"), 1)[p(2010.1, 2010.4)], 4)
 }

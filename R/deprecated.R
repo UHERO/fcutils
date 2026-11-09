@@ -14,6 +14,9 @@
 #' | `mtd_cum()` | [mtd_agg()] |
 #' | `ptd_cum()` | [ptd_agg()] |
 #'
+#' `yoy_to_lev()` was deprecated in fcutils 0.1.5 and has its own help page.
+#' Use `extend(hist_lev, path = yoy_gr, type = "growth", growth = "pcy")`.
+#'
 #' @param ... arguments passed to the new function
 #'
 #' @return the result of the new function

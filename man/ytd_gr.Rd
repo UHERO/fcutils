@@ -15,6 +15,10 @@ object of the same type as the input containing year to date growth rate
 \description{
 Year to date growth rate
 }
+\details{
+The growth rate is the percent change of the to-date average from
+the same date a year earlier. An NA makes the rest of its period NA.
+}
 \examples{
 monthly_data_example |>
   tsbox::ts_long() |>

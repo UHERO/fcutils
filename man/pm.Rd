@@ -7,19 +7,22 @@
 pm(dat1 = "", dat2 = "")
 }
 \arguments{
-\item{dat1}{date of period start (string: yyyyMm or yyyy.m)}
+\item{dat1}{month of period start, as a string such as "2010M10".
+Numbers such as 2010.10 are misread (as January).}
 
-\item{dat2}{date of period end (string: yyyyMm or yyyy.m)}
+\item{dat2}{month of period end, as for dat1}
 }
 \value{
-string containing date range
+string containing date range. It ends on the first day of dat2;
+for subsetting monthly data that is the whole month. \code{p()} reads any
+date form and includes the end period in full at any frequency.
 }
 \description{
 Concatenate dates formatted as yyyyMm or yyyy.m to obtain period
 }
 \examples{
 pm("2010M1", "2020M4")
-pm(2010.1, 2020.4)
+pm("2010M10", "2020M12")
 pm(2010.1, )
 pm(, 2010.1)
 }

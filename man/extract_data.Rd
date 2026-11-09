@@ -12,13 +12,18 @@ extract_data(model_in, y_name)
 \item{y_name}{the actual name of the y variable}
 }
 \value{
-an xts containing the model variables
+an xts with the dependent variable named y_name, AR lags named
+y_name.k (the lag notation model_equation() reads), indicator saturation
+dummies named IIS_yyyy_mm_dd and SIS_yyyy_mm_dd, and the other regressors
+as in the model
 }
 \description{
 Parse gets output and extract underlying data (GETS model development)
 }
 \examples{
 \dontshow{if (interactive()) (if (getRversion() >= "3.4") withAutoprint else force)(\{ # examplesIf}
-# save the data associated with a gets model
+q <- conv_xts(quarterly_data_example)
+mod <- gets::arx(tsbox::ts_pc(q$E_NF_HI)["2000/2019"], ar = 1:2)
+extract_data(mod, "E_NF_HI") |> head(3)
 \dontshow{\}) # examplesIf}
 }

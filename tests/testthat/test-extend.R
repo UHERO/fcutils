@@ -159,3 +159,35 @@ test_that("method = 'diff' keeps the gap to the path constant in points", {
   expect_equal(gap, rep(gap[1], length(gap)))
   expect_equal(gap[1], as.numeric(x["2025-01-01"] - pth["2025-01-01"]))
 })
+
+test_that("method = 'diff' follows a path that reaches zero or below", {
+  ref_bank()
+  x <- make_xts("2024Q1", val = c(1, 0.8, 0.5, 0.2))
+  pth <- make_xts("2024Q4", val = c(1, 0.5, 0, -0.5, 1.2))
+  fc <- extend(x, path = pth, type = "chain", method = "diff")
+  expect_equal(as.numeric(fc[p(2025.1, 2025.4)]), c(-0.3, -0.8, -1.3, 0.4))
+  # history at zero
+  fc0 <- extend(x - 0.2, path = pth, type = "chain", method = "diff")
+  expect_equal(as.numeric(fc0[p(2025.1, 2025.4)]), c(-0.5, -1, -1.5, 0.2))
+  # compounding growth needs a path above zero
+  expect_error(extend(x, path = pth, type = "chain"), "above zero")
+  expect_error(
+    extend(x, path = pth, type = "chain", method = "diff", smooth = list(span = 0.9)),
+    "above zero"
+  )
+})
+
+test_that("anchors must start a period within the bank", {
+  ref_bank()
+  ur <- make_xts(2024.1, val = c(3.8, 4.0, 4.2, 4.1))
+  expect_error(extend(ur, "2026-11-15" ~ 4.4), "not the start of a quarter")
+  expect_error(extend(ur, "2200Q1" ~ 4.4), "within the bank")
+})
+
+test_that("hold_last = FALSE carries the last anchor forward with linear too", {
+  ref_bank()
+  ur <- make_xts(2024.1, val = c(3.8, 4.0, 4.2, 4.1))
+  held <- extend(ur, 2026.4 ~ 4.4, 2028.4 ~ 4.0)
+  expect_equal(extend(ur, 2026.4 ~ 4.4, 2028.4 ~ 4.0, hold_last = FALSE), held)
+  expect_false(anyNA(held[p(2024.1, "")]))
+})

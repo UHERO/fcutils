@@ -7,7 +7,10 @@
 write_tsd(x, file, descriptions = NULL)
 }
 \arguments{
-\item{x}{a ts-boxable object (monthly, quarterly or annual)}
+\item{x}{a ts-boxable object (monthly, quarterly or annual). Other
+frequencies are written as annual without warning. Leading and trailing
+NAs of each series are dropped; NAs inside a series are written as
+1.000000E+0015, the TSD missing value.}
 
 \item{file}{character string denoting the location and name of the output file}
 
@@ -18,8 +21,7 @@ longer names or descriptions are cut, with a warning. Without them, the
 name fills the header line.}
 }
 \value{
-nothing (silently save the contents of the tsd file to a user defined
-location)
+the text written to \code{file}, invisibly
 }
 \description{
 Writes the TSD text format read by AREMOS and UHERO's visualization. Each
@@ -29,8 +31,8 @@ the frequency, and then its values, five to a line.
 }
 \examples{
 \dontshow{if (interactive()) (if (getRversion() >= "3.4") withAutoprint else force)(\{ # examplesIf}
-quarterly_data_example |> write_tsd("out.tsd")
+quarterly_data_example |> write_tsd(file.path(tempdir(), "out.tsd"))
 quarterly_data_example |>
-  write_tsd("out.tsd", descriptions = c(E_NF_HI = "Nonfarm payroll jobs"))
+  write_tsd(file.path(tempdir(), "out.tsd"), descriptions = c(E_NF_HI = "Nonfarm payroll jobs"))
 \dontshow{\}) # examplesIf}
 }

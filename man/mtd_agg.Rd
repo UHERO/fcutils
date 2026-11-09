@@ -12,17 +12,16 @@ mtd_agg(x, avg = TRUE)
 \item{avg}{if TRUE (default), return month to date average, if FALSE, return month to date sum}
 }
 \value{
-object of the same type as the input containing year to date sum or average
+object of the same type as the input containing month to date sum or average
 }
 \description{
 Month to date sum or average
 }
+\details{
+An NA makes the rest of its period NA.
+}
 \examples{
 daily_data_example |>
-  mtd_agg()
-test <- daily_data_example |>
-  tsbox::ts_long() |>
-  tsbox::ts_pick("VAPNS_HI") |>
-  mtd_agg()
-tsbox::`\%ts/\%`(test, tsbox::ts_lag(test, "6 months")) |> tail()
+  mtd_agg() |>
+  tail()
 }

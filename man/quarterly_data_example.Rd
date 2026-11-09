@@ -3,9 +3,10 @@
 \docType{data}
 \name{quarterly_data_example}
 \alias{quarterly_data_example}
-\title{quarterly data for examples}
+\title{Quarterly data for examples}
 \format{
-tibble of quarterly data
+wide tibble of 30 Hawaii payroll jobs series (E_NF_HI, ECT_HI,
+...), 1998Q1 to 2025Q1
 }
 \source{
 author
@@ -14,10 +15,10 @@ author
 quarterly_data_example
 }
 \description{
-quarterly data for examples
+Quarterly data for examples
 }
 \references{
-\url{uhero.hawaii.edu}
+\url{https://uhero.hawaii.edu}
 }
 \author{
 Peter Fuleky \email{fuleky@hawaii.edu}

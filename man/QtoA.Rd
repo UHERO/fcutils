@@ -14,7 +14,8 @@ QtoA(ser_in, aggr = "mean")
 }
 \value{
 converted xts series (freq = a). A name ending in \code{.Q}, \verb{_Q},
-\code{.SOLQ} or \verb{_SOLQ} gets the annual ending; other names are kept.
+\code{.SOLQ} or \verb{_SOLQ} gets the annual ending; other names are kept. Years
+with fewer than four quarters are dropped.
 }
 \description{
 Aggregate from quarterly to annual frequency

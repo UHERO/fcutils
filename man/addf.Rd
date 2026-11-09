@@ -2,7 +2,7 @@
 % Please edit documentation in R/bank.R
 \name{addf}
 \alias{addf}
-\title{Create xts addfactor}
+\title{Create an add-factor}
 \usage{
 addf(
   start = bank_start(),
@@ -11,77 +11,101 @@ addf(
   to = 0,
   ser_name = "value",
   per = "year",
-  ...
+  ...,
+  interp = c("linear", "stine")
 )
 }
 \arguments{
-\item{start}{start date of linear interpolation (character: "yyyy-mm-dd", "yyyyqq", "yyyy"),
-or a data frame of ramps with columns start, end, from, to (one ramp per
-row; see details)}
+\item{start}{date the ramp starts, in any form \code{to_ymd()} reads
+("2026Q3", 2026.3, "2026M07", 2026), or a data frame of ramps with
+columns start, end, from and to, one ramp per row. A day
+("2026-07-01") must be the first day of a period at frequency \code{per}.}
 
-\item{end}{end date of linear interpolation (character: "yyyy-mm-dd", "yyyyqq", "yyyy")}
+\item{end}{date the ramp ends}
 
-\item{from}{first value for linear interpolation (numeric)}
+\item{from}{value at \code{start}}
 
-\item{to}{last value for linear interpolation (numeric)}
+\item{to}{value at \code{end}}
 
-\item{ser_name}{name of the xts series (string)}
+\item{ser_name}{name of the series}
 
-\item{per}{periodicity of series (character: "year" - default)
-if start is written as a quarter or a month (see \code{to_ymd()}), per is set
-to "quarter" or "month"}
+\item{per}{frequency: "year" (default), "quarter" or "month". A start
+written as a quarter ("2026Q3", 2026.3) or a month ("2026M07") sets it.}
 
 \item{...}{with formulas: further points (see details)}
+
+\item{interp}{with formulas: how to join the points, "linear" (default)
+or "stine", the Stineman spline, which eases in and out of each point
+without overshooting. Must be named.}
 }
 \value{
-a single xts series spanning the bank: from
+one xts series over the bank, from
 \code{getOption("fcutils.bnk_start")} to \code{getOption("fcutils.bnk_end")} (see
-\code{make_xts()})
+\code{make_xts()}). A ramp that starts before the bank or ends after it
+extends the series past the bank.
 }
 \description{
-Create xts addfactor
+An add-factor is a series added to a forecast to shift it for a while.
+\code{addf()} returns one that is zero over the bank except where you set it:
+along a straight-line ramp, along several ramps that add up, or through
+points given as formulas.
 }
 \details{
-this is a wrapper around make_xts with some additional functionality.
-the start and end dates specify the span of the non-zero add-factor value. the
-remaining period between start and end is filled with zeros.
+A ramp runs in equal steps from \code{from} at \code{start} to \code{to} at
+\code{end}. Before \code{start} and after \code{end} the add-factor is zero, so a ramp
+that ends away from zero drops back to zero in the next period. With no
+arguments, \code{addf()} gives zeros over the bank.
 
-Given a data frame of ramps, addf() builds one add-factor per row and
+Given a data frame of ramps, \code{addf()} builds one add-factor per row and
 returns their sum, so overlapping ramps add up. A data frame with no rows
-gives zeros over the bank.
-The dates take any form \code{to_ymd()} reads, decimal years included, but a
-column must be all numbers or all strings.
+gives zeros over the bank, at the frequency \code{per}. A date column must be all numbers or all
+strings.
 
 Given formulas, \code{addf(2026.3 ~ 0, 2027.4 ~ -0.3, 2030.4 ~ 0)}, the
 add-factor runs through the points in straight lines, one equal step per
 period, and is zero before the first point and after the last. Each
-formula has a date on the left and a value on the right. The frequency
-follows the first date (2026.3 is a quarter), unless \code{per} is given by
+formula has a date on the left and a value on the right, and each date
+must start a period within the bank. Give at least two points. The
+frequency follows the date of the first formula (2026.3 is a quarter),
+unless \code{per} is given by
 name; \code{ser_name} and \code{per} must be named. Decimal dates are quarters, so
 monthly points need strings (\code{"2026M10" ~ 1}).
+
+With \code{interp = "stine"} the points are joined by a smooth curve instead.
+The spline treats the zeros before the first point and after the last as
+known, so an add-factor that starts and ends at zero leaves and returns to
+zero gradually. A ramp joins only two points, so \code{interp} applies to
+formulas, not to start, end, from and to or a table of ramps.
 }
 \examples{
-options(fcutils.bnk_start = as.Date("1970-01-01"), fcutils.bnk_end = as.Date("2070-12-31"))
-addf()
-addf(201002, 201504, 1, 2)
-addf(20100101, 20601201, 1, 2, per = "month")
-addf(20100101, from = 1, to = 2, per = "quarter")
-addf(2010.2, 2015.4, 1, 2, "ECT_HI")
-# several ramps at once
+options(
+  fcutils.bnk_start = as.Date("2020-01-01"),
+  fcutils.bnk_end = as.Date("2035-12-31")
+)
+# one ramp: from 0 in 2026Q3 to -0.3 in 2027Q4, zero outside
+addf("2026Q3", "2027Q4", 0, -0.3)[p(2026.2, 2028.1)]
+# a ramp that ends away from zero drops back to zero after its end
+addf(2026.3, 2027.4, 1, 2, ser_name = "ECT_HI")[p(2027.3, 2028.2)]
+# annual and monthly
+addf(2026, 2028, 0, 1)[p(2025, 2029)]
+addf("2026M01", "2026M06", 0, 0.5)[p("2025M12", "2026M07")]
+# zeros over the bank
+addf(per = "quarter")[p(2026.1, 2026.4)]
+
+# several ramps at once: down to -0.3 by 2027Q4, then back to 0 by 2030Q4
 ramps <- tibble::tribble(
   ~start,   ~end,     ~from, ~to,
   "2026Q3", "2027Q4", 0,     -0.3,
   "2028Q1", "2030Q4", -0.3,  0
 )
-addf(ramps)
-# the same with decimal dates
-ramps <- tibble::tribble(
-  ~start, ~end,   ~from, ~to,
-  2026.3, 2027.4, 0,     -0.3,
-  2028.1, 2030.4, -0.3,  0
-)
-addf(ramps)
+ramps_adj <- addf(ramps)
+round(ramps_adj[p(2026.2, 2031.1)], 3)
 # the same as points, with decimal or quoted dates
-addf(2026.3 ~ 0, 2027.4 ~ -0.3, 2028.1 ~ -0.3, 2030.4 ~ 0)
-addf("2026Q3" ~ 0, "2027Q4" ~ -0.3, "2028Q1" ~ -0.3, "2030Q4" ~ 0)
+pts_adj <- addf(2026.3 ~ 0, 2027.4 ~ -0.3, 2028.1 ~ -0.3, 2030.4 ~ 0)
+all.equal(pts_adj, ramps_adj)
+addf("2026Q3" ~ 0, "2027Q4" ~ -0.3, "2028Q1" ~ -0.3, "2030Q4" ~ 0)[p(2027.3, 2028.2)]
+# a smooth curve through the same points
+smooth_adj <- addf(2026.3 ~ 0, 2027.4 ~ -0.3, 2028.1 ~ -0.3, 2030.4 ~ 0,
+                   interp = "stine")
+round(tsbox::ts_c(linear = pts_adj, stine = smooth_adj)[p(2026.2, 2031.1)], 3)
 }

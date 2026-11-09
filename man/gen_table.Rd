@@ -17,23 +17,26 @@ gen_table(
 \arguments{
 \item{x}{a ts-boxable object}
 
-\item{tbl_start}{start period for table}
+\item{tbl_start}{start period for table (default: 10 years before today)}
 
-\item{tbl_end}{end period for table}
+\item{tbl_end}{end period for table (default: 2 years after today)}
 
-\item{percent}{what type of percent should be added ("none", "pc" (default),
-"pcy", "pca")}
+\item{percent}{the growth rate shown with each series: "pc" (default,
+period on period), "pcy" (year on year), "pca" (annualized) or "none".
+Any other value shows levels only. Growth is computed before the table is
+cut, so the first period shown has a growth rate.}
 
 \item{time_across}{should time be in column headers and variable names in
 first column (default TRUE)}
 
-\item{tbl_height}{the height of the table in px (default 800)}
+\item{tbl_height}{the height of the html table in px (default 800)}
 
 \item{save_loc}{file path for saving table incl. extension ("html" or "csv")
-(default NULL)}
+(default NULL, no file). Other extensions write nothing.}
 }
 \value{
-table formatted for output
+a tibble of the table, values rounded to 2 decimals and series
+sorted by name. It is returned also when a file is saved.
 }
 \description{
 Generate a table with time series
@@ -49,11 +52,11 @@ gen_table(quarterly_data_example, percent = "pcy", time_across = FALSE)
 \dontshow{if (interactive()) (if (getRversion() >= "3.4") withAutoprint else force)(\{ # examplesIf}
 gen_table(quarterly_data_example,
   percent = "pcy",
-  time_across = FALSE, save_loc = "~/Downloads/temp.csv"
+  time_across = FALSE, save_loc = file.path(tempdir(), "temp.csv")
 )
 gen_table(quarterly_data_example,
   percent = "pcy", time_across = TRUE,
-  save_loc = "~/Downloads/temp.html"
+  save_loc = file.path(tempdir(), "temp.html")
 )
 \dontshow{\}) # examplesIf}
 }

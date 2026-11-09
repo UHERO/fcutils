@@ -7,9 +7,11 @@
 make_xts(start = bank_start(), end = NULL, per = "year", val = NA_real_)
 }
 \arguments{
-\item{start}{date of series start (character: "yyyy-mm-dd", "yyyyqq", "yyyy")}
+\item{start}{date of the first observation, in any form \code{to_ymd()} reads
+(default: the bank start)}
 
-\item{end}{date of series end (character: "yyyy-mm-dd", "yyyyqq", "yyyy")}
+\item{end}{date of the last observation, in any form \code{to_ymd()} reads.
+Ignored when \code{val} is a tibble.}
 
 \item{per}{periodicity of series (character: "year" - default)
 if start is written as a quarter or a month (see \code{to_ymd()}), per is set
@@ -18,29 +20,29 @@ to "quarter" or "month"}
 \item{val}{values to fill in (numeric scalar, vector, or tibble)}
 }
 \value{
-an xts series
+an xts object: one series, or one per column when \code{val} is a
+tibble
 }
 \description{
 Create xts and fill with values
 }
 \details{
-when end is missing, but val is a vector of more than one element,
-the end date is automatically determined by the length of the val vector.
-if end is missing and val is a scalar, the end date is set to the bank end,
-\code{getOption("fcutils.bnk_end")}. The default start is the bank start,
-\code{getOption("fcutils.bnk_start")}. Set both once per session, e.g. in
-setup.R: \code{options(fcutils.bnk_start = as.Date("1970-01-01"), fcutils.bnk_end = as.Date("2070-12-31"))}.
-if end is missing the remaining arguments have to be named. if val is a tibble,
-the end date is automatically determined by the number of rows in the tibble.
+When end is missing and val is a vector of more than one element,
+the length of val sets the end date. When end is missing and val is a
+scalar, the series runs to the bank end, \code{getOption("fcutils.bnk_end")}.
+When val is a tibble, its number of rows sets the end date. The default
+start is the bank start, \code{getOption("fcutils.bnk_start")}. Set both once
+per session, e.g. in setup.R: \code{options(fcutils.bnk_start = as.Date("1970-01-01"), fcutils.bnk_end = as.Date("2070-12-31"))}. Name the
+arguments after \code{start} unless you give \code{end}.
 }
 \examples{
 options(fcutils.bnk_start = as.Date("1970-01-01"), fcutils.bnk_end = as.Date("2070-12-31"))
-make_xts()
-make_xts(val = 0, per = "m")
-make_xts(start = 20100101, per = "quarter", val = 0)
-make_xts(start = 2010.1, per = "q", val = 1:10)
-make_xts(2010.1, val = 1:10) # automatically set per = "quarter"
-make_xts(start = "2010-01-01", per = "m", val = 0)
+make_xts() |> head(3)
+make_xts(val = 0, per = "m") |> head(3)
+make_xts(start = 20100101, per = "quarter", val = 0) |> head(3)
+make_xts(start = 2010.1, per = "q", val = 1:10) |> tail(3)
+make_xts(2010.1, val = 1:10) |> tail(3) # automatically set per = "quarter"
+make_xts(start = "2010-01-01", end = "2010-06-01", per = "m", val = 0)
 make_xts(start = 201001, per = "q",
-         val = tibble::tibble(E_NF_HON = c(1:10), ECT_HI = c(11:20)))
+         val = tibble::tibble(E_NF_HON = c(1:10), ECT_HI = c(11:20))) |> head(3)
 }

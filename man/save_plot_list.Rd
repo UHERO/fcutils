@@ -12,7 +12,7 @@ save_plot_list(plot_list, save_loc)
 \item{save_loc}{location to save the plots to, including file name}
 }
 \value{
-nothing (silently save the html to a user defined location)
+the path of the saved file, invisibly
 }
 \description{
 Save a list of interactive plots to html
@@ -36,7 +36,7 @@ for (i in monthly_data_example[2:3] |> names()) {
   )
 }
 # specify location of the output
-save_loc <- stringr::str_c("~/Downloads/plots_", Sys.Date(), ".html")
+save_loc <- file.path(tempdir(), stringr::str_c("plots_", Sys.Date(), ".html"))
 # combine a list of plots into a single html
 \dontshow{if (interactive()) (if (getRversion() >= "3.4") withAutoprint else force)(\{ # examplesIf}
 plot_out |> save_plot_list(save_loc)
