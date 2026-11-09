@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">fcutils</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.4</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.5</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -37,6 +37,24 @@
 
     </div>
 
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.1.5" id="fcutils-015">fcutils 0.1.5<a class="anchor" aria-label="anchor" href="#fcutils-015"></a></h2>
+<ul><li>
+<code>extend(type = "growth")</code> takes <code>growth = "pcy"</code>: anchors and paths as year-over-year rates, each period grown from the same period a year earlier. The default, <code>"pca"</code>, is the annualized rate as before.</li>
+<li>
+<code>extend(type = "chain")</code> takes <code>method = "ratio"</code> or <code>"diff"</code>, the words <code><a href="../reference/chain.html">chain()</a></code> uses. It replaces <code>join</code>, which is removed; <code>join = "shift"</code> is now <code>method = "diff"</code>, with the same result.</li>
+<li>
+<code><a href="../reference/chain.html">chain()</a></code> takes a method per series: <code>method = c(UR = "diff")</code> continues UR with its changes and every other series with its growth.</li>
+<li>
+<code><a href="../reference/yoy_to_lev.html">yoy_to_lev()</a></code> is deprecated; use <code>extend(hist_lev, path = yoy_gr, type = "growth", growth = "pcy")</code>, which gives the same result.</li>
+<li>
+<code><a href="../reference/interpol.html">interpol()</a></code> takes <code>interp = "stine"</code>: without a pattern, it fills gaps inside a series along a Stineman spline instead of a straight line.</li>
+<li>
+<code>span(x)</code> without dates fits x to the bank: it cuts x at the bank’s start and end and pads it with NA to both.</li>
+<li>The help pages of <code><a href="../reference/extend.html">extend()</a></code> and <code><a href="../reference/chain.html">chain()</a></code>, and the “Building a forecast” article, say which to use when.</li>
+<li>
+<code><a href="../reference/agg.html">agg()</a></code> takes <code>partial</code>, to estimate the last period of a series when only part of it has data, such as a quarter with one or two months published. <code>"average"</code> takes the mean of the observations so far (rates, volatile prices); <code>"growth"</code> grows a complete earlier period by the change from the same observations of that period (trending levels). <code>partial_lag</code> sets how far back <code>"growth"</code> looks: one target period by default, or for example <code>"1 year"</code>. The default, <code>"drop"</code>, leaves results unchanged.</li>
+</ul></div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.1.4" id="fcutils-014">fcutils 0.1.4<a class="anchor" aria-label="anchor" href="#fcutils-014"></a></h2>
 <ul><li>

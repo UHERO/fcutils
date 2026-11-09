@@ -1,6 +1,10 @@
-# Extend a series using year over year growth
+# Extend a series using year over year growth (deprecated)
 
-Extend a series using year over year growth
+Deprecated in fcutils 0.1.5: use
+`extend(hist_lev, path = yoy_gr, type = "growth", growth = "pcy")`,
+which does the same, puts the result on the bank, and takes
+year-over-year anchors as well as a path. yoy_to_lev() still works but
+warns.
 
 ## Usage
 
@@ -48,6 +52,8 @@ lev <- quarterly_data_example |>
   tsbox::ts_long() |>
   dplyr::filter(id == "ECT_HI")
 res1 <- yoy_to_lev(gr, lev |> dplyr::filter(time <= "2010-01-01"))
+#> Warning: yoy_to_lev() is deprecated; use extend(hist_lev, path = yoy_gr, type = "growth", growth = "pcy").
 res2 <- yoy_to_lev(gr, lev |> dplyr::filter(time <= "2010-01-01"), 1/8)
+#> Warning: yoy_to_lev() is deprecated; use extend(hist_lev, path = yoy_gr, type = "growth", growth = "pcy").
 tsbox::ts_plot(lev, res1, res2)
 ```

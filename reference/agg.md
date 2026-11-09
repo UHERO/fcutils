@@ -6,7 +6,14 @@ frequency
 ## Usage
 
 ``` r
-agg(x, conv_type = "mean", target_freq = "year", na_rm = FALSE)
+agg(
+  x,
+  conv_type = "mean",
+  target_freq = "year",
+  na_rm = FALSE,
+  partial = c("drop", "average", "growth"),
+  partial_lag = NULL
+)
 ```
 
 ## Arguments
@@ -31,6 +38,32 @@ agg(x, conv_type = "mean", target_freq = "year", na_rm = FALSE)
   logical, if TRUE, incomplete periods are aggregated as well. For
   irregular series, incomplete periods are always aggregated.
 
+- partial:
+
+  what to do with the LAST period of each series when only part of it
+  has data (e.g. a quarter with one or two months published):
+
+  - "drop" (default): leave it out, as for any incomplete period.
+
+  - "average": the mean of the observations so far. Suits rates and
+    volatile prices. Only for series aggregated by "mean".
+
+  - "growth": a complete earlier period, `partial_lag` before, grown by
+    the change from the same observations of that period: with October
+    published and `partial_lag = "3 months"`, Q4 = Q3 x Oct / Jul; with
+    October and November, Q4 = Q3 x mean(Oct, Nov) / mean(Jul, Aug).
+    Suits trending levels.
+
+  Incomplete periods before the last are always left out.
+
+- partial_lag:
+
+  how far back "growth" looks, as a lubridate period string: the
+  default, NULL, is one target period ("3 months" for quarters, "1 year"
+  for years). "1 year" compares with the same months a year earlier, as
+  [`ptd_gr()`](https://uhero.github.io/fcutils/reference/ptd_gr.md)
+  does.
+
 ## Value
 
 aggregated object of the same type as the input
@@ -54,6 +87,16 @@ monthly_data_example |>
 #>  9 2002-10-01    1594.    1765.      471.
 #> 10 2003-01-01    1580.    1730.      491.
 #> # ℹ 88 more rows
+# the last quarter estimated from the months published so far
+monthly_data_example |>
+  utils::head(-1) |>
+  agg(target_freq = "quarter", partial = "growth") |>
+  utils::tail(2)
+#> # A tibble: 2 × 4
+#>   time       VISNS_HI VAPNS_HI VADCNS_HI
+#>   <date>        <dbl>    <dbl>     <dbl>
+#> 1 2024-10-01     819.     933.      228.
+#> 2 2025-01-01     822.     907.      262.
 monthly_data_example |>
   agg(conv_type = "uhero", target_freq = "quarter")
 #> # A tibble: 98 × 4

@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">fcutils</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.4</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.5</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -44,7 +44,12 @@
 
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">interpol</span><span class="op">(</span><span class="va">incomplete</span>, pattern <span class="op">=</span> <span class="cn">NULL</span>, extend_range <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">interpol</span><span class="op">(</span></span>
+<span>  <span class="va">incomplete</span>,</span>
+<span>  pattern <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  extend_range <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  interp <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"linear"</span>, <span class="st">"stine"</span><span class="op">)</span></span>
+<span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div class="section level2">
@@ -57,13 +62,20 @@
 
 <dt id="arg-pattern">pattern<a class="anchor" aria-label="anchor" href="#arg-pattern"></a></dt>
 <dd><p>a ts-boxable object no missing values, or NULL (default)
-to fill the gaps inside each series along a straight line</p></dd>
+to fill the gaps inside each series by <code>interp</code></p></dd>
 
 
 <dt id="arg-extend-range">extend_range<a class="anchor" aria-label="anchor" href="#arg-extend-range"></a></dt>
 <dd><p>logical. If TRUE, uses a full_join to potentially extend
 the date range. If FALSE (default), uses a left_join to only fill NAs
 within the original date range.</p></dd>
+
+
+<dt id="arg-interp">interp<a class="anchor" aria-label="anchor" href="#arg-interp"></a></dt>
+<dd><p>without a pattern: "linear" (default) fills a gap along a
+straight line, "stine" along a Stineman spline through the observed
+values, which bends smoothly without overshooting them (as in
+<code><a href="extend.html">extend()</a></code>). Not used with a pattern.</p></dd>
 
 </dl></div>
     <div class="section level2">
@@ -75,7 +87,7 @@ within the original date range.</p></dd>
     <p>the function aligns two sets of time series by date and then
 interpolates the first set using the second set as a pattern. Without a
 pattern, missing values between a series' first and last observation are
-filled linearly (by position, so each period counts the same); missing
+filled by <code>interp</code> (by position, so each period counts the same); missing
 dates in a regular series are added first, and leading and trailing gaps
 stay empty. extend_range has no effect then.
 The time-span of the pattern has to match or be larger
@@ -93,6 +105,17 @@ than the time-span of the incomplete data.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 2025-09-01     3</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 2025-10-01     4</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 2025-11-01     5</span>
+<span class="r-in"><span><span class="co"># a smooth fill along the curve of the neighbouring values</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="make_xts.html">make_xts</a></span><span class="op">(</span><span class="st">"2025M7"</span>, val <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">1.2</span>, <span class="fl">2</span>, <span class="cn">NA</span>, <span class="cn">NA</span>, <span class="fl">8</span>, <span class="fl">8.5</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span></span>
+<span class="r-in"><span>  <span class="fu">interpol</span><span class="op">(</span>interp <span class="op">=</span> <span class="st">"stine"</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>               value</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2025-07-01 1.000000</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2025-08-01 1.200000</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2025-09-01 2.000000</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2025-10-01 3.746101</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2025-11-01 6.275314</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2025-12-01 8.000000</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2026-01-01 8.500000</span>
 <span class="r-in"><span><span class="va">monthly_data_example</span> <span class="op">|&gt;</span></span></span>
 <span class="r-in"><span>  <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">time</span> <span class="op">&gt;</span> <span class="st">"2002-01-01"</span><span class="op">)</span> <span class="op">|&gt;</span></span></span>
 <span class="r-in"><span>  <span class="fu">tsbox</span><span class="fu">::</span><span class="fu"><a href="https://docs.ropensci.org/tsbox/reference/ts_long.html" class="external-link">ts_long</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span></span></span>

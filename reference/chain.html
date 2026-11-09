@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">fcutils</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.4</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.5</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -75,7 +75,9 @@ in which case all series common to x and y are extended)</p></dd>
 <dt id="arg-method">method<a class="anchor" aria-label="anchor" href="#arg-method"></a></dt>
 <dd><p>"ratio" (default) scales y so that it meets x, which keeps
 y's growth rates (for levels); "diff" shifts y by a constant, which keeps
-y's changes (for rates such as the unemployment rate)</p></dd>
+y's changes (for rates such as the unemployment rate). Either one method
+for all series, or a named vector giving the method by series name in x,
+<code>c(UR_AT_US = "diff", FFR_AT_US = "diff")</code>; series not named use "ratio".</p></dd>
 
 
 <dt id="arg-direction">direction<a class="anchor" aria-label="anchor" href="#arg-direction"></a></dt>
@@ -101,7 +103,10 @@ x always pairs with a single series in y. The result keeps x's names.</p></dd>
     </div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
-    <p>This function performs a similar operation to <code><a href="https://docs.ropensci.org/tsbox/reference/ts_bind.html" class="external-link">tsbox::ts_chain()</a></code>,
+    <p>chain() joins data: two sources of the same series, or two banks.
+To forecast one series from assumptions or a path, use <code><a href="extend.html">extend()</a></code>; see
+"Which function" there.</p>
+<p>This function performs a similar operation to <code><a href="https://docs.ropensci.org/tsbox/reference/ts_bind.html" class="external-link">tsbox::ts_chain()</a></code>,
 but for multiple series. x and y are linked at x's first observation (going
 backward) and its last (going forward); y needs a value at those dates.
 The default, method "ratio" with direction "both", is <code><a href="https://docs.ropensci.org/tsbox/reference/ts_bind.html" class="external-link">tsbox::ts_chain()</a></code>.</p>
@@ -175,6 +180,16 @@ The default, method "ratio" with direction "both", is <code><a href="https://doc
 <span class="r-in"><span><span class="va">hist</span> <span class="op">&lt;-</span> <span class="fu"><a href="make_xts.html">make_xts</a></span><span class="op">(</span><span class="fl">2020</span>, val <span class="op">=</span> <span class="fu">tibble</span><span class="fu">::</span><span class="fu"><a href="https://tibble.tidyverse.org/reference/tibble.html" class="external-link">tibble</a></span><span class="op">(</span>UR_A <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">8.1</span>, <span class="fl">5.4</span>, <span class="fl">3.6</span><span class="op">)</span>, LF_A <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">160</span>, <span class="fl">161</span>, <span class="fl">164</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="va">fcst</span> <span class="op">&lt;-</span> <span class="fu"><a href="make_xts.html">make_xts</a></span><span class="op">(</span><span class="fl">2022</span>, val <span class="op">=</span> <span class="fu">tibble</span><span class="fu">::</span><span class="fu"><a href="https://tibble.tidyverse.org/reference/tibble.html" class="external-link">tibble</a></span><span class="op">(</span>UR_SOLA <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">3.6</span>, <span class="fl">3.8</span>, <span class="fl">4.1</span><span class="op">)</span>, LF_SOLA <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">165</span>, <span class="fl">166</span>, <span class="fl">168</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu">chain</span><span class="op">(</span><span class="va">hist</span>, <span class="va">fcst</span>, match <span class="op">=</span> <span class="st">"stem"</span>, direction <span class="op">=</span> <span class="st">"forward"</span><span class="op">)</span></span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Extending the following series: </span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> UR_A, LF_A</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>            UR_A     LF_A</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2020-01-01  8.1 160.0000</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2021-01-01  5.4 161.0000</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2022-01-01  3.6 164.0000</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2023-01-01  3.8 164.9939</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2024-01-01  4.1 166.9818</span>
+<span class="r-in"><span><span class="co"># a method per series: changes for the rate, growth for the level</span></span></span>
+<span class="r-in"><span><span class="fu">chain</span><span class="op">(</span><span class="va">hist</span>, <span class="va">fcst</span>, match <span class="op">=</span> <span class="st">"stem"</span>, direction <span class="op">=</span> <span class="st">"forward"</span>, method <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>UR_A <span class="op">=</span> <span class="st">"diff"</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Extending the following series: </span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> UR_A, LF_A</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>            UR_A     LF_A</span>

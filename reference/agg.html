@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">fcutils</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.4</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.5</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -44,7 +44,14 @@
 
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">agg</span><span class="op">(</span><span class="va">x</span>, conv_type <span class="op">=</span> <span class="st">"mean"</span>, target_freq <span class="op">=</span> <span class="st">"year"</span>, na_rm <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">agg</span><span class="op">(</span></span>
+<span>  <span class="va">x</span>,</span>
+<span>  conv_type <span class="op">=</span> <span class="st">"mean"</span>,</span>
+<span>  target_freq <span class="op">=</span> <span class="st">"year"</span>,</span>
+<span>  na_rm <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  partial <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"drop"</span>, <span class="st">"average"</span>, <span class="st">"growth"</span><span class="op">)</span>,</span>
+<span>  partial_lag <span class="op">=</span> <span class="cn">NULL</span></span>
+<span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div class="section level2">
@@ -70,6 +77,26 @@ the aggregation is based on "sum"; for all others it is based on "mean."</p></dd
 <dd><p>logical, if TRUE, incomplete periods are aggregated as
 well. For irregular series, incomplete periods are always aggregated.</p></dd>
 
+
+<dt id="arg-partial">partial<a class="anchor" aria-label="anchor" href="#arg-partial"></a></dt>
+<dd><p>what to do with the LAST period of each series when only part
+of it has data (e.g. a quarter with one or two months published):</p><ul><li><p>"drop" (default): leave it out, as for any incomplete period.</p></li>
+<li><p>"average": the mean of the observations so far. Suits rates and
+volatile prices. Only for series aggregated by "mean".</p></li>
+<li><p>"growth": a complete earlier period, <code>partial_lag</code> before, grown by the
+change from the same observations of that period: with October
+published and <code>partial_lag = "3 months"</code>, Q4 = Q3 x Oct / Jul; with
+October and November, Q4 = Q3 x mean(Oct, Nov) / mean(Jul, Aug). Suits
+trending levels.</p></li>
+</ul><p>Incomplete periods before the last are always left out.</p></dd>
+
+
+<dt id="arg-partial-lag">partial_lag<a class="anchor" aria-label="anchor" href="#arg-partial-lag"></a></dt>
+<dd><p>how far back "growth" looks, as a lubridate period
+string: the default, NULL, is one target period ("3 months" for
+quarters, "1 year" for years). "1 year" compares with the same months a
+year earlier, as <code><a href="ptd_gr.html">ptd_gr()</a></code> does.</p></dd>
+
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
@@ -94,6 +121,16 @@ well. For irregular series, incomplete periods are always aggregated.</p></dd>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 9</span> 2002-10-01    <span style="text-decoration: underline;">1</span>594.    <span style="text-decoration: underline;">1</span>765.      471.</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">10</span> 2003-01-01    <span style="text-decoration: underline;">1</span>580.    <span style="text-decoration: underline;">1</span>730.      491.</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># ℹ 88 more rows</span></span>
+<span class="r-in"><span><span class="co"># the last quarter estimated from the months published so far</span></span></span>
+<span class="r-in"><span><span class="va">monthly_data_example</span> <span class="op">|&gt;</span></span></span>
+<span class="r-in"><span>  <span class="fu">utils</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="op">-</span><span class="fl">1</span><span class="op">)</span> <span class="op">|&gt;</span></span></span>
+<span class="r-in"><span>  <span class="fu">agg</span><span class="op">(</span>target_freq <span class="op">=</span> <span class="st">"quarter"</span>, partial <span class="op">=</span> <span class="st">"growth"</span><span class="op">)</span> <span class="op">|&gt;</span></span></span>
+<span class="r-in"><span>  <span class="fu">utils</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">tail</a></span><span class="op">(</span><span class="fl">2</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 2 × 4</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   time       VISNS_HI VAPNS_HI VADCNS_HI</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;date&gt;</span>        <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">1</span> 2024-10-01     819.     933.      228.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">2</span> 2025-01-01     822.     907.      262.</span>
 <span class="r-in"><span><span class="va">monthly_data_example</span> <span class="op">|&gt;</span></span></span>
 <span class="r-in"><span>  <span class="fu">agg</span><span class="op">(</span>conv_type <span class="op">=</span> <span class="st">"uhero"</span>, target_freq <span class="op">=</span> <span class="st">"quarter"</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 98 × 4</span></span>

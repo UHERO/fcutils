@@ -36,7 +36,10 @@ chain(
 
   "ratio" (default) scales y so that it meets x, which keeps y's growth
   rates (for levels); "diff" shifts y by a constant, which keeps y's
-  changes (for rates such as the unemployment rate)
+  changes (for rates such as the unemployment rate). Either one method
+  for all series, or a named vector giving the method by series name in
+  x, `c(UR_AT_US = "diff", FFR_AT_US = "diff")`; series not named use
+  "ratio".
 
 - direction:
 
@@ -60,6 +63,11 @@ chain(
 object of the same type as the input with extended series
 
 ## Details
+
+chain() joins data: two sources of the same series, or two banks. To
+forecast one series from assumptions or a path, use
+[`extend()`](https://uhero.github.io/fcutils/reference/extend.md); see
+"Which function" there.
 
 This function performs a similar operation to
 [`tsbox::ts_chain()`](https://docs.ropensci.org/tsbox/reference/ts_bind.html),
@@ -137,6 +145,16 @@ chain(hist, fcst, method = "diff", direction = "forward")
 hist <- make_xts(2020, val = tibble::tibble(UR_A = c(8.1, 5.4, 3.6), LF_A = c(160, 161, 164)))
 fcst <- make_xts(2022, val = tibble::tibble(UR_SOLA = c(3.6, 3.8, 4.1), LF_SOLA = c(165, 166, 168)))
 chain(hist, fcst, match = "stem", direction = "forward")
+#> Extending the following series: 
+#> UR_A, LF_A
+#>            UR_A     LF_A
+#> 2020-01-01  8.1 160.0000
+#> 2021-01-01  5.4 161.0000
+#> 2022-01-01  3.6 164.0000
+#> 2023-01-01  3.8 164.9939
+#> 2024-01-01  4.1 166.9818
+# a method per series: changes for the rate, growth for the level
+chain(hist, fcst, match = "stem", direction = "forward", method = c(UR_A = "diff"))
 #> Extending the following series: 
 #> UR_A, LF_A
 #>            UR_A     LF_A

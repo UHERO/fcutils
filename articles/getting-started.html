@@ -19,7 +19,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">fcutils</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.4</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.5</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -89,10 +89,10 @@ follow on from it.</p>
 so that they can be added, divided and compared. fcutils calls that
 common date range the <em>bank</em>: it runs from the start of the
 history to the end of the forecast period. <code><a href="../reference/make_xts.html">make_xts()</a></code>,
-<code><a href="../reference/addf.html">addf()</a></code>, <code><a href="../reference/extend.html">extend()</a></code> and
-<code>span(extend = TRUE)</code> return series that cover the whole
-bank, and they read its first and last date from two options. Set them
-once at the top of a script, before calling any of these functions:</p>
+<code><a href="../reference/addf.html">addf()</a></code>, <code><a href="../reference/extend.html">extend()</a></code> and <code><a href="../reference/span.html">span()</a></code>
+without dates return series that cover the whole bank, and they read its
+first and last date from two options. Set them once at the top of a
+script, before calling any of these functions:</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/options.html" class="external-link">options</a></span><span class="op">(</span></span>
 <span>  fcutils.bnk_start <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/as.Date.html" class="external-link">as.Date</a></span><span class="op">(</span><span class="st">"1990-01-01"</span><span class="op">)</span>,</span>
@@ -252,8 +252,7 @@ last date with a value:</p>
 <span><span class="fu"><a href="../reference/find_end.html">find_end</a></span><span class="op">(</span><span class="va">q</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] "2025-01-01" "2025-01-01"</span></span></code></pre></div>
 <p>With <code>extend = TRUE</code>, <code><a href="../reference/span.html">span()</a></code> also pads a
-series with NA out to the end of the range, which is how a series is
-fitted to the bank:</p>
+series with NA out to the end of the range:</p>
 <div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/span.html">span</a></span><span class="op">(</span><span class="va">x</span>, <span class="fl">2024.4</span>, <span class="fl">2025.4</span>, extend <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span><span class="co">#&gt;             E_NF_HI</span></span>
@@ -262,6 +261,14 @@ fitted to the bank:</p>
 <span><span class="co">#&gt; 2025-04-01       NA</span></span>
 <span><span class="co">#&gt; 2025-07-01       NA</span></span>
 <span><span class="co">#&gt; 2025-10-01       NA</span></span></code></pre></div>
+<p>Without any dates, <code><a href="../reference/span.html">span()</a></code> fits a series to the bank: it
+cuts the series at the bank’s start and end and pads it with NA to both.
+Use it to put a series made some other way, such as an annual average
+from <code><a href="../reference/agg.html">agg()</a></code>, on the same dates as the rest of the bank:</p>
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/span.html">span</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu">tsbox</span><span class="fu">::</span><span class="fu"><a href="https://docs.ropensci.org/tsbox/reference/ts_summary.html" class="external-link">ts_summary</a></span><span class="op">(</span><span class="op">)</span></span>
+<span><span class="co">#&gt;        id obs    diff freq      start        end</span></span>
+<span><span class="co">#&gt; 1 span(x) 109 3 month    4 1998-01-01 2025-01-01</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="getting-data">Getting data<a class="anchor" aria-label="anchor" href="#getting-data"></a>
@@ -274,7 +281,7 @@ a UDAMAN export. Both need the UDAMAN token, stored once with
 <code><a href="../reference/set_udaman_token.html">set_udaman_token()</a></code> (or as <code>udaman_token</code> in
 <code>.Renviron</code>), and the UHERO VPN unless
 <code>public = TRUE</code>.</p>
-<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/get_series.html">get_series</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"VISNS@HI.M"</span>, <span class="st">"E_NF@HI.Q"</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/get_series_exp.html">get_series_exp</a></span><span class="op">(</span><span class="fl">74</span>, format <span class="op">=</span> <span class="st">"xts"</span><span class="op">)</span></span></code></pre></div>
 <p><code><a href="../reference/get_series_src.html">get_series_src()</a></code> downloads from FRED, Statistics Canada,
@@ -282,7 +289,7 @@ the Bank of Canada, Japan’s e-Stat and the EIA. FRED, e-Stat and the EIA
 need a key, stored with <code><a href="../reference/set_api_key.html">set_api_key()</a></code> or in
 <code>.Renviron</code> (<code>FRED_API_KEY</code>,
 <code>ESTAT_API_KEY</code>, <code>EIA_API_KEY</code>):</p>
-<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/get_series_src.html">get_series_src</a></span><span class="op">(</span><span class="st">"UNRATE"</span>, <span class="st">"fred"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/get_series_src.html">get_series_src</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"PAYEMS"</span>, <span class="st">"CPIAUCSL"</span><span class="op">)</span>, <span class="st">"fred"</span>, format <span class="op">=</span> <span class="st">"xts"</span><span class="op">)</span></span></code></pre></div>
 <p>Next, <a href="forecasting.html">Building a forecast</a> extends

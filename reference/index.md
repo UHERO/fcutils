@@ -99,7 +99,7 @@
 - [`cagr()`](https://uhero.github.io/fcutils/reference/cagr.md) :
   Calculate compund annual growth
 - [`yoy_to_lev()`](https://uhero.github.io/fcutils/reference/yoy_to_lev.md)
-  : Extend a series using year over year growth
+  : Extend a series using year over year growth (deprecated)
 - [`ma()`](https://uhero.github.io/fcutils/reference/ma.md) : Backward
   looking moving average
 - [`index_to_base()`](https://uhero.github.io/fcutils/reference/index_to_base.md)

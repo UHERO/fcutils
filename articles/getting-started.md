@@ -38,9 +38,10 @@ of the forecast period.
 [`make_xts()`](https://uhero.github.io/fcutils/reference/make_xts.md),
 [`addf()`](https://uhero.github.io/fcutils/reference/addf.md),
 [`extend()`](https://uhero.github.io/fcutils/reference/extend.md) and
-`span(extend = TRUE)` return series that cover the whole bank, and they
-read its first and last date from two options. Set them once at the top
-of a script, before calling any of these functions:
+[`span()`](https://uhero.github.io/fcutils/reference/span.md) without
+dates return series that cover the whole bank, and they read its first
+and last date from two options. Set them once at the top of a script,
+before calling any of these functions:
 
 ``` r
 
@@ -217,8 +218,7 @@ find_end(q)
 
 With `extend = TRUE`,
 [`span()`](https://uhero.github.io/fcutils/reference/span.md) also pads
-a series with NA out to the end of the range, which is how a series is
-fitted to the bank:
+a series with NA out to the end of the range:
 
 ``` r
 
@@ -229,6 +229,21 @@ span(x, 2024.4, 2025.4, extend = TRUE)
 #> 2025-04-01       NA
 #> 2025-07-01       NA
 #> 2025-10-01       NA
+```
+
+Without any dates,
+[`span()`](https://uhero.github.io/fcutils/reference/span.md) fits a
+series to the bank: it cuts the series at the bank’s start and end and
+pads it with NA to both. Use it to put a series made some other way,
+such as an annual average from
+[`agg()`](https://uhero.github.io/fcutils/reference/agg.md), on the same
+dates as the rest of the bank:
+
+``` r
+
+span(x) |> tsbox::ts_summary()
+#>        id obs    diff freq      start        end
+#> 1 span(x) 109 3 month    4 1998-01-01 2025-01-01
 ```
 
 ## Getting data

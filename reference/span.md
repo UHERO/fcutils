@@ -33,11 +33,36 @@ span(x, start = NULL, end = NULL, template = NULL, extend = FALSE)
 
 ## Value
 
-filtered object of the same type as the input
+filtered object of the same type as the input. Without `start`, `end`
+and `template`, x is fitted to the bank: cut at the bank's start and end
+and padded with NA to both (`extend` is ignored).
 
 ## Examples
 
 ``` r
+options(fcutils.bnk_start = as.Date("1990-01-01"),
+  fcutils.bnk_end = as.Date("2030-12-31"))
+quarterly_data_example |>
+  span() # 1990Q1 to 2030Q4
+#> # A tibble: 164 × 31
+#>    time       E_NF_HI ECT_HI EMN_HI EWT_HI ERT_HI E_TRADE_HI E_TU_HI ETWTANS_HI
+#>    <date>       <dbl>  <dbl>  <dbl>  <dbl>  <dbl>      <dbl>   <dbl>      <dbl>
+#>  1 1990-01-01      NA     NA     NA     NA     NA         NA      NA         NA
+#>  2 1990-04-01      NA     NA     NA     NA     NA         NA      NA         NA
+#>  3 1990-07-01      NA     NA     NA     NA     NA         NA      NA         NA
+#>  4 1990-10-01      NA     NA     NA     NA     NA         NA      NA         NA
+#>  5 1991-01-01      NA     NA     NA     NA     NA         NA      NA         NA
+#>  6 1991-04-01      NA     NA     NA     NA     NA         NA      NA         NA
+#>  7 1991-07-01      NA     NA     NA     NA     NA         NA      NA         NA
+#>  8 1991-10-01      NA     NA     NA     NA     NA         NA      NA         NA
+#>  9 1992-01-01      NA     NA     NA     NA     NA         NA      NA         NA
+#> 10 1992-04-01      NA     NA     NA     NA     NA         NA      NA         NA
+#> # ℹ 154 more rows
+#> # ℹ 22 more variables: ETWNS_HI <dbl>, EUT_HI <dbl>, EIF_HI <dbl>,
+#> #   EFI_HI <dbl>, E_FIR_HI <dbl>, ERE_HI <dbl>, EPS_HI <dbl>, E_PBS_HI <dbl>,
+#> #   E_ELSE_HI <dbl>, EMA_HI <dbl>, EAD_HI <dbl>, EED_HI <dbl>, EHC_HI <dbl>,
+#> #   EAF_HI <dbl>, EAFAC_HI <dbl>, EAFFD_HI <dbl>, EOS_HI <dbl>, EGV_HI <dbl>,
+#> #   EGVFD_HI <dbl>, EGVST_HI <dbl>, EGVSTEDNS_HI <dbl>, EGVLC_HI <dbl>
 quarterly_data_example |>
   span(2010.1)
 #> # A tibble: 61 × 31

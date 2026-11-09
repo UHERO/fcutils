@@ -36,6 +36,24 @@ runs from the bank start to the bank end, so results line up with each
 other and with the bank. Before the last observation they hold the
 history; after it, the forecast.
 
+## Which function
+
+Each step below continues a series from something we know or assume
+about its future. The form of that knowledge picks the function:
+
+| What we know about the future | Function |
+|----|----|
+| Levels at some dates | `extend(type = "level")` |
+| Growth rates at some dates, or a growth path, annualized or year over year | `extend(type = "growth", growth = "pca" or "pcy")` |
+| Another series’ path, such as a projection, for one series | `extend(type = "chain", method = "ratio" or "diff")` |
+| Two sources of the same data to join, many series at once, or a series to extend back in time | [`chain()`](https://uhero.github.io/fcutils/reference/chain.md) |
+
+[`extend()`](https://uhero.github.io/fcutils/reference/extend.md)
+forecasts one series and returns it on the bank.
+[`chain()`](https://uhero.github.io/fcutils/reference/chain.md) joins
+data and keeps the span of its inputs. Both use “ratio” to continue with
+growth (levels) and “diff” to continue with changes in points (rates).
+
 ## Growth through anchors
 
 An *anchor* is a target value at a date. With `type = "growth"`, the
@@ -88,6 +106,35 @@ reads `2026.10` as `2026.1`. Anchors dated at or before the last
 observation are dropped, with a message naming them: history takes
 precedence.
 
+Growth is often quoted year over year instead, as for CPI inflation.
+With `growth = "pcy"`, the anchors are year-over-year rates and each
+quarter grows from the same quarter a year earlier:
+
+``` r
+
+jobs_yy <- extend(jobs, 2025.4 ~ 1.2, 2027.4 ~ 0.8, type = "growth", growth = "pcy")
+round(tsbox::ts_pcy(jobs_yy)[p(2025.1, 2028.1)], 2)
+#>            value
+#> 2025-01-01  1.73
+#> 2025-04-01  1.55
+#> 2025-07-01  1.38
+#> 2025-10-01  1.20
+#> 2026-01-01  1.15
+#> 2026-04-01  1.10
+#> 2026-07-01  1.05
+#> 2026-10-01  1.00
+#> 2027-01-01  0.95
+#> 2027-04-01  0.90
+#> 2027-07-01  0.85
+#> 2027-10-01  0.80
+#> 2028-01-01  0.80
+```
+
+Year-over-year growth carries last year’s quarter-to-quarter pattern
+into the forecast: a quarter that was weak a year ago stays weak
+relative to its neighbours. Annualized growth gives a smooth path from
+the last quarter.
+
 ## A level through anchors
 
 With the default `type = "level"`, the series itself runs through the
@@ -108,7 +155,7 @@ tsbox::ts_plot(paths[p(2022, 2031)], title = "Construction share of jobs, %")
 
 ![Construction share of jobs, 2022 to 2031: history, then the linear
 path with corners at the anchors and the smooth Stineman spline through
-the same anchors.](forecasting_files/figure-html/unnamed-chunk-5-1.png)
+the same anchors.](forecasting_files/figure-html/unnamed-chunk-6-1.png)
 
 ## Add-factors from ramps
 
@@ -258,8 +305,10 @@ round(pcmp(gv[, c("projection", "forecast")], lag = 1)[p(2025.2, 2025.4)], 3)
 #> 2025-10-01      0.142    0.142
 ```
 
-`join = "shift"` instead moves the projection by a constant to meet the
-history and uses the growth of the shifted series.
+`method = "diff"` instead moves the projection by a constant to meet the
+history, so the forecast keeps the projection’s changes rather than its
+growth rates. It suits rates, and levels whose gap to the projection
+should stay constant in units rather than in percent.
 
 ## Updating a forecast bank
 
@@ -320,8 +369,10 @@ If the names differ in their endings, such as `UR_AT_US_A` (annual) and
 `UR_AT_US_SOLQ` (quarterly model output), `match = "stem"` pairs them on
 the part before the ending. For rates such as the unemployment rate,
 `method = "diff"` continues with the change in points instead of the
-growth rate. `direction = "backward"` extends a short history back in
-time with the growth of a longer series.
+growth rate. A bank that mixes levels and rates takes one method per
+series, by name: `method = c(UR_AT_US = "diff", FFR_AT_US = "diff")`,
+with “ratio” for the rest. `direction = "backward"` extends a short
+history back in time with the growth of a longer series.
 
 ## Annual results
 
