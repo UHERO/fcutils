@@ -222,6 +222,41 @@ the pandemic:</p>
 more than the first 25 days of March 2021.</p>
 </div>
 <div class="section level2">
+<h2 id="a-quarter-in-progress">A quarter in progress<a class="anchor" aria-label="anchor" href="#a-quarter-in-progress"></a>
+</h2>
+<p><code><a href="../reference/agg.html">agg()</a></code> leaves out a quarter until all three of its months
+are published. A forecast often needs the current quarter sooner.
+<code>partial</code> estimates the last quarter of each series from the
+months published so far: <code>"average"</code> takes their mean, and
+<code>"growth"</code> grows an earlier complete quarter by the change
+from the same months of that quarter. By default <code>"growth"</code>
+looks back one quarter; <code>partial_lag = "1 year"</code> compares
+with the same months a year earlier, which suits data that are not
+seasonally adjusted.</p>
+<p>Suppose visitor arrivals were published only through February
+2025:</p>
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">vis_feb</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">vis</span>, <span class="op">-</span><span class="fl">1</span><span class="op">)</span></span>
+<span><span class="va">q1</span> <span class="op">&lt;-</span> <span class="fu">tsbox</span><span class="fu">::</span><span class="fu"><a href="https://docs.ropensci.org/tsbox/reference/ts_c.html" class="external-link">ts_c</a></span><span class="op">(</span></span>
+<span>  drop <span class="op">=</span> <span class="fu"><a href="../reference/agg.html">agg</a></span><span class="op">(</span><span class="va">vis_feb</span>, target_freq <span class="op">=</span> <span class="st">"quarter"</span><span class="op">)</span>,</span>
+<span>  average <span class="op">=</span> <span class="fu"><a href="../reference/agg.html">agg</a></span><span class="op">(</span><span class="va">vis_feb</span>, target_freq <span class="op">=</span> <span class="st">"quarter"</span>, partial <span class="op">=</span> <span class="st">"average"</span><span class="op">)</span>,</span>
+<span>  growth <span class="op">=</span> <span class="fu"><a href="../reference/agg.html">agg</a></span><span class="op">(</span><span class="va">vis_feb</span>, target_freq <span class="op">=</span> <span class="st">"quarter"</span>, partial <span class="op">=</span> <span class="st">"growth"</span><span class="op">)</span>,</span>
+<span>  growth_1y <span class="op">=</span> <span class="fu"><a href="../reference/agg.html">agg</a></span><span class="op">(</span><span class="va">vis_feb</span>, target_freq <span class="op">=</span> <span class="st">"quarter"</span>, partial <span class="op">=</span> <span class="st">"growth"</span>,</span>
+<span>                  partial_lag <span class="op">=</span> <span class="st">"1 year"</span><span class="op">)</span>,</span>
+<span>  actual <span class="op">=</span> <span class="fu"><a href="../reference/agg.html">agg</a></span><span class="op">(</span><span class="va">vis</span>, target_freq <span class="op">=</span> <span class="st">"quarter"</span><span class="op">)</span></span>
+<span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">round</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">tail</a></span><span class="op">(</span><span class="va">q1</span>, <span class="fl">2</span><span class="op">)</span>, <span class="fl">1</span><span class="op">)</span></span>
+<span><span class="co">#&gt;             drop average growth growth_1y actual</span></span>
+<span><span class="co">#&gt; 2024-10-01 818.5   818.5  818.5     818.5  818.5</span></span>
+<span><span class="co">#&gt; 2025-01-01    NA   775.9  821.9     812.9  818.6</span></span></code></pre></div>
+<p>With March published, the 2025Q1 average is 818.6. The mean of
+January and February misses the March peak and comes in at 775.9.
+Growing 2024Q4 by the change from October–November to January–February
+gives 821.9, and growing 2024Q1 by the change from January–February 2024
+gives 812.9. For a rate, such as the unemployment rate,
+<code>"average"</code> is the usual choice.</p>
+</div>
+<div class="section level2">
 <h2 id="tables">Tables<a class="anchor" aria-label="anchor" href="#tables"></a>
 </h2>
 <p><code><a href="../reference/gen_table.html">gen_table()</a></code> lays out series with their growth rates. By
@@ -230,7 +265,7 @@ default the dates run across and each series and growth rate has a row;
 page. <code>percent</code> picks the growth rate shown with each series:
 <code>"pc"</code> (period on period), <code>"pcy"</code> (year on year),
 <code>"pca"</code> (annualized) or <code>"none"</code>.</p>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/gen_table.html">gen_table</a></span><span class="op">(</span><span class="va">q</span><span class="op">[</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"E_NF_HI"</span>, <span class="st">"EAF_HI"</span><span class="op">)</span><span class="op">]</span>,</span>
 <span>  tbl_start <span class="op">=</span> <span class="st">"2024-01-01"</span>, tbl_end <span class="op">=</span> <span class="st">"2025-01-01"</span>, percent <span class="op">=</span> <span class="st">"pcy"</span>,</span>
 <span>  time_across <span class="op">=</span> <span class="cn">FALSE</span></span>
@@ -259,7 +294,7 @@ forecast, an earlier forecast and history, as lines, with the growth of
 the first as bars on the right axis and a table below. This is the jobs
 forecast from <a href="forecasting.html">Building a forecast</a> against
 history:</p>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">jobs_fc</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/extend.html">extend</a></span><span class="op">(</span><span class="va">jobs</span>, <span class="fl">2025.4</span> <span class="op">~</span> <span class="fl">1.2</span>, <span class="fl">2027.4</span> <span class="op">~</span> <span class="fl">0.8</span>, type <span class="op">=</span> <span class="st">"growth"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/plot_fc.html">plot_fc</a></span><span class="op">(</span></span>
 <span>  <span class="fu">tsbox</span><span class="fu">::</span><span class="fu"><a href="https://docs.ropensci.org/tsbox/reference/ts_c.html" class="external-link">ts_c</a></span><span class="op">(</span>forecast <span class="op">=</span> <span class="va">jobs_fc</span>, history <span class="op">=</span> <span class="va">jobs</span><span class="op">)</span>,</span>
@@ -280,7 +315,7 @@ levels and growth. <code><a href="../reference/plot_comp_3.html">plot_comp_3()</
 series indexed to 1 at <code>base_date</code>, which compares series of
 different size. Accommodation and food services jobs fell much further
 in 2020 than total jobs:</p>
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_comp_3.html">plot_comp_3</a></span><span class="op">(</span><span class="va">q</span><span class="op">[</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"E_NF_HI"</span>, <span class="st">"EAF_HI"</span><span class="op">)</span><span class="op">]</span>,</span>
 <span>  base_date <span class="op">=</span> <span class="st">"2019-10-01"</span>,</span>
 <span>  rng_start <span class="op">=</span> <span class="st">"2016-01-01"</span>, rng_end <span class="op">=</span> <span class="st">"2028-01-01"</span>, width <span class="op">=</span> <span class="fl">700</span></span>

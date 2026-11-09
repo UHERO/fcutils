@@ -142,6 +142,42 @@ round(tail(tsbox::ts_c(
 The first 25 days of March 2022 averaged 22,866 arrivals a day, 83% more
 than the first 25 days of March 2021.
 
+## A quarter in progress
+
+[`agg()`](https://uhero.github.io/fcutils/reference/agg.md) leaves out a
+quarter until all three of its months are published. A forecast often
+needs the current quarter sooner. `partial` estimates the last quarter
+of each series from the months published so far: `"average"` takes their
+mean, and `"growth"` grows an earlier complete quarter by the change
+from the same months of that quarter. By default `"growth"` looks back
+one quarter; `partial_lag = "1 year"` compares with the same months a
+year earlier, which suits data that are not seasonally adjusted.
+
+Suppose visitor arrivals were published only through February 2025:
+
+``` r
+
+vis_feb <- head(vis, -1)
+q1 <- tsbox::ts_c(
+  drop = agg(vis_feb, target_freq = "quarter"),
+  average = agg(vis_feb, target_freq = "quarter", partial = "average"),
+  growth = agg(vis_feb, target_freq = "quarter", partial = "growth"),
+  growth_1y = agg(vis_feb, target_freq = "quarter", partial = "growth",
+                  partial_lag = "1 year"),
+  actual = agg(vis, target_freq = "quarter")
+)
+round(tail(q1, 2), 1)
+#>             drop average growth growth_1y actual
+#> 2024-10-01 818.5   818.5  818.5     818.5  818.5
+#> 2025-01-01    NA   775.9  821.9     812.9  818.6
+```
+
+With March published, the 2025Q1 average is 818.6. The mean of January
+and February misses the March peak and comes in at 775.9. Growing 2024Q4
+by the change from October–November to January–February gives 821.9, and
+growing 2024Q1 by the change from January–February 2024 gives 812.9. For
+a rate, such as the unemployment rate, `"average"` is the usual choice.
+
 ## Tables
 
 [`gen_table()`](https://uhero.github.io/fcutils/reference/gen_table.md)
