@@ -17,8 +17,9 @@ addf(
 }
 \arguments{
 \item{start}{date the ramp starts, in any form \code{to_ymd()} reads
-("2026-07-01", "2026Q3", 2026.3, 2026), or a data frame of ramps with
-columns start, end, from and to, one ramp per row}
+("2026Q3", 2026.3, "2026M07", 2026), or a data frame of ramps with
+columns start, end, from and to, one ramp per row. A day
+("2026-07-01") must be the first day of a period at frequency \code{per}.}
 
 \item{end}{date the ramp ends}
 
@@ -40,7 +41,8 @@ without overshooting. Must be named.}
 \value{
 one xts series over the bank, from
 \code{getOption("fcutils.bnk_start")} to \code{getOption("fcutils.bnk_end")} (see
-\code{make_xts()})
+\code{make_xts()}). A ramp that starts before the bank or ends after it
+extends the series past the bank.
 }
 \description{
 An add-factor is a series added to a forecast to shift it for a while.
@@ -56,14 +58,16 @@ arguments, \code{addf()} gives zeros over the bank.
 
 Given a data frame of ramps, \code{addf()} builds one add-factor per row and
 returns their sum, so overlapping ramps add up. A data frame with no rows
-gives zeros over the bank. A date column must be all numbers or all
+gives zeros over the bank, at the frequency \code{per}. A date column must be all numbers or all
 strings.
 
 Given formulas, \code{addf(2026.3 ~ 0, 2027.4 ~ -0.3, 2030.4 ~ 0)}, the
 add-factor runs through the points in straight lines, one equal step per
 period, and is zero before the first point and after the last. Each
-formula has a date on the left and a value on the right. The frequency
-follows the first date (2026.3 is a quarter), unless \code{per} is given by
+formula has a date on the left and a value on the right, and each date
+must start a period within the bank. Give at least two points. The
+frequency follows the date of the first formula (2026.3 is a quarter),
+unless \code{per} is given by
 name; \code{ser_name} and \code{per} must be named. Decimal dates are quarters, so
 monthly points need strings (\code{"2026M10" ~ 1}).
 

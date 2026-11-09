@@ -29,6 +29,38 @@
   `"1 year"`. The default, `"drop"`, leaves results unchanged. The "Growth
   rates, tables and plots" article has an example.
 
+## Bug fixes
+
+* `extend(type = "chain", method = "diff")` follows the shifted path as is.
+  It compounded the path's growth, which lost the sign of a path that
+  reaches zero or below and gave NA after a history ending at zero. With
+  `smooth`, or with `method = "ratio"`, a path at or below zero is now an
+  error.
+* `extend()` stops on an anchor that is not the first day of a period within
+  the bank, as `addf()` does. Such an anchor used to be moved to the next
+  period or ignored without a message.
+* `extend(hold_last = FALSE)` carries the last anchor forward with
+  `interp = "linear"`, as it did with `"stine"`; the values after it were NA.
+* `write_tsd()` writes an NA inside a series as the TSD missing value. It
+  dropped it, which moved every later value one period early.
+* `plot_fc(table_start = NULL, table_end = NULL)` shows the whole data, as
+  documented; it stopped with an error.
+* `rename_udaman()` takes the location just before the frequency, so
+  `SH_JP__HON_M` becomes `SH_JP@HON.M` (was `SH_JP@JP.M`).
+* `extract_data()` renames only the AR lag columns (`ar1`, `ar2`, ...); it
+  also changed "ar" inside other regressor names.
+
+## Documentation
+
+* Help pages checked against the code. Among the corrections: `pcmp(x, 4)`
+  is the average quarterly growth over a year (year on year is
+  `pcmp(x, 4, 4)`); `yoy_gr = FALSE` in the plots is growth on the previous
+  period, not annualized; `index_to_base()` with one date sets that period,
+  not the year, to the base; `span()` reads an end year or quarter as its
+  first day; `interpol()` matches pattern series by position; `%+=%` binds
+  more tightly than `/`; `set_udaman_token()` sets the token for the session
+  only. Examples print only the rows that matter.
+
 # fcutils 0.1.4
 
 * `write_tsd()` takes `descriptions`, a named vector of labels written in

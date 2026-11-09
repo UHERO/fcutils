@@ -7,16 +7,27 @@
 rename_udaman(ser_in, freq = NULL)
 }
 \arguments{
-\item{ser_in}{series names (character "mnemonic_loc", "mnemonic_AT_loc_freq", "mnemonic__loc_freq", mnemonic@loc.freq")}
+\item{ser_in}{series names in any of the forms MNEMONIC_LOC,
+MNEMONIC__LOC_F, MNEMONIC_AT_LOC_F or MNEMONIC@LOC.F. One string may
+hold several names separated by commas, semicolons or spaces.}
 
-\item{freq}{frequency of the series, required if not contained in the series
-name (character "D", "W", "M", "Q", "S", "A")}
+\item{freq}{frequency of the series ("D", "W", "M", "Q", "S", "A"),
+required if not contained in the series names; it replaces any frequency
+in the names}
 }
 \value{
 series names following udaman convention "mnemonic@loc.freq"
 }
 \description{
 Format series names to udaman format (mnemonic@loc.freq)
+}
+\details{
+Recognised locations are HI, HON, HAW, MAU, KAU, MAUI, MOL, LAN,
+NBI, US and JP; the location is the one just before the frequency or the
+end of the name. HI5, HI3, HIALL and CNTY expand to the matching sets of
+counties, so the output can be longer than the input. A name with no
+recognised location, or with no frequency when \code{freq} is NULL, stops with
+an error.
 }
 \examples{
 rename_udaman(c("E_NF_HI", "ECT_HI", "E_TU_HAW"), freq = "M")
@@ -26,10 +37,14 @@ rename_udaman(c("E_NF@HI.M", "ECT@HI.M", "VAP@HAW.W"))
 rename_udaman(c("SH_US@HI.M", "SH_JP__HON_M"))
 rename_udaman(c("E_NF_HI5", "ECT__HIALL", "E_TU@CNTY"), freq = "M")
 rename_udaman(c("E_NF_HI5 , ECT__HIALL  E_TU@CNTY", "VAP_HAW ; ECT_HON"), freq = "M")
-quarterly_data_example |> dplyr::rename_with(~ rename_udaman(., freq = "M"), .cols = -1)
-quarterly_data_example |> dplyr::rename_with(rename_udaman, freq = "M", .cols = !time)
+quarterly_data_example |>
+  dplyr::rename_with(~ rename_udaman(., freq = "Q"), .cols = -1) |>
+  names() |>
+  head()
 quarterly_data_example |>
   tsbox::ts_long() |>
-  dplyr::mutate(id = rename_udaman(id, freq = "M")) |>
-  tsbox::ts_xts()
+  dplyr::mutate(id = rename_udaman(id, freq = "Q")) |>
+  tsbox::ts_xts() |>
+  colnames() |>
+  head()
 }

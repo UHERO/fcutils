@@ -3,9 +3,11 @@
 \docType{data}
 \name{monthly_data_example}
 \alias{monthly_data_example}
-\title{monthly data for examples}
+\title{Monthly data for examples}
 \format{
-tibble of monthly data
+wide tibble of Hawaii visitor arrivals (VISNS_HI), arrivals by air
+(VAPNS_HI) and average daily census (VADCNS_HI), not seasonally adjusted,
+September 2000 to March 2025
 }
 \source{
 author
@@ -14,10 +16,10 @@ author
 monthly_data_example
 }
 \description{
-monthly data for examples
+Monthly data for examples
 }
 \references{
-\url{uhero.hawaii.edu}
+\url{https://uhero.hawaii.edu}
 }
 \author{
 Peter Fuleky \email{fuleky@hawaii.edu}

@@ -17,7 +17,7 @@ uh_colors_50
 transparent versions of UHERO colors
 }
 \references{
-\url{uhero.hawaii.edu}
+\url{https://uhero.hawaii.edu}
 }
 \author{
 Peter Fuleky \email{fuleky@hawaii.edu}

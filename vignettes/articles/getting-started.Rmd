@@ -117,7 +117,8 @@ the column is called `E_NF_HI`. The series used below are:
 
 ## Dates
 
-Wherever a function takes a date, `to_ymd()` reads it. A year, a quarter
+Most functions read dates with `to_ymd()`; `pm()`, `pq()` and `py()` are
+older and take only their own format. A year, a quarter
 or a day can be a number or a string; as a number, a quarter is either a
 decimal (`2024.3`) or six digits (`202403`). A month must be a string,
 because R stores `2024.10` and `2024.1` as the same number.
@@ -135,16 +136,19 @@ x <- conv_xts(q)$E_NF_HI
 x[p(2024.2, 2024)]
 ```
 
-`span()` cuts any format to a range. `find_start()` and `find_end()` give
-the first and last date with a value:
+`span()` cuts any format to a range. Unlike `p()`, it reads an end given as
+a year or quarter as that period's first day, which on monthly data keeps
+only its first month; give the last day (`"2024-12-31"`) to keep the whole
+period. `find_start()` and `find_end()` give the first and last date with a
+value, one per series:
 
 ```{r}
 span(q, 2024) |> head(3)
 find_end(q)
 ```
 
-With `extend = TRUE`, `span()` also pads a series with NA out to the end
-of the range:
+With `extend = TRUE`, `span()` also pads a series with NA out to the start
+and end of the range:
 
 ```{r}
 span(x, 2024.4, 2025.4, extend = TRUE)
@@ -156,7 +160,9 @@ series made some other way, such as an annual average from `agg()`, on the
 same dates as the rest of the bank:
 
 ```{r}
-span(x) |> tsbox::ts_summary()
+fitted <- span(x)
+range(zoo::index(fitted))
+tail(fitted, 2)
 ```
 
 ## Getting data

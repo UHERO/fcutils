@@ -13,16 +13,17 @@ disagg(
 )
 }
 \arguments{
-\item{x}{a tx-boxable object at a low frequency (e.g. annual or quarterly)}
+\item{x}{a ts-boxable object at a low frequency (e.g. annual or quarterly)}
 
 \item{conv_type}{match the interpolated value via "first", "last", "sum",
 "mean". If conv_type == "uhero" then the name of the time series x is
 compared to the internal variable \code{sum_pattern}. For matching series names
 the interpolation is based on "sum"; for all others it is based on "mean."}
 
-\item{target_freq}{target frequency "quarter" or "month"}
+\item{target_freq}{target frequency "quarter" (default) or "month"}
 
-\item{pattern}{a single high-frequency pattern that the interpolation should follow}
+\item{pattern}{a single high-frequency pattern that the interpolation
+should follow; it serves every series in x}
 
 \item{extend_with}{NULL (default), "last_growth", or a ts-boxable object. Without
 a pattern the interpolation has nothing to follow at the end of a series
@@ -39,18 +40,24 @@ interpolated object of the same type as the input
 Disaggregate univariate or multivariate time series from low to high frequency
 }
 \details{
-the time-span of the high-frequency pattern has to match or be larger
-than the time-span of the low frequency series. NA values are not allowed,
-except that with extend_with, leading and trailing NAs of x are dropped.
+Leading and trailing NAs of x are dropped, so the result ends at
+the last period with data. An NA inside a series is an error. Where the
+pattern covers less than x, tempdisagg drops the periods of x outside the
+pattern, with a message.
 }
 \examples{
 quarterly_data_example |>
-  disagg(conv_type = "mean", target_freq = "month")
+  disagg(conv_type = "mean", target_freq = "month") |>
+  dplyr::select(1:4) |>
+  head(4)
+# the monthly values average back to the original quarters
 quarterly_data_example |>
   disagg(conv_type = "mean", target_freq = "month") |>
   tsbox::ts_long() |>
   tsbox::ts_frequency(to = "quarter", aggregate = "mean") |>
-  tsbox::ts_wide() # this matches original data
+  tsbox::ts_wide() |>
+  dplyr::select(1:4) |>
+  head(2)
 # works with a single series too
 quarterly_data_example |>
   tsbox::ts_long() |>
@@ -65,7 +72,8 @@ quarterly_data_example |>
     conv_type = "mean", target_freq = "month", pattern = monthly_data_example |>
       tsbox::ts_long() |>
       tsbox::ts_pick("VISNS_HI")
-  )
+  ) |>
+  head(4)
 # multiple low-frequency series, same number of high-frequency patterns
 purrr::map2(
   quarterly_data_example |>
@@ -78,7 +86,8 @@ purrr::map2(
     tsbox::ts_pick("VISNS_HI", "VAPNS_HI") |>
     tsbox::ts_long() |>
     tsbox::ts_tslist(),
-  ~ disagg(.x, conv_type = "mean", target_freq = "month", pattern = .y)
+  ~ disagg(.x, conv_type = "mean", target_freq = "month", pattern = .y) |>
+    head(3)
 )
 # the last year without and with an extension
 a <- make_xts(2015, val = 100 * 1.02^(0:10))

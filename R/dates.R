@@ -1,10 +1,15 @@
 #' Specify span of time series (wrapper around tsbox::ts_span())
 #'
 #' @param x ts-boxable object to filter by span
-#' @param start start date (see examples)
-#' @param end end date (see examples)
+#' @param start start date, in any form `to_ymd()` reads
+#' @param end end date, in any form `to_ymd()` reads. A year, quarter or month
+#'   given as `end` stands for its first day, so on monthly data
+#'   `span(x, 2010, 2010)` keeps only January 2010. To keep a whole period,
+#'   give its last day ("2010-12-31"), or subset an xts with `x[p(2010, 2010)]`,
+#'   which includes the end period in full.
 #' @param template ts-boxable time series (see tsbox::ts_span)
-#' @param extend logical. If true, the start and end values are allowed to extend the series (by adding NA values).
+#' @param extend logical. If TRUE, a `start` before the data or an `end` after
+#'   them pads the series with NA.
 #'
 #' @return filtered object of the same type as the input. Without `start`,
 #'   `end` and `template`, x is fitted to the bank: cut at the bank's start
@@ -22,6 +27,12 @@
 #'   span(2010.1, 2010.4)
 #' quarterly_data_example |>
 #'   span("2010-01-01", "2010-12-31")
+#' # on monthly data, a year as end means its first month
+#' monthly_data_example |>
+#'   span(2010, 2010)
+#' monthly_data_example |>
+#'   span(2010, "2010-12-31") |>
+#'   tail(2)
 span <- function(x, start = NULL, end = NULL, template = NULL, extend = FALSE) {
   if (is.null(start) && is.null(end) && is.null(template)) {
     start <- bank_start()
@@ -65,7 +76,8 @@ span <- function(x, start = NULL, end = NULL, template = NULL, extend = FALSE) {
 #'
 #' @param x ts-boxable object
 #'
-#' @return dates associated with first observation
+#' @return a Date vector with one date per series, in the order of the series
+#'   in x, without names
 #' @export
 #'
 #' @examples
@@ -108,7 +120,8 @@ obs_range <- function(x_mod) {
 #' @param x ts-boxable object
 #' @param last_day should the last day of period be returned (default: FALSE)
 #'
-#' @return date associated with last observation
+#' @return a Date vector with one date per series, in the order of the series
+#'   in x, without names
 #' @export
 #'
 #' @examples
@@ -196,15 +209,18 @@ period_end <- function(x) {
 
 #' Concatenate dates formatted as yyyyMm or yyyy.m to obtain period
 #'
-#' @param dat1 date of period start (string: yyyyMm or yyyy.m)
-#' @param dat2 date of period end (string: yyyyMm or yyyy.m)
+#' @param dat1 month of period start, as a string such as "2010M10".
+#'   Numbers such as 2010.10 are misread (as January).
+#' @param dat2 month of period end, as for dat1
 #'
-#' @return string containing date range
+#' @return string containing date range. It ends on the first day of dat2;
+#'   for subsetting monthly data that is the whole month. `p()` reads any
+#'   date form and includes the end period in full at any frequency.
 #' @export
 #'
 #' @examples
 #' pm("2010M1", "2020M4")
-#' pm(2010.1, 2020.4)
+#' pm("2010M10", "2020M12")
 #' pm(2010.1, )
 #' pm(, 2010.1)
 pm <- function(dat1 = "", dat2 = "") {
@@ -218,10 +234,12 @@ pm <- function(dat1 = "", dat2 = "") {
 
 #' Concatenate dates formatted as yyyyQq or yyyy.q to obtain period
 #'
-#' @param dat1 date of period start (string: yyyyQq or yyyy.q)
-#' @param dat2 date of period end (string: yyyyQq or yyyy.q)
+#' @param dat1 date of period start (yyyyQq or yyyy.q, as string or number)
+#' @param dat2 date of period end (yyyyQq or yyyy.q, as string or number)
 #'
-#' @return string containing date range
+#' @return string containing date range. It ends on the first day of dat2,
+#'   so on monthly data `pq(2010.1, 2010.4)` stops at October. `p()`
+#'   includes the end period in full.
 #' @export
 #'
 #' @examples
@@ -258,7 +276,9 @@ pq <- function(dat1 = "", dat2 = "") {
 #' @param dat1 year of period start (string or numeric: yyyy)
 #' @param dat2 year of period end (string or numeric: yyyy)
 #'
-#' @return string containing date range
+#' @return string containing date range. It ends on January 1 of dat2, so on
+#'   quarterly or monthly data it keeps only the first period of dat2. `p()`
+#'   includes the end year in full.
 #' @export
 #'
 #' @examples

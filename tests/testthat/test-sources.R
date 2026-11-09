@@ -117,3 +117,12 @@ test_that("EIA", {
   expect_true(all(aeo$value > 0))
   expect_error(get_series_src("WTIPUUS", "eia"), "route")
 })
+
+test_that("rename_udaman() takes the location just before the frequency", {
+  expect_equal(
+    rename_udaman(c("SH_US@HI.M", "SH_JP__HON_M", "SH_US_HI_M", "E_NF_AT_HI_Q")),
+    c("SH_US@HI.M", "SH_JP@HON.M", "SH_US@HI.M", "E_NF@HI.Q")
+  )
+  expect_equal(rename_udaman("ECT_HI", freq = "Q"), "ECT@HI.Q")
+  expect_length(rename_udaman("E_NF_HI5", freq = "M"), 5)
+})

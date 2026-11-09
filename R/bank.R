@@ -29,36 +29,38 @@ bank_option <- function(name) {
 
 #' Create xts and fill with values
 #'
-#' @param start date of series start (character: "yyyy-mm-dd", "yyyyqq", "yyyy")
-#' @param end date of series end (character: "yyyy-mm-dd", "yyyyqq", "yyyy")
+#' @param start date of the first observation, in any form `to_ymd()` reads
+#'   (default: the bank start)
+#' @param end date of the last observation, in any form `to_ymd()` reads.
+#'   Ignored when `val` is a tibble.
 #' @param per periodicity of series (character: "year" - default)
 #'   if start is written as a quarter or a month (see `to_ymd()`), per is set
 #'   to "quarter" or "month"
 #' @param val values to fill in (numeric scalar, vector, or tibble)
 #'
-#' @return an xts series
+#' @return an xts object: one series, or one per column when `val` is a
+#'   tibble
 #' @export
 #'
-#' @details when end is missing, but val is a vector of more than one element,
-#' the end date is automatically determined by the length of the val vector.
-#' if end is missing and val is a scalar, the end date is set to the bank end,
-#' `getOption("fcutils.bnk_end")`. The default start is the bank start,
-#' `getOption("fcutils.bnk_start")`. Set both once per session, e.g. in
-#' setup.R: `options(fcutils.bnk_start = as.Date("1970-01-01"),
-#' fcutils.bnk_end = as.Date("2070-12-31"))`.
-#' if end is missing the remaining arguments have to be named. if val is a tibble,
-#' the end date is automatically determined by the number of rows in the tibble.
+#' @details When end is missing and val is a vector of more than one element,
+#' the length of val sets the end date. When end is missing and val is a
+#' scalar, the series runs to the bank end, `getOption("fcutils.bnk_end")`.
+#' When val is a tibble, its number of rows sets the end date. The default
+#' start is the bank start, `getOption("fcutils.bnk_start")`. Set both once
+#' per session, e.g. in setup.R: `options(fcutils.bnk_start =
+#' as.Date("1970-01-01"), fcutils.bnk_end = as.Date("2070-12-31"))`. Name the
+#' arguments after `start` unless you give `end`.
 #'
 #' @examples
 #' options(fcutils.bnk_start = as.Date("1970-01-01"), fcutils.bnk_end = as.Date("2070-12-31"))
-#' make_xts()
-#' make_xts(val = 0, per = "m")
-#' make_xts(start = 20100101, per = "quarter", val = 0)
-#' make_xts(start = 2010.1, per = "q", val = 1:10)
-#' make_xts(2010.1, val = 1:10) # automatically set per = "quarter"
-#' make_xts(start = "2010-01-01", per = "m", val = 0)
+#' make_xts() |> head(3)
+#' make_xts(val = 0, per = "m") |> head(3)
+#' make_xts(start = 20100101, per = "quarter", val = 0) |> head(3)
+#' make_xts(start = 2010.1, per = "q", val = 1:10) |> tail(3)
+#' make_xts(2010.1, val = 1:10) |> tail(3) # automatically set per = "quarter"
+#' make_xts(start = "2010-01-01", end = "2010-06-01", per = "m", val = 0)
 #' make_xts(start = 201001, per = "q",
-#'          val = tibble::tibble(E_NF_HON = c(1:10), ECT_HI = c(11:20)))
+#'          val = tibble::tibble(E_NF_HON = c(1:10), ECT_HI = c(11:20))) |> head(3)
 make_xts <- function(
   start = bank_start(),
   end = NULL,
@@ -113,8 +115,9 @@ make_xts <- function(
 #' points given as formulas.
 #'
 #' @param start date the ramp starts, in any form `to_ymd()` reads
-#'   ("2026-07-01", "2026Q3", 2026.3, 2026), or a data frame of ramps with
-#'   columns start, end, from and to, one ramp per row
+#'   ("2026Q3", 2026.3, "2026M07", 2026), or a data frame of ramps with
+#'   columns start, end, from and to, one ramp per row. A day
+#'   ("2026-07-01") must be the first day of a period at frequency `per`.
 #' @param end date the ramp ends
 #' @param from value at `start`
 #' @param to value at `end`
@@ -128,7 +131,8 @@ make_xts <- function(
 #'
 #' @return one xts series over the bank, from
 #'   `getOption("fcutils.bnk_start")` to `getOption("fcutils.bnk_end")` (see
-#'   `make_xts()`)
+#'   `make_xts()`). A ramp that starts before the bank or ends after it
+#'   extends the series past the bank.
 #' @export
 #'
 #' @details A ramp runs in equal steps from `from` at `start` to `to` at
@@ -138,14 +142,16 @@ make_xts <- function(
 #'
 #' Given a data frame of ramps, `addf()` builds one add-factor per row and
 #' returns their sum, so overlapping ramps add up. A data frame with no rows
-#' gives zeros over the bank. A date column must be all numbers or all
+#' gives zeros over the bank, at the frequency `per`. A date column must be all numbers or all
 #' strings.
 #'
 #' Given formulas, `addf(2026.3 ~ 0, 2027.4 ~ -0.3, 2030.4 ~ 0)`, the
 #' add-factor runs through the points in straight lines, one equal step per
 #' period, and is zero before the first point and after the last. Each
-#' formula has a date on the left and a value on the right. The frequency
-#' follows the first date (2026.3 is a quarter), unless `per` is given by
+#' formula has a date on the left and a value on the right, and each date
+#' must start a period within the bank. Give at least two points. The
+#' frequency follows the date of the first formula (2026.3 is a quarter),
+#' unless `per` is given by
 #' name; `ser_name` and `per` must be named. Decimal dates are quarters, so
 #' monthly points need strings (`"2026M10" ~ 1`).
 #'

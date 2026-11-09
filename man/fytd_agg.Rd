@@ -9,23 +9,25 @@ fytd_agg(x, avg = TRUE)
 \arguments{
 \item{x}{a ts-boxable object}
 
-\item{avg}{if TRUE (default), return year to date average, if FALSE, return year to date sum}
+\item{avg}{if TRUE (default), return fiscal year to date average, if FALSE, return fiscal year to date sum}
 }
 \value{
-object of the same type as the input containing year to date sum or average
+object of the same type as the input containing fiscal year to date sum or average
 }
 \description{
 Fiscal year to date sum or average
 }
 \details{
-this function operates similarly to ytd_agg() but assumes that the
-fiscal year starts in July and accumulates the values from that month onward.
+Works as ytd_agg(), with the fiscal year starting in July. An NA
+makes the rest of its fiscal year NA.
 }
 \examples{
 monthly_data_example |>
-  fytd_agg()
+  fytd_agg() |>
+  tail()
 quarterly_data_example |>
-  fytd_agg()
+  fytd_agg() |>
+  tail()
 monthly_data_example |>
   tsbox::ts_long() |>
   tsbox::ts_pick("VISNS_HI") |>

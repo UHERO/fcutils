@@ -1,10 +1,15 @@
-#' pattern in series names that should be aggregate as sum
+#' Pattern in series names that should be aggregated as sum
+#'
+#' A regular expression matched against upper-cased series names when
+#' `conv_type = "uhero"` in [agg()], [fagg()] and [disagg()]. Matching series
+#' are aggregated by sum, all others by mean.
+#'
 #' @name sum_pattern
 #' @format string of patterns in series names that should be aggregated via sum
 #' @docType data
 #' @author Peter Fuleky \email{fuleky@hawaii.edu}
 #' @source author
-#' @references \url{uhero.hawaii.edu}
+#' @references \url{https://uhero.hawaii.edu}
 #' @keywords data
 # NULL
 "sum_pattern"
@@ -37,7 +42,7 @@ sum_pattern <- stringr::str_flatten(
 #' @docType data
 #' @author Peter Fuleky \email{fuleky@hawaii.edu}
 #' @source author
-#' @references \url{uhero.hawaii.edu}
+#' @references \url{https://uhero.hawaii.edu}
 #' @keywords data
 # NULL
 # plot <- plot +
@@ -85,7 +90,7 @@ uh_colors <- c(
 #' @docType data
 #' @author Peter Fuleky \email{fuleky@hawaii.edu}
 #' @source author
-#' @references \url{uhero.hawaii.edu}
+#' @references \url{https://uhero.hawaii.edu}
 #' @keywords data
 # NULL
 # oi <- uh_colors
@@ -124,7 +129,7 @@ uh_colors_light <- c(
 #' @docType data
 #' @author Peter Fuleky \email{fuleky@hawaii.edu}
 #' @source author
-#' @references \url{uhero.hawaii.edu}
+#' @references \url{https://uhero.hawaii.edu}
 #' @keywords data
 # NULL
 # colorspace::adjust_transparency(uh_colors, alpha = 0.5)
@@ -148,26 +153,29 @@ uh_colors_50 <- c(
     "uhtred"
   ))
 
-#' quarterly data for examples
+#' Quarterly data for examples
 #' @name quarterly_data_example
-#' @format tibble of quarterly data
+#' @format wide tibble of 30 Hawaii payroll jobs series (E_NF_HI, ECT_HI,
+#'   ...), 1998Q1 to 2025Q1
 #' @docType data
 #' @author Peter Fuleky \email{fuleky@hawaii.edu}
 #' @source author
-#' @references \url{uhero.hawaii.edu}
+#' @references \url{https://uhero.hawaii.edu}
 #' @keywords data
 # NULL
 # quarterly_data_example <- get_series_exp(74) |> tidyr::drop_na()
 # quarterly_data_example |> save(file = "data/quarterly_data_example.rda")
 "quarterly_data_example"
 
-#' monthly data for examples
+#' Monthly data for examples
 #' @name monthly_data_example
-#' @format tibble of monthly data
+#' @format wide tibble of Hawaii visitor arrivals (VISNS_HI), arrivals by air
+#'   (VAPNS_HI) and average daily census (VADCNS_HI), not seasonally adjusted,
+#'   September 2000 to March 2025
 #' @docType data
 #' @author Peter Fuleky \email{fuleky@hawaii.edu}
 #' @source author
-#' @references \url{uhero.hawaii.edu}
+#' @references \url{https://uhero.hawaii.edu}
 #' @keywords data
 # NULL
 # monthly_data_example <- get_series(c(
@@ -179,13 +187,14 @@ uh_colors_50 <- c(
 # monthly_data_example |> save(file = "data/monthly_data_example.rda")
 "monthly_data_example"
 
-#' daily data for examples
+#' Daily data for examples
 #' @name daily_data_example
-#' @format tibble of daily data
+#' @format wide tibble of daily Hawaii visitor arrivals (VISPNS_HI, VAPNS_HI),
+#'   1 September 2020 to 25 March 2022
 #' @docType data
 #' @author Peter Fuleky \email{fuleky@hawaii.edu}
 #' @source author
-#' @references \url{uhero.hawaii.edu}
+#' @references \url{https://uhero.hawaii.edu}
 #' @keywords data
 # NULL
 # daily_data_example <- get_series(c("VISPNS@HI.D", "VAPNS@HI.D")) |>

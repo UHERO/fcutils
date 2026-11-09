@@ -96,27 +96,34 @@ interpol_1 <- function(vec_incomplete, vec_pattern) {
 #' Interpolate univariate or multivariate time series with missing values
 #'
 #' @param incomplete a ts-boxable object with NAs
-#' @param pattern a ts-boxable object no missing values, or NULL (default)
-#'   to fill the gaps inside each series by `interp`
-#' @param extend_range logical. If TRUE, uses a full_join to potentially extend
-#'   the date range. If FALSE (default), uses a left_join to only fill NAs
-#'   within the original date range.
+#' @param pattern a ts-boxable object at the same frequency, or NULL (default)
+#'   to fill the gaps inside each series by `interp`. Pattern series are
+#'   matched to the series in `incomplete` by position, not by name; a single
+#'   pattern series serves every series, with a warning. `interpol()` prints
+#'   the mapping it uses.
+#' @param extend_range logical. If TRUE, the result covers every date of
+#'   either input, and each series is continued along its pattern over the
+#'   added dates. If FALSE (default), the result keeps the dates of
+#'   `incomplete`.
 #' @param interp without a pattern: "linear" (default) fills a gap along a
 #'   straight line, "stine" along a Stineman spline through the observed
 #'   values, which bends smoothly without overshooting them (as in
-#'   [extend()]). Not used with a pattern.
+#'   [extend()]). With a pattern only "linear" is allowed; "stine" is an
+#'   error.
 #'
 #' @return interpolated object of the same type as the input
 #' @export
 #'
-#' @details the function aligns two sets of time series by date and then
-#' interpolates the first set using the second set as a pattern. Without a
-#' pattern, missing values between a series' first and last observation are
-#' filled by `interp` (by position, so each period counts the same); missing
-#' dates in a regular series are added first, and leading and trailing gaps
-#' stay empty. extend_range has no effect then.
-#' The time-span of the pattern has to match or be larger
-#' than the time-span of the incomplete data.
+#' @details With a pattern, a gap inside a series follows the pattern's growth
+#' from the last known value, plus a correction that grows linearly across the
+#' gap so the path ends on the next known value. A gap at the start or end of
+#' a series follows the pattern's growth from the nearest known value. Where
+#' the pattern is NA, or does not cover a gap's end points, the gap stays NA.
+#'
+#' Without a pattern, missing values between a series' first and last
+#' observation are filled by `interp` (by position, so each period counts the
+#' same); missing dates in a regular series are added first, and leading and
+#' trailing gaps stay empty. extend_range has no effect then.
 #'
 #' @examples
 #' # straight-line fill of an internal gap
@@ -132,7 +139,8 @@ interpol_1 <- function(vec_incomplete, vec_pattern) {
 #'     value = dplyr::if_else(time > "2021-01-01" & time < "2022-01-01",
 #'     NA_real_, value)
 #'   )|>
-#'   interpol(monthly_data_example, extend_range = TRUE)
+#'   interpol(monthly_data_example, extend_range = TRUE) |>
+#'   span("2020-11-01", "2022-02-01")
 #' monthly_data_example |>
 #'   tsbox::ts_long() |>
 #'   dplyr::mutate(
@@ -154,8 +162,9 @@ interpol_1 <- function(vec_incomplete, vec_pattern) {
 #'         )
 #'       )
 #'   ) %>%
-#'   # no interpolation where pattern has NAs
-#'   tsbox::ts_wide()
+#'   # no interpolation where pattern has NAs (April to August 2021)
+#'   tsbox::ts_wide() |>
+#'   span("2020-11-01", "2022-02-01")
 interpol <- function(
   incomplete,
   pattern = NULL,
@@ -183,7 +192,7 @@ interpol <- function(
   aligned_data <- join_fun(incomplete_wide, pattern_wide, by = "time") %>%
     dplyr::arrange(.data$time)
 
-  # create a robust mapping of incomplete columns to pattern columns by name
+  # map incomplete columns to pattern columns by position
   inc_cols <- names(incomplete_wide)[-1]
   pat_cols <- names(pattern_wide)[-1]
 
@@ -199,14 +208,14 @@ interpol <- function(
     )
   }
 
-  # mapping betwen incomplete series and pattern series
+  # mapping between incomplete series and pattern series
   col_map <- stats::setNames(
     pat_cols, # pattern column names
     inc_cols # incomplete column name
   )
 
   cat(
-    "The mapping betwen interpolated series and pattern series is the following:\n"
+    "The mapping between interpolated series and pattern series is the following:\n"
   )
   print(col_map, quote = FALSE)
 
@@ -329,13 +338,14 @@ disagg_1 <- function(x, x_name, conv_type, target_freq, pattern) {
 
 #' Disaggregate univariate or multivariate time series from low to high frequency
 #'
-#' @param x a tx-boxable object at a low frequency (e.g. annual or quarterly)
+#' @param x a ts-boxable object at a low frequency (e.g. annual or quarterly)
 #' @param conv_type match the interpolated value via "first", "last", "sum",
 #' "mean". If conv_type == "uhero" then the name of the time series x is
 #' compared to the internal variable `sum_pattern`. For matching series names
 #' the interpolation is based on "sum"; for all others it is based on "mean."
-#' @param target_freq target frequency "quarter" or "month"
-#' @param pattern a single high-frequency pattern that the interpolation should follow
+#' @param target_freq target frequency "quarter" (default) or "month"
+#' @param pattern a single high-frequency pattern that the interpolation
+#'   should follow; it serves every series in x
 #' @param extend_with NULL (default), "last_growth", or a ts-boxable object. Without
 #'   a pattern the interpolation has nothing to follow at the end of a series
 #'   and bends toward zero growth over the last periods (and the first).
@@ -347,18 +357,24 @@ disagg_1 <- function(x, x_name, conv_type, target_freq, pattern) {
 #' @return interpolated object of the same type as the input
 #' @export
 #'
-#' @details the time-span of the high-frequency pattern has to match or be larger
-#' than the time-span of the low frequency series. NA values are not allowed,
-#' except that with extend_with, leading and trailing NAs of x are dropped.
+#' @details Leading and trailing NAs of x are dropped, so the result ends at
+#' the last period with data. An NA inside a series is an error. Where the
+#' pattern covers less than x, tempdisagg drops the periods of x outside the
+#' pattern, with a message.
 #'
 #' @examples
 #' quarterly_data_example |>
-#'   disagg(conv_type = "mean", target_freq = "month")
+#'   disagg(conv_type = "mean", target_freq = "month") |>
+#'   dplyr::select(1:4) |>
+#'   head(4)
+#' # the monthly values average back to the original quarters
 #' quarterly_data_example |>
 #'   disagg(conv_type = "mean", target_freq = "month") |>
 #'   tsbox::ts_long() |>
 #'   tsbox::ts_frequency(to = "quarter", aggregate = "mean") |>
-#'   tsbox::ts_wide() # this matches original data
+#'   tsbox::ts_wide() |>
+#'   dplyr::select(1:4) |>
+#'   head(2)
 #' # works with a single series too
 #' quarterly_data_example |>
 #'   tsbox::ts_long() |>
@@ -373,7 +389,8 @@ disagg_1 <- function(x, x_name, conv_type, target_freq, pattern) {
 #'     conv_type = "mean", target_freq = "month", pattern = monthly_data_example |>
 #'       tsbox::ts_long() |>
 #'       tsbox::ts_pick("VISNS_HI")
-#'   )
+#'   ) |>
+#'   head(4)
 #' # multiple low-frequency series, same number of high-frequency patterns
 #' purrr::map2(
 #'   quarterly_data_example |>
@@ -386,7 +403,8 @@ disagg_1 <- function(x, x_name, conv_type, target_freq, pattern) {
 #'     tsbox::ts_pick("VISNS_HI", "VAPNS_HI") |>
 #'     tsbox::ts_long() |>
 #'     tsbox::ts_tslist(),
-#'   ~ disagg(.x, conv_type = "mean", target_freq = "month", pattern = .y)
+#'   ~ disagg(.x, conv_type = "mean", target_freq = "month", pattern = .y) |>
+#'     head(3)
 #' )
 #' # the last year without and with an extension
 #' a <- make_xts(2015, val = 100 * 1.02^(0:10))
@@ -527,7 +545,8 @@ extend_low <- function(x_long, extend_with, n_hold = 3) {
 #' (superseded by disagg())
 #'
 #' @param ser_in the xts series to be interpolated (freq = a)
-#' @param aggr interpolation method: aggregate via mean (default) or sum
+#' @param aggr "mean" (default): the quarters average to the annual value;
+#'   any other value: they sum to it
 #'
 #' @return interpolated xts series (freq = q). A name ending in `.A`, `_A`,
 #'   `.SOLA` or `_SOLA` gets the quarterly ending (`.Q`, `_Q`, `.SOLQ`,
@@ -597,7 +616,8 @@ AtoQ <- function(ser_in, aggr = "mean") {
 #' @param	aggr aggregate via mean (default) or sum
 #'
 #' @return converted xts series (freq = a). A name ending in `.Q`, `_Q`,
-#'   `.SOLQ` or `_SOLQ` gets the annual ending; other names are kept.
+#'   `.SOLQ` or `_SOLQ` gets the annual ending; other names are kept. Years
+#'   with fewer than four quarters are dropped.
 #' @export
 #'
 #' @examples
@@ -620,7 +640,7 @@ QtoA <- function(ser_in, aggr = "mean") {
 
 # #' Aggregate univariate or multivariate time series from low to high frequency
 # #'
-# #' @param x a tx-boxable object at a high frequency (e.g. monthly or quarterly)
+# #' @param x a ts-boxable object at a high frequency (e.g. monthly or quarterly)
 # #' @param conv_type match the aggregated value via "first", "last", "sum",
 # #' "mean". If conv_type == "uhero" then the name of the time series x is
 # #' compared to the internal variable `sum_pattern`. For matching series names
@@ -702,14 +722,15 @@ QtoA <- function(ser_in, aggr = "mean") {
 #   return(ans)
 # }
 
-#' Aggregate univariate or multivariate time series from low to high frequency
+#' Aggregate time series to a lower frequency
 #'
-#' @param x a tx-boxable object at a high frequency (e.g. monthly or quarterly)
+#' @param x a ts-boxable object at a high frequency (e.g. monthly or quarterly)
 #' @param conv_type match the aggregated value via "first", "last", "sum",
 #' "mean". If conv_type == "uhero" then the name of the time series x is
 #' compared to the internal variable `sum_pattern`. For matching series names
 #' the aggregation is based on "sum"; for all others it is based on "mean."
-#' @param target_freq target frequency "year", "quarter", "month", "week"
+#' @param target_freq target frequency "year" (default), "quarter", "month",
+#'   "week"
 #' @param na_rm	logical, if TRUE, incomplete periods are aggregated as
 #' well. For irregular series, incomplete periods are always aggregated.
 #' @param partial what to do with the LAST period of each series when only part
@@ -723,7 +744,11 @@ QtoA <- function(ser_in, aggr = "mean") {
 #'     October and November, Q4 = Q3 x mean(Oct, Nov) / mean(Jul, Aug). Suits
 #'     trending levels.
 #'
-#'   Incomplete periods before the last are always left out.
+#'   Incomplete periods before the last are left out. With `na_rm = TRUE`
+#'   every incomplete period is aggregated from the values present, so
+#'   `partial` has no effect. "growth" leaves the last period out when the
+#'   earlier period or its matching observations are missing. Any `partial`
+#'   other than "drop" needs conv_type "mean", "sum" or "uhero".
 #' @param partial_lag how far back "growth" looks, as a lubridate period
 #'   string: the default, NULL, is one target period ("3 months" for
 #'   quarters, "1 year" for years). "1 year" compares with the same months a
@@ -746,7 +771,7 @@ QtoA <- function(ser_in, aggr = "mean") {
 #'   agg(conv_type = "uhero", target_freq = "quarter") |>
 #'   tsbox::ts_long() |>
 #'   disagg(conv_type = "uhero", target_freq = "month") |>
-#'   tsbox::ts_wide() # this is close to original data
+#'   tsbox::ts_wide() # keeps the quarterly averages, not the monthly pattern
 #' # works with a single series too
 #' monthly_data_example |>
 #'   tsbox::ts_long() |>
@@ -815,9 +840,11 @@ agg <- function(
 }
 
 
-#' Aggregate univariate or multivariate fiscal time series from low to high frequency
+#' Aggregate time series to fiscal years or quarters
 #'
-#' @param x a tx-boxable object at a high frequency (e.g. monthly or quarterly)
+#' Fiscal years run from July to June.
+#'
+#' @param x a ts-boxable object at a high frequency (e.g. monthly or quarterly)
 #' @param conv_type match the aggregated value via "first", "last", "sum",
 #' "mean". If conv_type == "uhero" then the name of the time series x is
 #' compared to the internal variable `sum_pattern`. For matching series names

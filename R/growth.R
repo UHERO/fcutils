@@ -1,9 +1,11 @@
-#' Convert annualized growth to quarterly growth
+#' Convert annualized growth to growth per period
 #'
 #' @param x ts-boxable object containing annualized growth (in percent)
-#' @param freq numeric frequency of the time series e.g. 4 for quarterly
+#' @param freq periods per year: 4 (default) for quarterly, 12 for monthly.
+#'   It is not read from x.
 #'
-#' @return object of the same type as the input containing quarterly growth (in percent)
+#' @return object of the same type as the input containing growth per period
+#'   (in percent)
 #' @export
 #'
 #' @examples
@@ -12,17 +14,12 @@
 #'   tsbox::ts_pca() |>
 #'   pca_to_pc() |>
 #'   tail()
-#' tsbox::ts_c(
-#'   quarterly_data_example |>
-#'     tsbox::ts_long() |>
-#'     tsbox::ts_pca() |>
-#'     pca_to_pc(),
-#'   quarterly_data_example |>
-#'     tsbox::ts_long() |>
-#'     tsbox::ts_pc()
-#' ) |>
-#'   dplyr::arrange(id, time) |>
-#'   tsbox::ts_wide()
+#' # the round trip gives tsbox's growth per period
+#' jobs <- conv_xts(quarterly_data_example)$E_NF_HI
+#' tail(tsbox::ts_c(
+#'   from_pca = pca_to_pc(tsbox::ts_pca(jobs)),
+#'   pc = tsbox::ts_pc(jobs)
+#' ), 3)
 pca_to_pc <- function(x, freq = 4) {
   # convert to long format and return additional details
   x_mod <- conv_long(x, ser_info = TRUE)
@@ -37,10 +34,11 @@ pca_to_pc <- function(x, freq = 4) {
 }
 
 
-#' Convert quarterly growth to annualized growth
+#' Convert growth per period to annualized growth
 #'
-#' @param x ts-boxable object containing quarterly growth (in percent)
-#' @param freq numeric frequency of the time series e.g. 4 for quarterly
+#' @param x ts-boxable object containing growth per period (in percent)
+#' @param freq periods per year: 4 (default) for quarterly, 12 for monthly.
+#'   It is not read from x.
 #'
 #' @return object of the same type as the input containing annualized growth (in percent)
 #' @export
@@ -51,17 +49,12 @@ pca_to_pc <- function(x, freq = 4) {
 #'   tsbox::ts_pc() |>
 #'   pc_to_pca() |>
 #'   tail()
-#' tsbox::ts_c(
-#'   quarterly_data_example |>
-#'     tsbox::ts_long() |>
-#'     tsbox::ts_pc() |>
-#'     pc_to_pca(),
-#'   quarterly_data_example |>
-#'     tsbox::ts_long() |>
-#'     tsbox::ts_pca()
-#' ) |>
-#'   dplyr::arrange(id, time) |>
-#'   tsbox::ts_wide()
+#' # the round trip gives tsbox's annualized growth
+#' jobs <- conv_xts(quarterly_data_example)$E_NF_HI
+#' tail(tsbox::ts_c(
+#'   from_pc = pc_to_pca(tsbox::ts_pc(jobs)),
+#'   pca = tsbox::ts_pca(jobs)
+#' ), 3)
 pc_to_pca <- function(x, freq = 4) {
   # convert to long format and return additional details
   x_mod <- conv_long(x, ser_info = TRUE)
@@ -82,7 +75,14 @@ pc_to_pca <- function(x, freq = 4) {
 #' @param lag number of periods over which growth is calculated
 #' @param comp_freq compounding frequency (1 if period by period, 4 if annualized for quarterly data, etc.)
 #'
-#' @return object of the same type as the input ontaining the average growth of x (in percent)
+#' @return object of the same type as the input containing the average growth of x (in percent)
+#'
+#' @details `pcmp()` returns `((x / x[lag periods earlier])^(comp_freq / lag) - 1) * 100`,
+#' the average growth per period over the last `lag` periods, compounded
+#' `comp_freq` times. On quarterly data, `pcmp(x, 1)` is quarter-on-quarter
+#' growth, `pcmp(x, 1, 4)` is annualized quarterly growth, `pcmp(x, 4, 4)` is
+#' year-on-year growth, and `pcmp(x, 4)` is the average quarterly growth over
+#' the past year.
 #' @export
 #'
 #' @examples
@@ -142,12 +142,14 @@ pcmp <- function(x, lag = 4, comp_freq = 1) {
 }
 
 
-#' Calculate compund annual growth
+#' Calculate compound annual growth
 #'
 #' @param x ts-boxable object for which growth is calculated between first and last period
 #'
-#' @return a tibble with a single row containing the compound annual growth between
-#'   the first and last period of x (in percent)
+#' @return a tibble with one row: `years_elapsed`, the years between the
+#'   first and last dates in x, and for each series its compound annual growth
+#'   over that span (in percent). A series that starts later or ends earlier
+#'   than the others gets NA.
 #' @export
 #'
 #' @examples
@@ -201,9 +203,9 @@ cagr <- function(x) {
 #' does the same, puts the result on the bank, and takes year-over-year
 #' anchors as well as a path. yoy_to_lev() still works but warns.
 #'
-#' @param yoy_gr ts-boxable object containing year over year growth rates
-#' @param hist_lev ts-boxable object containing the history in levels
-#' for forecast and at least one year of history (in percent)
+#' @param yoy_gr ts-boxable object with year-over-year growth rates (in
+#'   percent) for the forecast and at least the last year of history
+#' @param hist_lev ts-boxable object with the history in levels
 #' @param smooth_span extent of smoothing between 0-1 (default: 0, no smoothing).
 #' Effect depends on the length of the time series. Low smooth_span value may
 #' trigger warning, if time series too short.
@@ -333,20 +335,29 @@ yoy_to_lev <- function(yoy_gr, hist_lev, smooth_span = 0) {
 #' function does not do).
 #'
 #' @param x ts-boxable object to be indexed
-#' @param base_per base date when the index is set to base_value (see examples).
-#'   If two dates are provided, the mean in the range is set equal to base_value.
+#' @param base_per base period, in any form `to_ymd()` reads. With one date,
+#'   the first observation on or after it equals `base_value`, so `2019` sets
+#'   2019Q1 (or January 2019) to `base_value`. With two dates, the mean of the
+#'   observations from the first date to the second equals `base_value`. A
+#'   date stands for the first day of its period, so `c(2019.1, 2019.4)` covers
+#'   2019 for quarterly data, and monthly data need `c("2019-01-01",
+#'   "2019-12-31")`. The default, today's date, works only for data that reach
+#'   today.
 #' @param base_value numeric value of the index at base_per (e.g. 1 or 100)
 #'
 #' @return indexed object of the same type as the input
 #' @export
 #'
 #' @examples
-#' quarterly_data_example |>
-#'   index_to_base(2010.1)
-#' quarterly_data_example |>
-#'   index_to_base(c(2010.1, 2010.4))
-#' quarterly_data_example |>
-#'   index_to_base(c("2010-01-01", "2010-12-31"), 1)
+#' jobs <- conv_xts(quarterly_data_example)[, c("E_NF_HI", "ECT_HI")]
+#' # 2010Q1 = 100
+#' round(index_to_base(jobs, 2010.1)[p(2010.1, 2010.4)], 2)
+#' # the average of 2010 = 100
+#' idx <- index_to_base(jobs, c(2010.1, 2010.4))
+#' round(idx[p(2010.1, 2010.4)], 2)
+#' colMeans(idx[p(2010.1, 2010.4)])
+#' # the same with dates, and 1 as the base value
+#' round(index_to_base(jobs, c("2010-01-01", "2010-12-31"), 1)[p(2010.1, 2010.4)], 4)
 index_to_base <- function(x, base_per = as.character(Sys.Date()), base_value = 100) {
   # convert to long format and return additional details
   x_mod <- conv_long(x, ser_info = TRUE)
@@ -379,7 +390,9 @@ index_to_base <- function(x, base_per = as.character(Sys.Date()), base_value = 1
 #' @param x ts-boxable object
 #' @param order numeric order (window length) of moving average, includes contemporaneous observation
 #'
-#' @return object of the same type as the input containing moving average
+#' @return object of the same type as the input containing moving average. The
+#'   first `order - 1` periods are NA, and an NA inside the window gives NA.
+#'   The window counts observations, not dates.
 #' @export
 #'
 #' @examples

@@ -5,7 +5,10 @@
 #' description), a line with the date written, the first and last period and
 #' the frequency, and then its values, five to a line.
 #'
-#' @param x a ts-boxable object (monthly, quarterly or annual)
+#' @param x a ts-boxable object (monthly, quarterly or annual). Other
+#'   frequencies are written as annual without warning. Leading and trailing
+#'   NAs of each series are dropped; NAs inside a series are written as
+#'   1.000000E+0015, the TSD missing value.
 #' @param file character string denoting the location and name of the output file
 #' @param descriptions optional named character vector, `c(id = "label")`, with
 #'   a description for some or all series. With descriptions, the header line
@@ -13,17 +16,19 @@
 #'   longer names or descriptions are cut, with a warning. Without them, the
 #'   name fills the header line.
 #'
-#' @return nothing (silently save the contents of the tsd file to a user defined
-#'   location)
+#' @return the text written to `file`, invisibly
 #' @export
 #'
 #' @examplesIf interactive()
-#' quarterly_data_example |> write_tsd("out.tsd")
+#' quarterly_data_example |> write_tsd(file.path(tempdir(), "out.tsd"))
 #' quarterly_data_example |>
-#'   write_tsd("out.tsd", descriptions = c(E_NF_HI = "Nonfarm payroll jobs"))
+#'   write_tsd(file.path(tempdir(), "out.tsd"), descriptions = c(E_NF_HI = "Nonfarm payroll jobs"))
 write_tsd <- function(x, file, descriptions = NULL) {
+  # drop leading and trailing NAs; NAs inside a series stay and are written
+  # as the TSD missing value, so the values keep their dates
   in_long <- conv_long(x, ser_info = TRUE) %>%
-    tidyr::drop_na()
+    tsbox::ts_na_omit() %>%
+    tsbox::ts_regular()
   in_summary <- tsbox::ts_summary(in_long)
   today <- Sys.Date()
 
@@ -108,12 +113,14 @@ write_tsd <- function(x, file, descriptions = NULL) {
 }
 
 
-#' Copy a data frame to clipboard (only works on MacOS)
+#' Copy time series to the clipboard as a tab-separated table (macOS only)
 #'
-#' @param x tibble (or data frame) to be copied
-#' @param dec number of decimals to round numeric columns to (default: 2)
+#' @param x a ts-boxable object; it is copied in wide form, one column per
+#'   series
+#' @param dec number of decimals to round to (default: 2)
 #'
-#' @return copy_tbl() returns the input x invisibly
+#' @return the copied table invisibly, a tibble of text with numbers rounded
+#'   to `dec` decimals
 #' @export
 #'
 #' @examplesIf interactive()

@@ -5,17 +5,20 @@
 #' Generate a table with time series
 #'
 #' @param x a ts-boxable object
-#' @param tbl_start start period for table
-#' @param tbl_end end period for table
-#' @param percent what type of percent should be added ("none", "pc" (default),
-#'   "pcy", "pca")
+#' @param tbl_start start period for table (default: 10 years before today)
+#' @param tbl_end end period for table (default: 2 years after today)
+#' @param percent the growth rate shown with each series: "pc" (default,
+#'   period on period), "pcy" (year on year), "pca" (annualized) or "none".
+#'   Any other value shows levels only. Growth is computed before the table is
+#'   cut, so the first period shown has a growth rate.
 #' @param time_across should time be in column headers and variable names in
 #'   first column (default TRUE)
-#' @param tbl_height the height of the table in px (default 800)
+#' @param tbl_height the height of the html table in px (default 800)
 #' @param save_loc file path for saving table incl. extension ("html" or "csv")
-#'   (default NULL)
+#'   (default NULL, no file). Other extensions write nothing.
 #'
-#' @return table formatted for output
+#' @return a tibble of the table, values rounded to 2 decimals and series
+#'   sorted by name. It is returned also when a file is saved.
 #' @export
 #'
 #' @examples
@@ -29,11 +32,11 @@
 #' @examplesIf interactive()
 #' gen_table(quarterly_data_example,
 #'   percent = "pcy",
-#'   time_across = FALSE, save_loc = "~/Downloads/temp.csv"
+#'   time_across = FALSE, save_loc = file.path(tempdir(), "temp.csv")
 #' )
 #' gen_table(quarterly_data_example,
 #'   percent = "pcy", time_across = TRUE,
-#'   save_loc = "~/Downloads/temp.html"
+#'   save_loc = file.path(tempdir(), "temp.html")
 #' )
 gen_table <- function(
   x,

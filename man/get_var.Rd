@@ -7,22 +7,21 @@
 get_var(ser_in, env = parent.frame())
 }
 \arguments{
-\item{ser_in}{a variable name (character string with substituted expressions)}
+\item{ser_in}{a name with glue expressions in braces, such as
+"E{ser_i}_{cnty_i}". The expressions are evaluated in the global
+environment.}
 
-\item{env}{environment where the expression should be evaluated}
+\item{env}{environment in which the resulting name is looked up}
 }
 \value{
-variable
+the object with that name
 }
 \description{
 Construct a series name from variable components and retrieve the series
 }
 \examples{
-\dontshow{if (interactive()) (if (getRversion() >= "3.4") withAutoprint else force)(\{ # examplesIf}
 ser_i <- "_NF"
 cnty_i <- "HI"
-quarterly_data_example |>
-  tsbox::ts_long() |>
-  tsbox::ts_xts() \%$\% get_var("E{ser_i}_{cnty_i}")
-\dontshow{\}) # examplesIf}
+q <- conv_xts(quarterly_data_example)
+with(as.list(q), get_var("E{ser_i}_{cnty_i}")) |> tail(2)
 }

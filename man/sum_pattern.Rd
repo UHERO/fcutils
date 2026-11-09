@@ -3,7 +3,7 @@
 \docType{data}
 \name{sum_pattern}
 \alias{sum_pattern}
-\title{pattern in series names that should be aggregate as sum}
+\title{Pattern in series names that should be aggregated as sum}
 \format{
 string of patterns in series names that should be aggregated via sum
 }
@@ -14,10 +14,12 @@ author
 sum_pattern
 }
 \description{
-pattern in series names that should be aggregate as sum
+A regular expression matched against upper-cased series names when
+\code{conv_type = "uhero"} in \code{\link[=agg]{agg()}}, \code{\link[=fagg]{fagg()}} and \code{\link[=disagg]{disagg()}}. Matching series
+are aggregated by sum, all others by mean.
 }
 \references{
-\url{uhero.hawaii.edu}
+\url{https://uhero.hawaii.edu}
 }
 \author{
 Peter Fuleky \email{fuleky@hawaii.edu}

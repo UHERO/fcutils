@@ -25,12 +25,13 @@ plot_1(
 
 \item{width}{width of a single panel (px)}
 
-\item{yoy_gr}{year-over-year (default) or annualized growth}
+\item{yoy_gr}{TRUE (default) for growth on the same period a year earlier,
+FALSE for growth on the previous period}
 
 \item{gr_1}{only show growth for the first series (default)}
 }
 \value{
-a dygraph plot
+a browsable htmltools tag list holding the dygraph plots
 }
 \description{
 Interactive plot with level and growth rate

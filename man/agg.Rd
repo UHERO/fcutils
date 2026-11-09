@@ -2,7 +2,7 @@
 % Please edit documentation in R/frequency.R
 \name{agg}
 \alias{agg}
-\title{Aggregate univariate or multivariate time series from low to high frequency}
+\title{Aggregate time series to a lower frequency}
 \usage{
 agg(
   x,
@@ -14,14 +14,15 @@ agg(
 )
 }
 \arguments{
-\item{x}{a tx-boxable object at a high frequency (e.g. monthly or quarterly)}
+\item{x}{a ts-boxable object at a high frequency (e.g. monthly or quarterly)}
 
 \item{conv_type}{match the aggregated value via "first", "last", "sum",
 "mean". If conv_type == "uhero" then the name of the time series x is
 compared to the internal variable \code{sum_pattern}. For matching series names
 the aggregation is based on "sum"; for all others it is based on "mean."}
 
-\item{target_freq}{target frequency "year", "quarter", "month", "week"}
+\item{target_freq}{target frequency "year" (default), "quarter", "month",
+"week"}
 
 \item{na_rm}{logical, if TRUE, incomplete periods are aggregated as
 well. For irregular series, incomplete periods are always aggregated.}
@@ -39,7 +40,11 @@ October and November, Q4 = Q3 x mean(Oct, Nov) / mean(Jul, Aug). Suits
 trending levels.
 }
 
-Incomplete periods before the last are always left out.}
+Incomplete periods before the last are left out. With \code{na_rm = TRUE}
+every incomplete period is aggregated from the values present, so
+\code{partial} has no effect. "growth" leaves the last period out when the
+earlier period or its matching observations are missing. Any \code{partial}
+other than "drop" needs conv_type "mean", "sum" or "uhero".}
 
 \item{partial_lag}{how far back "growth" looks, as a lubridate period
 string: the default, NULL, is one target period ("3 months" for
@@ -50,7 +55,7 @@ year earlier, as \code{\link[=ptd_gr]{ptd_gr()}} does.}
 aggregated object of the same type as the input
 }
 \description{
-Aggregate univariate or multivariate time series from low to high frequency
+Aggregate time series to a lower frequency
 }
 \examples{
 monthly_data_example |>
@@ -66,7 +71,7 @@ monthly_data_example |>
   agg(conv_type = "uhero", target_freq = "quarter") |>
   tsbox::ts_long() |>
   disagg(conv_type = "uhero", target_freq = "month") |>
-  tsbox::ts_wide() # this is close to original data
+  tsbox::ts_wide() # keeps the quarterly averages, not the monthly pattern
 # works with a single series too
 monthly_data_example |>
   tsbox::ts_long() |>

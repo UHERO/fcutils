@@ -103,7 +103,10 @@ set_attr_tslist <- function(x) {
 #'
 #' @param x tibble or data frame
 #'
-#' @return returns TRUE for wide format data frame (time and value columns), FALSE otherwise
+#' @return TRUE for a data frame with a `time` column and numeric value
+#'   columns only, FALSE for a long data frame or any object that is not a
+#'   data frame. A data frame without a `time` column, or without a numeric
+#'   column, stops with an error.
 #' @export
 #'
 #' @examples
@@ -111,12 +114,10 @@ set_attr_tslist <- function(x) {
 #' monthly_data_example |>
 #'   tsbox::ts_long() |>
 #'   is_wide()
-#' dat_in <- monthly_data_example |>
+#' monthly_data_example |>
 #'   tsbox::ts_long() |>
-#'   tsbox::ts_tslist()
-#' wide_df <- is_wide(dat_in)
-#' x_mod <- if (wide_df) tsbox::ts_long(dat_in) else tsbox::ts_tbl(dat_in)
-#' ans <- if (wide_df) tsbox::ts_wide(x_mod) else tsbox::copy_class(x_mod, dat_in)
+#'   tsbox::ts_tslist() |>
+#'   is_wide()
 is_wide <- function(x) {
   rc <- tsbox::relevant_class(x)
   if (!(rc %in% c("data.frame", "tbl_df", "data.table"))) {
@@ -244,7 +245,9 @@ reclass <- function(out, x_mod, x) {
 #' @return returns a ts-boxable object in long format with `id`, `time` and
 #' `value` columns. if `ser_info = TRUE`, also returns the following attributes:
 #' `was_wide` is `TRUE` if x is a wide data frame, `FALSE` otherwise, and
-#' `ser_names` are the names of the series in x.
+#' `ser_names` are the names of the series in x. Missing dates inside each
+#' series are filled with NA rows. A single unnamed series gets the id
+#' "x_mod".
 #' @export
 #'
 #' @details This function performs a similar operation to `tsbox::ts_long()`. It
@@ -260,19 +263,17 @@ reclass <- function(out, x_mod, x) {
 #'   conv_long() |>
 #'   tsbox::ts_tslist() |>
 #'   conv_long()
-#' quarterly_data_example |>
+#' long <- quarterly_data_example |>
 #'   tsbox::ts_long() |>
 #'   tsbox::ts_xts() |>
 #'   conv_long(ser_info = TRUE)
+#' attr(long, "was_wide")
+#' attr(long, "ser_names") |> head()
+#' # a single series still gets an id column
 #' quarterly_data_example |>
 #'   tsbox::ts_long() |>
 #'   tsbox::ts_pick("E_NF_HI") |>
 #'   tsbox::ts_xts() |>
-#'   conv_long()
-#' quarterly_data_example |>
-#'   tsbox::ts_long() |>
-#'   tsbox::ts_xts() |>
-#'   tsbox::ts_pick("E_NF_HI") |>
 #'   conv_long()
 conv_long <- function(x, ser_info = FALSE) {
   # need xts series names for differential treatment of univariate data
@@ -344,7 +345,8 @@ conv_long <- function(x, ser_info = FALSE) {
 #'   conv_wide()
 #' quarterly_data_example |>
 #'   conv_xts() |>
-#'   conv_wide()
+#'   conv_wide() |>
+#'   dplyr::select(1:4)
 #' quarterly_data_example |>
 #'   tsbox::ts_long() |>
 #'   tsbox::ts_pick("E_NF_HI") |>
@@ -375,10 +377,14 @@ conv_wide <- function(x) {
 #' @examples
 #' quarterly_data_example |>
 #'   conv_tslist() |>
-#'   conv_xts()
+#'   conv_xts() |>
+#'   tsbox::ts_pick(1:3) |>
+#'   tail(3)
 #' quarterly_data_example |>
 #'   conv_wide() |>
-#'   conv_xts()
+#'   conv_xts() |>
+#'   tsbox::ts_pick(1:3) |>
+#'   tail(3)
 #' quarterly_data_example |>
 #'   tsbox::ts_long() |>
 #'   tsbox::ts_pick("E_NF_HI") |>
@@ -409,10 +415,13 @@ conv_xts <- function(x) {
 #' @examples
 #' quarterly_data_example |>
 #'   conv_xts() |>
-#'   conv_tslist()
+#'   conv_tslist() |>
+#'   names() |>
+#'   head()
 #' quarterly_data_example |>
 #'   conv_wide() |>
-#'   conv_tslist()
+#'   conv_tslist() |>
+#'   utils::str(list.len = 2)
 #' quarterly_data_example |>
 #'   tsbox::ts_long() |>
 #'   tsbox::ts_pick("E_NF_HI") |>

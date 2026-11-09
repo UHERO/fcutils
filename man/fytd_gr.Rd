@@ -10,18 +10,20 @@ fytd_gr(x)
 \item{x}{a ts-boxable object}
 }
 \value{
-object of the same type as the input containing year to date growth rate
+object of the same type as the input containing fiscal year to date growth rate
 }
 \description{
 Fiscal year to date growth rate
 }
 \details{
-this function operates similarly to ytd_gr() but assumes that the
-fiscal year starts in July and accumulates the values from that month onward.
+Works as ytd_gr(), with the fiscal year starting in July: the
+percent change of the fiscal-year-to-date average from the same date a year
+earlier. An NA makes the rest of its fiscal year NA.
 }
 \examples{
 quarterly_data_example |>
-  fytd_gr()
+  fytd_gr() |>
+  tail()
 monthly_data_example |>
   tsbox::ts_long() |>
   tsbox::ts_pick("VISNS_HI") |>

@@ -17,9 +17,13 @@ object of the same type as the input containing year to date sum or average
 \description{
 Year to date sum or average
 }
+\details{
+An NA makes the rest of its period NA.
+}
 \examples{
 monthly_data_example |>
-  ytd_agg()
+  ytd_agg() |>
+  tail()
 monthly_data_example |>
   tsbox::ts_long() |>
   tsbox::ts_pick("VISNS_HI") |>

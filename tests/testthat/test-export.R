@@ -33,3 +33,16 @@ test_that("write_tsd() puts descriptions in columns 17-80", {
     "exceeds 64 characters"
   )
 })
+
+test_that("write_tsd() keeps interior NAs in place as the TSD missing value", {
+  x <- conv_xts(quarterly_data_example)[, "E_NF_HI"]["2019/2021"]
+  x[c(1, 6)] <- NA # leading NA dropped, 2020Q2 kept as missing
+  file <- withr::local_tempfile(fileext = ".tsd")
+  write_tsd(x, file)
+  lines <- strsplit(readr::read_file(file), "\r\n")[[1]]
+  expect_match(lines[2], "2019020020210400Q")
+  vals <- as.numeric(unlist(strsplit(trimws(paste(lines[3:5], collapse = " ")), " +")))
+  expect_length(vals, 11)
+  expect_equal(vals[5], 1e15)
+  expect_equal(vals[11], signif(as.numeric(x["2021-10-01"]), 7))
+})

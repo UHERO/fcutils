@@ -17,7 +17,7 @@ uh_colors
 colors defined in the UHERO Style Guide
 }
 \references{
-\url{uhero.hawaii.edu}
+\url{https://uhero.hawaii.edu}
 }
 \author{
 Peter Fuleky \email{fuleky@hawaii.edu}

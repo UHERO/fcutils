@@ -10,16 +10,19 @@ set_udaman_token(key)
 \item{key}{a string containing 44 characters}
 }
 \value{
-true if setting the token in .Renviron succeeded
+NULL, invisibly
 }
 \description{
 Set udaman token for API access
 }
 \details{
-Save the token in .Renviron as udaman_token = key.
+Sets the udaman token for this R session (environment variable
+\code{udaman_token}) and warns if the key is not 44 characters long. To keep
+the token for later sessions, add \code{udaman_token = "<key>"} to .Renviron,
+or run \code{set_api_key("udaman", key, store = "keyring")}.
 }
 \examples{
 \dontshow{if (interactive()) (if (getRversion() >= "3.4") withAutoprint else force)(\{ # examplesIf}
-set_udaman_token("-ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890=")
+set_udaman_token("-ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890abcdef=")
 \dontshow{\}) # examplesIf}
 }

@@ -2,20 +2,21 @@
 % Please edit documentation in R/growth.R
 \name{pc_to_pca}
 \alias{pc_to_pca}
-\title{Convert quarterly growth to annualized growth}
+\title{Convert growth per period to annualized growth}
 \usage{
 pc_to_pca(x, freq = 4)
 }
 \arguments{
-\item{x}{ts-boxable object containing quarterly growth (in percent)}
+\item{x}{ts-boxable object containing growth per period (in percent)}
 
-\item{freq}{numeric frequency of the time series e.g. 4 for quarterly}
+\item{freq}{periods per year: 4 (default) for quarterly, 12 for monthly.
+It is not read from x.}
 }
 \value{
 object of the same type as the input containing annualized growth (in percent)
 }
 \description{
-Convert quarterly growth to annualized growth
+Convert growth per period to annualized growth
 }
 \examples{
 quarterly_data_example |>
@@ -23,15 +24,10 @@ quarterly_data_example |>
   tsbox::ts_pc() |>
   pc_to_pca() |>
   tail()
-tsbox::ts_c(
-  quarterly_data_example |>
-    tsbox::ts_long() |>
-    tsbox::ts_pc() |>
-    pc_to_pca(),
-  quarterly_data_example |>
-    tsbox::ts_long() |>
-    tsbox::ts_pca()
-) |>
-  dplyr::arrange(id, time) |>
-  tsbox::ts_wide()
+# the round trip gives tsbox's annualized growth
+jobs <- conv_xts(quarterly_data_example)$E_NF_HI
+tail(tsbox::ts_c(
+  from_pc = pc_to_pca(tsbox::ts_pc(jobs)),
+  pca = tsbox::ts_pca(jobs)
+), 3)
 }

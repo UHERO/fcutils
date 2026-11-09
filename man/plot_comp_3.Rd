@@ -18,7 +18,9 @@ plot_comp_3(
 \arguments{
 \item{x}{ts-boxable object to plot}
 
-\item{base_date}{base period for the indexed series ("YYYY-MM-DD")}
+\item{base_date}{base period for the index panel, where the index equals 1
+("YYYY-MM-DD"; default 10 years before today). It works as \code{base_per} in
+\code{\link[=index_to_base]{index_to_base()}}: the first observation on or after the date.}
 
 \item{rng_start}{start of the zoom range ("YYYY-MM-DD")}
 
@@ -28,12 +30,14 @@ plot_comp_3(
 
 \item{width}{width of a single panel (px)}
 
-\item{yoy_gr}{year-over-year (default) or annualized growth}
+\item{yoy_gr}{TRUE (default) for growth on the same period a year earlier,
+FALSE for growth on the previous period}
 
 \item{gr_bar}{show bars or line (default) for the growth series}
 }
 \value{
-a list with three dygraph plots (level, index, growth)
+a browsable htmltools tag list with three dygraph plots (level,
+index, growth)
 }
 \description{
 Three-panel plot of levels, index, and growth rates

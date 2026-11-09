@@ -14,17 +14,22 @@ interpol(
 \arguments{
 \item{incomplete}{a ts-boxable object with NAs}
 
-\item{pattern}{a ts-boxable object no missing values, or NULL (default)
-to fill the gaps inside each series by \code{interp}}
+\item{pattern}{a ts-boxable object at the same frequency, or NULL (default)
+to fill the gaps inside each series by \code{interp}. Pattern series are
+matched to the series in \code{incomplete} by position, not by name; a single
+pattern series serves every series, with a warning. \code{interpol()} prints
+the mapping it uses.}
 
-\item{extend_range}{logical. If TRUE, uses a full_join to potentially extend
-the date range. If FALSE (default), uses a left_join to only fill NAs
-within the original date range.}
+\item{extend_range}{logical. If TRUE, the result covers every date of
+either input, and each series is continued along its pattern over the
+added dates. If FALSE (default), the result keeps the dates of
+\code{incomplete}.}
 
 \item{interp}{without a pattern: "linear" (default) fills a gap along a
 straight line, "stine" along a Stineman spline through the observed
 values, which bends smoothly without overshooting them (as in
-\code{\link[=extend]{extend()}}). Not used with a pattern.}
+\code{\link[=extend]{extend()}}). With a pattern only "linear" is allowed; "stine" is an
+error.}
 }
 \value{
 interpolated object of the same type as the input
@@ -33,14 +38,16 @@ interpolated object of the same type as the input
 Interpolate univariate or multivariate time series with missing values
 }
 \details{
-the function aligns two sets of time series by date and then
-interpolates the first set using the second set as a pattern. Without a
-pattern, missing values between a series' first and last observation are
-filled by \code{interp} (by position, so each period counts the same); missing
-dates in a regular series are added first, and leading and trailing gaps
-stay empty. extend_range has no effect then.
-The time-span of the pattern has to match or be larger
-than the time-span of the incomplete data.
+With a pattern, a gap inside a series follows the pattern's growth
+from the last known value, plus a correction that grows linearly across the
+gap so the path ends on the next known value. A gap at the start or end of
+a series follows the pattern's growth from the nearest known value. Where
+the pattern is NA, or does not cover a gap's end points, the gap stays NA.
+
+Without a pattern, missing values between a series' first and last
+observation are filled by \code{interp} (by position, so each period counts the
+same); missing dates in a regular series are added first, and leading and
+trailing gaps stay empty. extend_range has no effect then.
 }
 \examples{
 # straight-line fill of an internal gap
@@ -56,7 +63,8 @@ monthly_data_example |>
     value = dplyr::if_else(time > "2021-01-01" & time < "2022-01-01",
     NA_real_, value)
   )|>
-  interpol(monthly_data_example, extend_range = TRUE)
+  interpol(monthly_data_example, extend_range = TRUE) |>
+  span("2020-11-01", "2022-02-01")
 monthly_data_example |>
   tsbox::ts_long() |>
   dplyr::mutate(
@@ -78,6 +86,7 @@ monthly_data_example |>
         )
       )
   ) \%>\%
-  # no interpolation where pattern has NAs
-  tsbox::ts_wide()
+  # no interpolation where pattern has NAs (April to August 2021)
+  tsbox::ts_wide() |>
+  span("2020-11-01", "2022-02-01")
 }

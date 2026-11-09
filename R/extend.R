@@ -17,43 +17,50 @@
 #'   `2026.4 ~ 4.4, 2028.4 ~ 4.0`. The right side is evaluated, so
 #'   `2027.4 ~ target` works. An alternative to `at` and `val`.
 #' @param at dates of the anchors, in any form `to_ymd()` reads
-#'   (`c(2026.4, 2028.4)`, `c("2026Q4", "2028")`)
-#' @param val anchor values (by name, like `at`): a numeric vector the length of `at`; a named
+#'   (`c(2026.4, 2028.4)`, `c("2026Q4", "2028")`). Each must be the first day
+#'   of a period of x within the bank, or extend() stops.
+#' @param val anchor values, given by name: a numeric vector the length of `at`; a named
 #'   numeric vector whose names are the dates (`c("2026Q4" = 4.3)`), with
 #'   `at = NULL`; or a series (e.g. from `make_xts()`), whose observations are
-#'   the anchors
+#'   the anchors (`at` is then ignored)
 #' @param path instead of anchors, a series that sets the forecast: the
 #'   level (`type = "level"`), the growth rate in percent (`type = "growth"`),
-#'   or a level whose growth or changes continue x (`type = "chain"`)
+#'   or a level whose growth or changes continue x (`type = "chain"`). The
+#'   forecast ends where the path ends.
 #' @param type "level", "growth" or "chain" (see details)
 #' @param growth for `type = "growth"`, how anchors and `path` state growth:
 #'   "pca" (default), the period-on-period rate annualized (4.0 for a
 #'   quarter that grew 1%); "pcy", the year-over-year rate
 #' @param method for `type = "chain"`: "ratio" (default) continues x with
 #'   the growth of `path`, for levels; "diff" with its changes, for rates
-#'   (the same words as in [chain()])
+#'   (the same words as in [chain()]). Ignored for other types.
 #' @param interp interpolation between anchors: "linear" or "stine" (the
 #'   Stineman spline: smooth turns without overshooting)
 #' @param last last date that counts as history (default: the last
 #'   observation of x). Values of x after `last` are replaced.
 #' @param hold_last if TRUE (default), the last anchor is held to the end of
-#'   the bank. If FALSE, the interpolation itself runs to the last anchor and
-#'   its value is then carried forward.
+#'   the bank, so a spline flattens into it. If FALSE, the interpolation runs
+#'   only to the last anchor and its value is then carried forward. With
+#'   `interp = "linear"` both give the same result.
 #' @param smooth NULL, or a list with `span` and optionally `from` and `to`:
-#'   smooth the forecast with loess before compounding (the period growth
-#'   rate for "growth" and "chain", the level for "level"). `from` defaults
-#'   to the first period after `last`.
+#'   smooth the forecast with loess before compounding (the growth rate for
+#'   "growth", year over year with `growth = "pcy"`; the period growth rate
+#'   for "chain"; the level for "level"). `from` defaults to the first period
+#'   after `last`, `to` to the end of the forecast.
 #'
 #' @return an object of the same type as x, from the bank start to the bank
 #'   end (`getOption("fcutils.bnk_start")`, `getOption("fcutils.bnk_end")`),
-#'   empty before x's first observation
+#'   empty before x's first observation. With a `path`, the forecast ends
+#'   where the path ends.
 #' @export
 #'
 #' @details
 #' * `type = "level"`: history up to `last`, then the anchors, with the gaps
 #'   interpolated, including between the last history value and the first
 #'   anchor. Anchors dated at or before `last` are dropped with a message,
-#'   since history takes precedence.
+#'   since history takes precedence. With a `path` instead, the forecast is
+#'   the path's values after `last`, unadjusted, so it can jump at the seam;
+#'   use `type = "chain"` to join it to history.
 #' * `type = "growth"`: the same applied to the growth rate of x; the level
 #'   is then compounded from history. With `growth = "pca"` the line starts
 #'   from the annualized growth at `last` and each period grows from the one
@@ -64,7 +71,11 @@
 #'   within-year pattern.
 #' * `type = "chain"`: `path` after `last`, joined to x at `last`: scaled to
 #'   meet it (`method = "ratio"`) or shifted by a constant
-#'   (`method = "diff"`).
+#'   (`method = "diff"`). The path needs a value at `last`. "ratio" compounds
+#'   the path's growth, so the path must stay above zero. "diff" uses the
+#'   shifted path as is, so it suits rates that reach zero or below; with
+#'   `smooth`, it compounds the smoothed growth of the shifted path, which
+#'   must then stay above zero.
 #'
 #' Linear interpolation weighs the gaps by time, the spline by position.
 #'
@@ -90,23 +101,25 @@
 #' options(fcutils.bnk_start = as.Date("2015-01-01"), fcutils.bnk_end = as.Date("2035-12-31"))
 #' ur <- make_xts(2024.1, val = c(3.8, 4.0, 4.2, 4.1, 4.1, 4.2, 4.3))
 #' # the unemployment rate through two anchors, then held
-#' extend(ur, 2026.4 ~ 4.4, 2028.4 ~ 4.0, interp = "stine")
-#' extend(ur, "2026Q4" ~ 4.4, "2028Q4" ~ 4.0, interp = "stine")
-#' # the same with at and val
-#' extend(ur, at = c(2026.4, 2028.4), val = c(4.4, 4.0), interp = "stine")
-#' # the same with the anchors as a named vector
-#' extend(ur, val = c("2026Q4" = 4.4, "2028Q4" = 4.0), interp = "stine")
+#' extend(ur, 2026.4 ~ 4.4, 2028.4 ~ 4.0, interp = "stine")[p(2025.2, 2029.1)]
+#' # the same with quoted dates, with at and val, or with a named vector
+#' u1 <- extend(ur, "2026Q4" ~ 4.4, "2028Q4" ~ 4.0, interp = "stine")
+#' u2 <- extend(ur, at = c(2026.4, 2028.4), val = c(4.4, 4.0), interp = "stine")
+#' u3 <- extend(ur, val = c("2026Q4" = 4.4, "2028Q4" = 4.0), interp = "stine")
+#' all.equal(u1, u2)
+#' all.equal(u1, u3)
 #' # a price level whose annualized inflation falls from 3% to 2%
 #' cpi <- make_xts(2024.1, val = 100 * 1.0075^(0:6))
-#' extend(cpi, at = c(2026.1, 2027.4), val = c(3, 2), type = "growth")
+#' extend(cpi, at = c(2026.1, 2027.4), val = c(3, 2), type = "growth")[p(2025.2, 2028.4)]
 #' # the same with year-over-year inflation
-#' extend(cpi, at = c(2026.1, 2027.4), val = c(3, 2), type = "growth", growth = "pcy")
+#' extend(cpi, at = c(2026.1, 2027.4), val = c(3, 2), type = "growth",
+#'   growth = "pcy")[p(2025.2, 2028.4)]
 #' # history continued with the growth of a projection on another level
 #' proj <- make_xts(2020.1, val = 50 * 1.01^(0:63))
-#' extend(cpi, path = proj, type = "chain")
-#' # a rate continued with the changes of a projection
+#' extend(cpi, path = proj, type = "chain")[p(2025.2, 2026.4)]
+#' # a rate continued with the changes of a projection, which ends in 2028Q4
 #' extend(ur, path = make_xts(2024.1, val = seq(4, 5, length.out = 20)),
-#'   type = "chain", method = "diff")
+#'   type = "chain", method = "diff")[p(2025.2, 2029.2)]
 extend <- function(
   x,
   ...,
@@ -205,8 +218,22 @@ extend <- function(
       if (method == "diff") {
         pth <- pth + (value_at(xs, last) - value_at(pth, last))
       }
-      g <- pca_to_pc(tsbox::ts_pca(pth), nper)
-      compound_from(xs, g, last, smooth, smooth_from())
+      if (method == "diff" && is.null(smooth)) {
+        # the shifted path itself: compounding its growth would lose the sign
+        # of a path that reaches zero or below
+        tsbox::ts_bind(xs[p("", last)], pth[p(next_period, "")])
+      } else {
+        if (any(as.numeric(pth[p(last, "")]) <= 0, na.rm = TRUE)) {
+          stop(
+            "extend(): type = \"chain\" compounds the growth of the path, ",
+            "so the path must stay above zero; for a rate use ",
+            "method = \"diff\" without smooth",
+            call. = FALSE
+          )
+        }
+        g <- pca_to_pc(tsbox::ts_pca(pth), nper)
+        compound_from(xs, g, last, smooth, smooth_from())
+      }
     }
   )
 
@@ -357,13 +384,24 @@ anchor_series <- function(x, anchors, last, interp, hold_last, per) {
     dates <- dates[!stale]
     values <- values[!stale]
   }
-  for (i in seq_along(dates)) {
-    x[dates[i]] <- values[i]
+  pos <- match(dates, zoo::index(x))
+  if (anyNA(pos)) {
+    stop(
+      "extend(): ", stringr::str_flatten(format(dates[is.na(pos)]), collapse = ", "),
+      " is not the start of a ", per, " within the bank",
+      call. = FALSE
+    )
   }
+  x[pos] <- values
   if (hold_last && length(dates) > 0) {
     x[paste0(max(dates), "/")] <- values[which.max(dates)]
   }
-  x <- if (interp == "linear") zoo::na.approx(x) else stine_fill(x)
+  x <- if (interp == "linear") {
+    # carry the last value forward, as stine_fill() does
+    zoo::na.locf(zoo::na.approx(x, na.rm = FALSE), na.rm = FALSE)
+  } else {
+    stine_fill(x)
+  }
   x %>%
     tsbox::ts_bind(make_xts(per = per)) %>%
     tsbox::ts_span(end = bank_end())

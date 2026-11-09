@@ -13,13 +13,18 @@ ptd_agg(x, per = "year", avg = TRUE)
 (this is the unit of time at which the aggregation is performed:
 for ytd per = "year" (default), for mtd per = "month")}
 
-\item{avg}{if TRUE (default), retorn period to date average, if FALSE, return period to date sum}
+\item{avg}{if TRUE (default), return period to date average, if FALSE, return period to date sum}
 }
 \value{
 object of the same type as the input containing period to date sum or average
 }
 \description{
 Period to date sum or average
+}
+\details{
+\code{per} takes any unit \code{lubridate::floor_date()} does, such as
+"week" or "day". Weeks start on Sunday. An NA makes the rest of its period
+NA.
 }
 \examples{
 daily_data_example |>

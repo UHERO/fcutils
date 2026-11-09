@@ -47,5 +47,9 @@ new names, which take the same arguments:
    \code{mtd_cum()} \tab \code{\link[=mtd_agg]{mtd_agg()}} \cr
    \code{ptd_cum()} \tab \code{\link[=ptd_agg]{ptd_agg()}} \cr
 }
+
+
+\code{yoy_to_lev()} was deprecated in fcutils 0.1.5 and has its own help page.
+Use \code{extend(hist_lev, path = yoy_gr, type = "growth", growth = "pcy")}.
 }
 \keyword{internal}

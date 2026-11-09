@@ -25,12 +25,14 @@ plot_comp_2(
 
 \item{width}{width of a single panel (px)}
 
-\item{yoy_gr}{year-over-year (default) or annualized growth}
+\item{yoy_gr}{TRUE (default) for growth on the same period a year earlier,
+FALSE for growth on the previous period}
 
 \item{gr_bar}{show bars or line (default) for the growth series}
 }
 \value{
-a list with two dygraph plots (level, growth)
+a browsable htmltools tag list with two dygraph plots (level,
+growth)
 }
 \description{
 Two-panel plot of levels and growth rates

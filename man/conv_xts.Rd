@@ -24,10 +24,14 @@ can be a wide tbl.
 \examples{
 quarterly_data_example |>
   conv_tslist() |>
-  conv_xts()
+  conv_xts() |>
+  tsbox::ts_pick(1:3) |>
+  tail(3)
 quarterly_data_example |>
   conv_wide() |>
-  conv_xts()
+  conv_xts() |>
+  tsbox::ts_pick(1:3) |>
+  tail(3)
 quarterly_data_example |>
   tsbox::ts_long() |>
   tsbox::ts_pick("E_NF_HI") |>

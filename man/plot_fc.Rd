@@ -18,7 +18,9 @@ plot_fc(
 )
 }
 \arguments{
-\item{x}{ts-boxable object to plot (min 1, max 3 time series) (e.g. current fcst, old fcst, history)}
+\item{x}{ts-boxable object to plot (e.g. current fcst, old fcst, history).
+The first three series get their own line styles; later ones get the
+default style.}
 
 \item{rng_start}{start of zoom range ("YYYY-MM-DD")}
 
@@ -26,21 +28,24 @@ plot_fc(
 
 \item{add_table}{should a data table be appended to the plot? (default = TRUE)}
 
-\item{table_start}{start of table range ("YYYY-MM-DD") (all data = NULL, default = rng_start)}
+\item{table_start}{start of table range ("YYYY-MM-DD"; default rng_start;
+NULL for the start of the data)}
 
-\item{table_end}{end of table range ("YYYY-MM-DD") (all data = NULL, default = rng_end)}
+\item{table_end}{end of table range ("YYYY-MM-DD"; default rng_end; NULL
+for the end of the data)}
 
 \item{height}{height of a single panel (px)}
 
 \item{width}{width of a single panel (px)}
 
-\item{yoy_gr}{year-over-year (default) or annualized growth}
+\item{yoy_gr}{TRUE (default) for growth on the same period a year earlier,
+FALSE for growth on the previous period}
 
 \item{rate}{if TRUE, the bars show the change in points instead of the \%
 change (for rates such as the unemployment rate; default = FALSE)}
 }
 \value{
-a dygraph plot
+a browsable htmltools tag list holding the dygraph plots
 }
 \description{
 Interactive plot with level and growth rate for forecast series

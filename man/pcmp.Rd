@@ -14,10 +14,18 @@ pcmp(x, lag = 4, comp_freq = 1)
 \item{comp_freq}{compounding frequency (1 if period by period, 4 if annualized for quarterly data, etc.)}
 }
 \value{
-object of the same type as the input ontaining the average growth of x (in percent)
+object of the same type as the input containing the average growth of x (in percent)
 }
 \description{
 Calculate multi-period average growth
+}
+\details{
+\code{pcmp()} returns \verb{((x / x[lag periods earlier])^(comp_freq / lag) - 1) * 100},
+the average growth per period over the last \code{lag} periods, compounded
+\code{comp_freq} times. On quarterly data, \code{pcmp(x, 1)} is quarter-on-quarter
+growth, \code{pcmp(x, 1, 4)} is annualized quarterly growth, \code{pcmp(x, 4, 4)} is
+year-on-year growth, and \code{pcmp(x, 4)} is the average quarterly growth over
+the past year.
 }
 \examples{
 quarterly_data_example |>

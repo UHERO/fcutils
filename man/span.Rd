@@ -9,13 +9,18 @@ span(x, start = NULL, end = NULL, template = NULL, extend = FALSE)
 \arguments{
 \item{x}{ts-boxable object to filter by span}
 
-\item{start}{start date (see examples)}
+\item{start}{start date, in any form \code{to_ymd()} reads}
 
-\item{end}{end date (see examples)}
+\item{end}{end date, in any form \code{to_ymd()} reads. A year, quarter or month
+given as \code{end} stands for its first day, so on monthly data
+\code{span(x, 2010, 2010)} keeps only January 2010. To keep a whole period,
+give its last day ("2010-12-31"), or subset an xts with \code{x[p(2010, 2010)]},
+which includes the end period in full.}
 
 \item{template}{ts-boxable time series (see tsbox::ts_span)}
 
-\item{extend}{logical. If true, the start and end values are allowed to extend the series (by adding NA values).}
+\item{extend}{logical. If TRUE, a \code{start} before the data or an \code{end} after
+them pads the series with NA.}
 }
 \value{
 filtered object of the same type as the input. Without \code{start},
@@ -36,4 +41,10 @@ quarterly_data_example |>
   span(2010.1, 2010.4)
 quarterly_data_example |>
   span("2010-01-01", "2010-12-31")
+# on monthly data, a year as end means its first month
+monthly_data_example |>
+  span(2010, 2010)
+monthly_data_example |>
+  span(2010, "2010-12-31") |>
+  tail(2)
 }

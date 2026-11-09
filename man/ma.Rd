@@ -12,7 +12,9 @@ ma(x, order)
 \item{order}{numeric order (window length) of moving average, includes contemporaneous observation}
 }
 \value{
-object of the same type as the input containing moving average
+object of the same type as the input containing moving average. The
+first \code{order - 1} periods are NA, and an NA inside the window gives NA.
+The window counts observations, not dates.
 }
 \description{
 Backward looking moving average

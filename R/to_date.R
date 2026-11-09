@@ -4,11 +4,14 @@
 #' @param avg if TRUE (default), return year to date average, if FALSE, return year to date sum
 #'
 #' @return object of the same type as the input containing year to date sum or average
+#'
+#' @details An NA makes the rest of its period NA.
 #' @export
 #'
 #' @examples
 #' monthly_data_example |>
-#'   ytd_agg()
+#'   ytd_agg() |>
+#'   tail()
 #' monthly_data_example |>
 #'   tsbox::ts_long() |>
 #'   tsbox::ts_pick("VISNS_HI") |>
@@ -25,6 +28,9 @@ ytd_agg <- function(x, avg = TRUE) {
 #' @param x a ts-boxable object
 #'
 #' @return object of the same type as the input containing year to date growth rate
+#'
+#' @details The growth rate is the percent change of the to-date average from
+#' the same date a year earlier. An NA makes the rest of its period NA.
 #' @export
 #'
 #' @examples
@@ -42,19 +48,21 @@ ytd_gr <- function(x) {
 #' Fiscal year to date sum or average
 #'
 #' @param x a ts-boxable object
-#' @param avg if TRUE (default), return year to date average, if FALSE, return year to date sum
+#' @param avg if TRUE (default), return fiscal year to date average, if FALSE, return fiscal year to date sum
 #'
-#' @return object of the same type as the input containing year to date sum or average
+#' @return object of the same type as the input containing fiscal year to date sum or average
 #' @export
 #'
-#' @details this function operates similarly to ytd_agg() but assumes that the
-#' fiscal year starts in July and accumulates the values from that month onward.
+#' @details Works as ytd_agg(), with the fiscal year starting in July. An NA
+#' makes the rest of its fiscal year NA.
 #'
 #' @examples
 #' monthly_data_example |>
-#'   fytd_agg()
+#'   fytd_agg() |>
+#'   tail()
 #' quarterly_data_example |>
-#'   fytd_agg()
+#'   fytd_agg() |>
+#'   tail()
 #' monthly_data_example |>
 #'   tsbox::ts_long() |>
 #'   tsbox::ts_pick("VISNS_HI") |>
@@ -70,15 +78,17 @@ fytd_agg <- function(x, avg = TRUE) {
 #'
 #' @param x a ts-boxable object
 #'
-#' @return object of the same type as the input containing year to date growth rate
+#' @return object of the same type as the input containing fiscal year to date growth rate
 #' @export
 #'
-#' @details this function operates similarly to ytd_gr() but assumes that the
-#' fiscal year starts in July and accumulates the values from that month onward.
+#' @details Works as ytd_gr(), with the fiscal year starting in July: the
+#' percent change of the fiscal-year-to-date average from the same date a year
+#' earlier. An NA makes the rest of its fiscal year NA.
 #'
 #' @examples
 #' quarterly_data_example |>
-#'   fytd_gr()
+#'   fytd_gr() |>
+#'   tail()
 #' monthly_data_example |>
 #'   tsbox::ts_long() |>
 #'   tsbox::ts_pick("VISNS_HI") |>
@@ -95,17 +105,15 @@ fytd_gr <- function(x) {
 #' @param x a ts-boxable object
 #' @param avg if TRUE (default), return month to date average, if FALSE, return month to date sum
 #'
-#' @return object of the same type as the input containing year to date sum or average
+#' @return object of the same type as the input containing month to date sum or average
+#'
+#' @details An NA makes the rest of its period NA.
 #' @export
 #'
 #' @examples
 #' daily_data_example |>
-#'   mtd_agg()
-#' test <- daily_data_example |>
-#'   tsbox::ts_long() |>
-#'   tsbox::ts_pick("VAPNS_HI") |>
-#'   mtd_agg()
-#' tsbox::`%ts/%`(test, tsbox::ts_lag(test, "6 months")) |> tail()
+#'   mtd_agg() |>
+#'   tail()
 mtd_agg <- function(x, avg = TRUE) {
   to_date(x, "month", avg = avg)
 }
@@ -117,6 +125,9 @@ mtd_agg <- function(x, avg = TRUE) {
 #'
 #' @return object of the same type as the input containing month to date growth rate
 #' @export
+#'
+#' @details The growth rate is the percent change of the month-to-date average
+#' from the same date a year earlier. An NA makes the rest of its month NA.
 #'
 #' @examples
 #' daily_data_example |>
@@ -133,10 +144,14 @@ mtd_gr <- function(x) {
 #' @param per period over which the sum or average of a higher frequency series in x is calculated
 #'   (this is the unit of time at which the aggregation is performed:
 #'   for ytd per = "year" (default), for mtd per = "month")
-#' @param avg if TRUE (default), retorn period to date average, if FALSE, return period to date sum
+#' @param avg if TRUE (default), return period to date average, if FALSE, return period to date sum
 #'
 #' @return object of the same type as the input containing period to date sum or average
 #' @export
+#'
+#' @details `per` takes any unit `lubridate::floor_date()` does, such as
+#' "week" or "day". Weeks start on Sunday. An NA makes the rest of its period
+#' NA.
 #'
 #' @examples
 #' daily_data_example |>
@@ -166,6 +181,10 @@ ptd_agg <- function(x, per = "year", avg = TRUE) {
 #' @return object of the same type as the input containing period to date growth rate
 #' @export
 #'
+#' @details The growth rate is the percent change of the period-to-date average
+#' from the same date `lag_length` earlier. Weeks start on Sunday. An NA makes
+#' the rest of its period NA.
+#'
 #' @examples
 #' monthly_data_example |>
 #'   ptd_gr() |>
@@ -174,15 +193,15 @@ ptd_agg <- function(x, per = "year", avg = TRUE) {
 #'   dplyr::select("time", "VAPNS_HI") |>
 #'   ptd_gr(per = "month", lag_length = "3 years") |>
 #'   tail()
-#' # don't use lag_length = "1 year" with weekly data
+#' # with per = "week", compare with 52 weeks back so the same weekdays line
+#' # up; "1 year" back lands on a different weekday
 #' daily_data_example |>
-#'   ptd_gr("week")
-#' # lag_length = "52 weeks" instead
-#' daily_data_example |>
-#'   ptd_gr("week", "52 weeks")
+#'   ptd_gr("week", "52 weeks") |>
+#'   tail()
 #' # and use lag_length = "364 days" with daily data
 #' daily_data_example |>
-#'   ptd_gr("day", "364 days")
+#'   ptd_gr("day", "364 days") |>
+#'   tail()
 #' daily_data_example |>
 #'   tsbox::ts_long() |>
 #'   tsbox::ts_pick("VAPNS_HI") |>

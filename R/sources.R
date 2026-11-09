@@ -118,14 +118,18 @@ mask_keys <- function(x) {
 #'   one by one.
 #' @param source "fred", "statcan", "boc", "estat" or "eia"
 #' @param freq NULL (default) keeps the source's frequency; "month" averages
-#'   daily or weekly data to months, keeping complete months only (the
-#'   current month is dropped)
+#'   daily or weekly data to months and drops the current calendar month. A
+#'   month at either end of the data with only some days is still averaged,
+#'   so set `start` to the first of a month.
 #' @param start first date to request (any form `to_ymd()` reads; default
 #'   1940)
 #' @param filters named list of further query parameters. e-Stat: the table's
 #'   category codes, e.g. `list(cdTab = "1", cdCat01 = "0001", cdArea =
 #'   "00000")`. EIA: `route` (e.g. "steo" or "aeo/2025"), `frequency`
-#'   ("monthly", "annual") and facets such as `scenario = "ref2025"`.
+#'   ("monthly", "annual") and facets such as `scenario = "ref2025"`; EIA
+#'   returns at most 5,000 observations per series. FRED: added to the
+#'   request as query parameters, e.g. `list(units = "pc1")`. StatCan and
+#'   Bank of Canada: ignored.
 #' @param format "wide" (default), "long" or "xts", as in `get_series()`
 #'
 #' @return the series, in the chosen format, named by id

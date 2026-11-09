@@ -7,16 +7,17 @@
 e1 \%+=\% e2
 }
 \arguments{
-\item{e1}{first addend (and returned sum)}
+\item{e1}{first addend, replaced by the sum}
 
 \item{e2}{second addend}
 }
 \value{
-sum of the two addends replacing the values in the first addend
+the new value of e1, invisibly
 }
 \description{
-Warning: Typing x \%+=\% y/2 returns x <- (x + y)/2.
-Adding parentheses, i.e. x \%+=\% (y/2) solves the problem.
+\code{x \%+=\% y} adds y to x and stores the sum in x. \verb{\%+=\%} binds more
+tightly than \code{*} and \code{/}, so \code{x \%+=\% y/2} sets x to x + y and halves only
+the returned value. Write \code{x \%+=\% (y/2)} to add half of y.
 }
 \examples{
 \dontshow{if (interactive()) (if (getRversion() >= "3.4") withAutoprint else force)(\{ # examplesIf}

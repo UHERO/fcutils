@@ -26,7 +26,7 @@
 #' @details This function requires permission to access UDAMAN.
 #' Store the udaman token in the .Renviron file using the following format:
 #' udaman_token = "-ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890="
-#' Or using fcutils::set_udaman_token("-ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890=")
+#' Or run set_udaman_token(key) to set it for the current session only.
 #' Or store the udaman token among your credentials (e.g. keychain) using keyring:
 #' keyring::key_set_with_value(service = "udaman_token", password = "-ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890=")
 #'
@@ -90,7 +90,7 @@ get_series_1 <- function(ser_id, expand, rename, descr, public) {
 #' @details This function requires permission to access UDAMAN.
 #' Store the udaman token in the .Renviron file using the following format:
 #' udaman_token = "-ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890="
-#' Or using fcutils::set_udaman_token("-ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890=")
+#' Or run set_udaman_token(key) to set it for the current session only.
 #' Or store the udaman token among your credentials (e.g. keychain) using keyring:
 #' keyring::key_set_with_value(service = "udaman_token", password = "-ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890=")
 #'
@@ -142,15 +142,16 @@ get_series <- function(
 #'   keep UDAMAN names
 #' @param descr if TRUE add to the udaman series name the series description in parentheses (default: FALSE)
 #' @param public if TRUE use the public API interface - does not require VPN (default: FALSE)
-#' @param save_loc file path for saving data incl. extension ("html" or "csv") (default NULL)
+#' @param save_loc path of a CSV file to write (default NULL: no file). The
+#'   file always holds the wide table, whatever `format` is.
 #'
-#' @return time and data for all series combined in a tibble
+#' @return the series in the format chosen by `format`
 #' @export
 #'
 #' @details This function requires permission to access UDAMAN.
 #' Store the udaman token in the .Renviron file using the following format:
 #' udaman_token = "-ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890="
-#' Or using fcutils::set_udaman_token("-ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890=")
+#' Or run set_udaman_token(key) to set it for the current session only.
 #' Or store the udaman token among your credentials (e.g. keychain) using keyring:
 #' keyring::key_set_with_value(service = "udaman_token", password = "-ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890=")
 #'
@@ -247,18 +248,19 @@ get_series_exp <- function(
 
 #' Construct a series name from variable components and retrieve the series
 #'
-#' @param ser_in a variable name (character string with substituted expressions)
-#' @param env environment where the expression should be evaluated
+#' @param ser_in a name with glue expressions in braces, such as
+#'   "E{ser_i}_{cnty_i}". The expressions are evaluated in the global
+#'   environment.
+#' @param env environment in which the resulting name is looked up
 #'
-#' @return variable
+#' @return the object with that name
 #' @export
 #'
-#' @examplesIf interactive()
+#' @examples
 #' ser_i <- "_NF"
 #' cnty_i <- "HI"
-#' quarterly_data_example |>
-#'   tsbox::ts_long() |>
-#'   tsbox::ts_xts() %$% get_var("E{ser_i}_{cnty_i}")
+#' q <- conv_xts(quarterly_data_example)
+#' with(as.list(q), get_var("E{ser_i}_{cnty_i}")) |> tail(2)
 get_var <- function(ser_in, env = parent.frame()) {
   return(ser_in %>% stringr::str_glue() %>% get(envir = env, inherits = TRUE))
 }
@@ -266,12 +268,22 @@ get_var <- function(ser_in, env = parent.frame()) {
 
 #' Format series names to udaman format (mnemonic@loc.freq)
 #'
-#' @param ser_in series names (character "mnemonic_loc", "mnemonic_AT_loc_freq", "mnemonic__loc_freq", mnemonic@loc.freq")
-#' @param freq frequency of the series, required if not contained in the series
-#'   name (character "D", "W", "M", "Q", "S", "A")
+#' @param ser_in series names in any of the forms MNEMONIC_LOC,
+#'   MNEMONIC__LOC_F, MNEMONIC_AT_LOC_F or MNEMONIC@LOC.F. One string may
+#'   hold several names separated by commas, semicolons or spaces.
+#' @param freq frequency of the series ("D", "W", "M", "Q", "S", "A"),
+#'   required if not contained in the series names; it replaces any frequency
+#'   in the names
 #'
 #' @return series names following udaman convention "mnemonic@loc.freq"
 #' @export
+#'
+#' @details Recognised locations are HI, HON, HAW, MAU, KAU, MAUI, MOL, LAN,
+#' NBI, US and JP; the location is the one just before the frequency or the
+#' end of the name. HI5, HI3, HIALL and CNTY expand to the matching sets of
+#' counties, so the output can be longer than the input. A name with no
+#' recognised location, or with no frequency when `freq` is NULL, stops with
+#' an error.
 #'
 #' @examples
 #' rename_udaman(c("E_NF_HI", "ECT_HI", "E_TU_HAW"), freq = "M")
@@ -281,12 +293,16 @@ get_var <- function(ser_in, env = parent.frame()) {
 #' rename_udaman(c("SH_US@HI.M", "SH_JP__HON_M"))
 #' rename_udaman(c("E_NF_HI5", "ECT__HIALL", "E_TU@CNTY"), freq = "M")
 #' rename_udaman(c("E_NF_HI5 , ECT__HIALL  E_TU@CNTY", "VAP_HAW ; ECT_HON"), freq = "M")
-#' quarterly_data_example |> dplyr::rename_with(~ rename_udaman(., freq = "M"), .cols = -1)
-#' quarterly_data_example |> dplyr::rename_with(rename_udaman, freq = "M", .cols = !time)
+#' quarterly_data_example |>
+#'   dplyr::rename_with(~ rename_udaman(., freq = "Q"), .cols = -1) |>
+#'   names() |>
+#'   head()
 #' quarterly_data_example |>
 #'   tsbox::ts_long() |>
-#'   dplyr::mutate(id = rename_udaman(id, freq = "M")) |>
-#'   tsbox::ts_xts()
+#'   dplyr::mutate(id = rename_udaman(id, freq = "Q")) |>
+#'   tsbox::ts_xts() |>
+#'   colnames() |>
+#'   head()
 rename_udaman <- function(ser_in, freq = NULL) {
   if (!is.character(ser_in)) {
     ser_in <- as.character(ser_in)
@@ -309,9 +325,11 @@ rename_udaman <- function(ser_in, freq = NULL) {
           .,
           "@HI5|@HI3|@HIALL|@HI|@CNTY|@HON|@HAW|@MAUI|@MOL|@LAN|@MAU|@KAU|@NBI|@US|@JP"
         ),
+        # the location just before the frequency (or the end), so a mnemonic
+        # that contains a location code, such as SH_JP, is not mistaken for it
         stringr::str_extract(
           .,
-          "_+HI5|_+HI3|_+HIALL|_+HI|_+CNTY|_+HON|_+HAW|_+MAUI|_+MOL|_+LAN|_+MAU|_+KAU|_+NBI|_+US|_+JP"
+          "_+(HI5|HI3|HIALL|HI|CNTY|HON|HAW|MAUI|MOL|LAN|MAU|KAU|NBI|US|JP)(?=([_.][DWMQSA])?$)"
         )
       )
     } %>%
@@ -355,13 +373,16 @@ rename_udaman <- function(ser_in, freq = NULL) {
 #'
 #' @param key a string containing 44 characters
 #'
-#' @return true if setting the token in .Renviron succeeded
+#' @return NULL, invisibly
 #' @export
 #'
-#' @details Save the token in .Renviron as udaman_token = key.
+#' @details Sets the udaman token for this R session (environment variable
+#' `udaman_token`) and warns if the key is not 44 characters long. To keep
+#' the token for later sessions, add `udaman_token = "<key>"` to .Renviron,
+#' or run `set_api_key("udaman", key, store = "keyring")`.
 #'
 #' @examplesIf interactive()
-#' set_udaman_token("-ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890=")
+#' set_udaman_token("-ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890abcdef=")
 set_udaman_token <- function(key) {
   if (!rlang::is_string(key)) {
     rlang::abort("`key` must be a string.")

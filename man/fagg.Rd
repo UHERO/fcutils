@@ -2,12 +2,12 @@
 % Please edit documentation in R/frequency.R
 \name{fagg}
 \alias{fagg}
-\title{Aggregate univariate or multivariate fiscal time series from low to high frequency}
+\title{Aggregate time series to fiscal years or quarters}
 \usage{
 fagg(x, conv_type = "mean", target_freq = "year", na_rm = FALSE)
 }
 \arguments{
-\item{x}{a tx-boxable object at a high frequency (e.g. monthly or quarterly)}
+\item{x}{a ts-boxable object at a high frequency (e.g. monthly or quarterly)}
 
 \item{conv_type}{match the aggregated value via "first", "last", "sum",
 "mean". If conv_type == "uhero" then the name of the time series x is
@@ -23,7 +23,7 @@ well. For irregular series, incomplete periods are always aggregated.}
 aggregated object of the same type as the input
 }
 \description{
-Aggregate univariate or multivariate fiscal time series from low to high frequency
+Fiscal years run from July to June.
 }
 \details{
 date stamps typically reflect the start of a period, but here the

@@ -22,6 +22,11 @@ object of the same type as the input containing period to date growth rate
 \description{
 Period to date growth rate
 }
+\details{
+The growth rate is the percent change of the period-to-date average
+from the same date \code{lag_length} earlier. Weeks start on Sunday. An NA makes
+the rest of its period NA.
+}
 \examples{
 monthly_data_example |>
   ptd_gr() |>
@@ -30,15 +35,15 @@ monthly_data_example |>
   dplyr::select("time", "VAPNS_HI") |>
   ptd_gr(per = "month", lag_length = "3 years") |>
   tail()
-# don't use lag_length = "1 year" with weekly data
+# with per = "week", compare with 52 weeks back so the same weekdays line
+# up; "1 year" back lands on a different weekday
 daily_data_example |>
-  ptd_gr("week")
-# lag_length = "52 weeks" instead
-daily_data_example |>
-  ptd_gr("week", "52 weeks")
+  ptd_gr("week", "52 weeks") |>
+  tail()
 # and use lag_length = "364 days" with daily data
 daily_data_example |>
-  ptd_gr("day", "364 days")
+  ptd_gr("day", "364 days") |>
+  tail()
 daily_data_example |>
   tsbox::ts_long() |>
   tsbox::ts_pick("VAPNS_HI") |>
