@@ -11,7 +11,8 @@ addf(
   to = 0,
   ser_name = "value",
   per = "year",
-  ...
+  ...,
+  interp = c("linear", "stine")
 )
 }
 \arguments{
@@ -32,6 +33,10 @@ if start is written as a quarter or a month (see \code{to_ymd()}), per is set
 to "quarter" or "month"}
 
 \item{...}{with formulas: further points (see details)}
+
+\item{interp}{with formulas: how to join the points, "linear" (default)
+or "stine", the Stineman spline, which eases in and out of each point
+without overshooting. Must be named.}
 }
 \value{
 a single xts series spanning the bank: from
@@ -59,6 +64,12 @@ formula has a date on the left and a value on the right. The frequency
 follows the first date (2026.3 is a quarter), unless \code{per} is given by
 name; \code{ser_name} and \code{per} must be named. Decimal dates are quarters, so
 monthly points need strings (\code{"2026M10" ~ 1}).
+
+With \code{interp = "stine"} the points are joined by a smooth curve instead.
+The spline treats the zeros before the first point and after the last as
+known, so an add-factor that starts and ends at zero leaves and returns to
+zero gradually. A ramp joins only two points, so \code{interp} applies to
+formulas, not to start, end, from and to or a table of ramps.
 }
 \examples{
 options(fcutils.bnk_start = as.Date("1970-01-01"), fcutils.bnk_end = as.Date("2070-12-31"))
@@ -84,4 +95,6 @@ addf(ramps)
 # the same as points, with decimal or quoted dates
 addf(2026.3 ~ 0, 2027.4 ~ -0.3, 2028.1 ~ -0.3, 2030.4 ~ 0)
 addf("2026Q3" ~ 0, "2027Q4" ~ -0.3, "2028Q1" ~ -0.3, "2030Q4" ~ 0)
+# a smooth curve through the same points
+addf(2026.3 ~ 0, 2027.4 ~ -0.3, 2028.1 ~ -0.3, 2030.4 ~ 0, interp = "stine")
 }

@@ -154,6 +154,17 @@ ramps <- tibble::tribble(
 addf(2026.1 ~ 0, 2027.4 ~ 0.3, 2028.1 ~ 0.3, 2029.4 ~ 0)
 ```
 
+Points also take `interp = "stine"`, which joins them with a smooth curve
+that eases off zero and back, like the spline in `extend()`:
+
+```{r, fig.alt = "Add-factor from 2025 to 2030: straight ramps up to 0.3 and back down, and a smooth curve through the same points that leaves and returns to zero gradually."}
+adj_paths <- tsbox::ts_c(
+  linear = adj,
+  stine = addf(2026.1 ~ 0, 2027.4 ~ 0.3, 2028.1 ~ 0.3, 2029.4 ~ 0, interp = "stine")
+)
+tsbox::ts_plot(adj_paths[p(2025, 2030.4)], title = "Add-factor, points")
+```
+
 Construction jobs follow from the adjusted share and the total. Because
 the share and the total both span the bank, ordinary arithmetic lines them
 up:

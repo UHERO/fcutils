@@ -118,6 +118,9 @@ make_xts <- function(
 #'   if start is written as a quarter or a month (see `to_ymd()`), per is set
 #'   to "quarter" or "month"
 #' @param ... with formulas: further points (see details)
+#' @param interp with formulas: how to join the points, "linear" (default)
+#'   or "stine", the Stineman spline, which eases in and out of each point
+#'   without overshooting. Must be named.
 #'
 #' @return a single xts series spanning the bank: from
 #'   `getOption("fcutils.bnk_start")` to `getOption("fcutils.bnk_end")` (see
@@ -141,6 +144,12 @@ make_xts <- function(
 #' follows the first date (2026.3 is a quarter), unless `per` is given by
 #' name; `ser_name` and `per` must be named. Decimal dates are quarters, so
 #' monthly points need strings (`"2026M10" ~ 1`).
+#'
+#' With `interp = "stine"` the points are joined by a smooth curve instead.
+#' The spline treats the zeros before the first point and after the last as
+#' known, so an add-factor that starts and ends at zero leaves and returns to
+#' zero gradually. A ramp joins only two points, so `interp` applies to
+#' formulas, not to start, end, from and to or a table of ramps.
 #'
 #' @examples
 #' options(fcutils.bnk_start = as.Date("1970-01-01"), fcutils.bnk_end = as.Date("2070-12-31"))
@@ -166,6 +175,8 @@ make_xts <- function(
 #' # the same as points, with decimal or quoted dates
 #' addf(2026.3 ~ 0, 2027.4 ~ -0.3, 2028.1 ~ -0.3, 2030.4 ~ 0)
 #' addf("2026Q3" ~ 0, "2027Q4" ~ -0.3, "2028Q1" ~ -0.3, "2030Q4" ~ 0)
+#' # a smooth curve through the same points
+#' addf(2026.3 ~ 0, 2027.4 ~ -0.3, 2028.1 ~ -0.3, 2030.4 ~ 0, interp = "stine")
 addf <- function(
   start = bank_start(),
   end = bank_end(),
@@ -173,8 +184,10 @@ addf <- function(
   to = 0,
   ser_name = "value",
   per = "year",
-  ...
+  ...,
+  interp = c("linear", "stine")
 ) {
+  interp <- match.arg(interp)
   if (inherits(start, "formula")) {
     # formulas fill the positional slots first; collect them all
     pts <- list(start)
@@ -191,7 +204,13 @@ addf <- function(
       per_given <- FALSE
     }
     pts <- c(pts, list(...))
-    return(addf_points(pts, ser_name, if (per_given) per else NULL))
+    return(addf_points(pts, ser_name, if (per_given) per else NULL, interp))
+  }
+  if (interp != "linear") {
+    stop(
+      "addf(): interp applies to points given as formulas (2026.3 ~ 0), not to ramps",
+      call. = FALSE
+    )
   }
   slots <- list(end, from, to, ser_name, per)
   if (length(list(...)) > 0 || any(vapply(slots, inherits, logical(1), "formula"))) {
@@ -260,7 +279,7 @@ addf <- function(
 
 #' addf() from points given as formulas
 #' @noRd
-addf_points <- function(pts, ser_name, per = NULL) {
+addf_points <- function(pts, ser_name, per = NULL, interp = "linear") {
   fp <- formula_points(pts, "addf")
   if (is.null(per)) {
     per <- fp$units[1]
@@ -288,7 +307,14 @@ addf_points <- function(pts, ser_name, per = NULL) {
     )
   }
   span <- seq(min(pos), max(pos))
-  out[span] <- stats::approx(pos, values, xout = span)$y
+  if (interp == "linear") {
+    out[span] <- stats::approx(pos, values, xout = span)$y
+  } else {
+    # zeros outside the points are known, so the curve eases off and back to zero
+    out[span] <- NA
+    out[pos] <- values
+    out <- stine_fill(out)
+  }
   colnames(out) <- ser_name
   out
 }

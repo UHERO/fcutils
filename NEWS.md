@@ -13,6 +13,9 @@
   gives the same result.
 * `interpol()` takes `interp = "stine"`: without a pattern, it fills gaps
   inside a series along a Stineman spline instead of a straight line.
+* `addf()` takes `interp = "stine"` with points given as formulas: a smooth
+  curve through the points that eases off zero and back, the same curve
+  `extend(interp = "stine")` draws from a zero history.
 * `span(x)` without dates fits x to the bank: it cuts x at the bank's start
   and end and pads it with NA to both.
 * The help pages of `extend()` and `chain()`, and the "Building a forecast"
