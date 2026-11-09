@@ -12,8 +12,8 @@ get_var(ser_in, env = parent.frame())
 
 - ser_in:
 
-  a name with glue expressions in braces, such as "Eser_i_cnty_i". The
-  expressions are evaluated in the global environment.
+  a name with glue expressions in braces, such as `"E{ser_i}_{cnty_i}"`.
+  The expressions are evaluated in the global environment.
 
 - env:
 
