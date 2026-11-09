@@ -114,3 +114,51 @@ test_that("fagg() handles a series that starts with missing values", {
   expect_equal(out$B, c(mean(3:6), mean(7:10), mean(11:14)))
   expect_equal(out$A, c(NA, mean(3:6), mean(7:10)))
 })
+
+test_that("agg(partial = ) estimates an incomplete last period", {
+  x <- monthly_data_example[, c("time", "VISNS_HI")] |>
+    dplyr::filter(time <= as.Date("2024-11-01")) # Q4: Oct, Nov
+  m <- x$VISNS_HI
+  names(m) <- format(x$time)
+  q3 <- mean(m[c("2024-07-01", "2024-08-01", "2024-09-01")])
+
+  dropped <- agg(x, target_freq = "quarter")
+  expect_equal(max(dropped$time), as.Date("2024-07-01"))
+
+  avg <- agg(x, target_freq = "quarter", partial = "average")
+  expect_equal(max(avg$time), as.Date("2024-10-01"))
+  expect_equal(utils::tail(avg$VISNS_HI, 1), mean(m[c("2024-10-01", "2024-11-01")]))
+
+  gr <- agg(x, target_freq = "quarter", partial = "growth")
+  expect_equal(
+    utils::tail(gr$VISNS_HI, 1),
+    q3 * mean(m[c("2024-10-01", "2024-11-01")]) /
+      mean(m[c("2024-07-01", "2024-08-01")])
+  )
+  # complete periods are untouched
+  expect_equal(utils::head(gr, -1), dropped)
+})
+
+test_that("agg(partial = 'growth', partial_lag = '1 year') matches ptd_gr()", {
+  x <- monthly_data_example[, c("time", "VISNS_HI")] |>
+    dplyr::filter(time <= as.Date("2024-11-01"))
+  gr <- agg(x, target_freq = "quarter", partial = "growth", partial_lag = "1 year")
+  qtd <- ptd_gr(x, "quarter")
+  expect_equal(
+    utils::tail(tsbox::ts_pcy(gr)$VISNS_HI, 1),
+    qtd$VISNS_HI[qtd$time == as.Date("2024-11-01")]
+  )
+})
+
+test_that("agg(partial = ) checks its arguments", {
+  x <- monthly_data_example |> dplyr::filter(time <= as.Date("2024-11-01"))
+  expect_error(agg(x, "uhero", "quarter", partial = "average"), "aggregated by")
+  expect_error(
+    agg(x, target_freq = "quarter", partial = "growth", partial_lag = "soon"),
+    "cannot read"
+  )
+  expect_equal(
+    agg(x, target_freq = "quarter", partial = "growth", partial_lag = "1 quarter"),
+    agg(x, target_freq = "quarter", partial = "growth")
+  )
+})
