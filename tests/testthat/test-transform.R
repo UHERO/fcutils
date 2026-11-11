@@ -215,3 +215,60 @@ test_that("interpol(match = 'name') pairs series with patterns by name", {
 test_that("index_to_base() needs base_per", {
   expect_error(index_to_base(quarterly_data_example), "base_per")
 })
+
+test_that("agg(partial = 'hold') fills the period at the latest level", {
+  x <- monthly_data_example[, c("time", "VISNS_HI")] |>
+    dplyr::filter(time <= as.Date("2024-09-01")) # Jan-Sep 2024
+  m <- x$VISNS_HI
+  names(m) <- format(x$time)
+  months_2024 <- m[format(seq(as.Date("2024-01-01"), by = "month", length.out = 9))]
+  held <- mean(m[c("2024-07-01", "2024-08-01", "2024-09-01")])
+
+  out <- agg(x, partial = "hold")
+  expect_equal(max(out$time), as.Date("2024-01-01"))
+  expect_equal(utils::tail(out$VISNS_HI, 1), mean(c(months_2024, rep(held, 3))))
+  # complete periods are untouched
+  expect_equal(utils::head(out, -1), agg(x))
+
+  # the last observations can reach into the previous period
+  jan <- dplyr::filter(x, time <= as.Date("2024-01-01"))
+  held_jan <- mean(m[c("2023-11-01", "2023-12-01", "2024-01-01")])
+  expect_equal(
+    utils::tail(agg(jan, partial = "hold")$VISNS_HI, 1),
+    mean(c(m[["2024-01-01"]], rep(held_jan, 11)))
+  )
+  expect_equal(
+    utils::tail(agg(x, partial = "hold", partial_n = 1)$VISNS_HI, 1),
+    mean(c(months_2024, rep(m[["2024-09-01"]], 3)))
+  )
+  # a sum adds the held values
+  expect_equal(
+    utils::tail(agg(x, conv_type = "sum", partial = "hold")$VISNS_HI, 1),
+    sum(c(months_2024, rep(held, 3)))
+  )
+})
+
+test_that("agg(partial = 'hold') works for quarters too", {
+  m <- monthly_data_example[, c("time", "VISNS_HI")] |>
+    dplyr::filter(time <= as.Date("2024-11-01"))
+  v <- rlang::set_names(m$VISNS_HI, format(m$time))
+  held <- mean(v[c("2024-09-01", "2024-10-01", "2024-11-01")])
+  expect_equal(
+    utils::tail(agg(m, target_freq = "quarter", partial = "hold")$VISNS_HI, 1),
+    mean(c(v[["2024-10-01"]], v[["2024-11-01"]], held))
+  )
+  # quarterly data to years
+  q <- agg(monthly_data_example[, c("time", "VISNS_HI")], target_freq = "quarter") |>
+    dplyr::filter(time <= as.Date("2024-07-01"))
+  w <- rlang::set_names(q$VISNS_HI, format(q$time))
+  q24 <- w[c("2024-01-01", "2024-04-01", "2024-07-01")]
+  expect_equal(utils::tail(agg(q, partial = "hold")$VISNS_HI, 1), mean(c(q24, mean(q24))))
+})
+
+test_that("agg(partial = 'hold') needs monthly or quarterly data", {
+  daily <- tibble::tibble(
+    time = seq(as.Date("2024-01-01"), as.Date("2024-02-10"), by = "day"),
+    value = 1
+  )
+  expect_error(agg(daily, target_freq = "quarter", partial = "hold"), "monthly or quarterly")
+})

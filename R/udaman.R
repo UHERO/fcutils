@@ -35,7 +35,11 @@
 #' get_series_1(ser_id = "VISNS@HI.M")
 get_series_1 <- function(ser_id, expand, rename, descr, public) {
   uhero_data <- udaman_get(
-    stringr::str_c("series?name=", ser_id, "&expand=", expand),
+    # encoded, so a % in a name (OCUP%@HAW.M) reaches udaman intact
+    stringr::str_c(
+      "series?name=", utils::URLencode(ser_id, reserved = TRUE),
+      "&expand=", expand
+    ),
     public
   )
   # extract series info
@@ -266,24 +270,33 @@ get_var <- function(ser_in, env = parent.frame()) {
 }
 
 
-#' Format series names to udaman format (mnemonic@loc.freq)
+#' Convert series names between udaman and R forms
 #'
 #' @param ser_in series names in any of the forms MNEMONIC_LOC,
 #'   MNEMONIC__LOC_F, MNEMONIC_AT_LOC_F or MNEMONIC@LOC.F. One string may
 #'   hold several names separated by commas, semicolons or spaces.
-#' @param freq frequency of the series ("D", "W", "M", "Q", "S", "A"),
-#'   required if not contained in the series names; it replaces any frequency
-#'   in the names
+#' @param freq what follows the location, replacing any frequency in the
+#'   names: a frequency ("D", "W", "M", "Q", "S", "A"), another suffix such
+#'   as "SOLA" for an AREMOS solution bank, or "" for none (`UR@US`). NULL
+#'   (default) keeps the frequency in the names. Not used when `to` is
+#'   "compact", which has no frequency.
+#' @param to the form of the output: "udaman" (default, `E_NF@HI.M`),
+#'   "full" (`E_NF_AT_HI_M`, the R form that keeps the frequency) or
+#'   "compact" (`E_NF_HI`, no frequency). "full" and "compact" are the forms
+#'   of `get_series(rename = )`.
 #'
-#' @return series names following udaman convention "mnemonic@loc.freq"
+#' @return series names in the form `to`
 #' @export
 #'
-#' @details Recognised locations are HI, HON, HAW, MAU, KAU, MAUI, MOL, LAN,
-#' NBI, US and JP; the location is the one just before the frequency or the
-#' end of the name. HI5, HI3, HIALL and CNTY expand to the matching sets of
-#' counties, so the output can be longer than the input. A name with no
-#' recognised location, or with no frequency when `freq` is NULL, stops with
-#' an error.
+#' @details In MNEMONIC_AT_LOC and MNEMONIC@LOC the location is the part
+#' after `_AT_` or `@`, so any location works (CAN, CA, ...). In MNEMONIC_LOC
+#' and MNEMONIC__LOC the location must be one of HI, HON, HAW, MAU, KAU,
+#' MAUI, MOL, LAN, NBI, US and JP, just before the frequency or the end of
+#' the name. HI5, HI3, HIALL and CNTY expand to the matching sets of
+#' counties, so the output can be longer than the input. A name whose
+#' location cannot be read stops with an error naming it, and so does a
+#' name with no frequency when `to` is "udaman" and `freq` is NULL. The R
+#' forms replace the % of udaman names with P (OCUP% becomes OCUPP).
 #'
 #' @examples
 #' rename_udaman(c("E_NF_HI", "ECT_HI", "E_TU_HAW"), freq = "M")
@@ -291,8 +304,14 @@ get_var <- function(ser_in, env = parent.frame()) {
 #' rename_udaman(c("E_NF_AT_HI_M", "ECT_AT_HI_M", "VAP_AT_HAW_W"))
 #' rename_udaman(c("E_NF@HI.M", "ECT@HI.M", "VAP@HAW.W"))
 #' rename_udaman(c("SH_US@HI.M", "SH_JP__HON_M"))
+#' rename_udaman(c("EAF_AT_HAW", "GDP_R_AT_CAN"), freq = "SOLA")
+#' rename_udaman(c("UR_AT_US", "GDP_R_AT_US"), freq = "")
 #' rename_udaman(c("E_NF_HI5", "ECT__HIALL", "E_TU@CNTY"), freq = "M")
 #' rename_udaman(c("E_NF_HI5 , ECT__HIALL  E_TU@CNTY", "VAP_HAW ; ECT_HON"), freq = "M")
+#' # from udaman names to the R forms
+#' rename_udaman(c("E_NF@HI.M", "OCUP%@HAW.M"), to = "full")
+#' rename_udaman(c("E_NF@HI.M", "OCUP%@HAW.M"), to = "compact")
+#' rename_udaman("E_NF_HI", freq = "Q", to = "full")
 #' quarterly_data_example |>
 #'   dplyr::rename_with(~ rename_udaman(., freq = "Q"), .cols = -1) |>
 #'   names() |>
@@ -303,7 +322,8 @@ get_var <- function(ser_in, env = parent.frame()) {
 #'   tsbox::ts_xts() |>
 #'   colnames() |>
 #'   head()
-rename_udaman <- function(ser_in, freq = NULL) {
+rename_udaman <- function(ser_in, freq = NULL, to = c("udaman", "full", "compact")) {
+  to <- rlang::arg_match(to)
   if (!is.character(ser_in)) {
     ser_in <- as.character(ser_in)
   }
@@ -311,61 +331,63 @@ rename_udaman <- function(ser_in, freq = NULL) {
     ser_in <- stringr::str_split(ser_in, "[,;\\s]+") %>%
       purrr::list_c()
   }
-  ser_in <- stringr::str_replace(ser_in, "_AT_", "__")
-  mnemonic <- ser_in %>%
-    stringr::str_extract(
-      "[[:alnum:]_]+(?=_+HI5|_+HI3|_+HIALL|_+HI|_+CNTY|_+HON|_+HAW|_+MAUI|_+MOL|_+LAN|_+MAU|_+KAU|_+NBI|_+US|_+JP|@)"
-    ) %>%
-    stringr::str_replace("_$", "")
-  loc <- ser_in %>%
-    {
-      ifelse(
-        stringr::str_detect(., "@"),
-        stringr::str_extract(
-          .,
-          "@HI5|@HI3|@HIALL|@HI|@CNTY|@HON|@HAW|@MAUI|@MOL|@LAN|@MAU|@KAU|@NBI|@US|@JP"
-        ),
-        # the location just before the frequency (or the end), so a mnemonic
-        # that contains a location code, such as SH_JP, is not mistaken for it
-        stringr::str_extract(
-          .,
-          "_+(HI5|HI3|HIALL|HI|CNTY|HON|HAW|MAUI|MOL|LAN|MAU|KAU|NBI|US|JP)(?=([_.][DWMQSA])?$)"
-        )
-      )
-    } %>%
-    stringr::str_replace("_+", "@")
-  freq <- if (!is.null(freq)) {
-    stringr::str_replace(freq, "^", ".")
+  locs <- "HI5|HI3|HIALL|HI|CNTY|HON|HAW|MAUI|MOL|LAN|MAU|KAU|NBI|US|JP"
+  # MNEMONIC_AT_LOC_F and MNEMONIC@LOC.F name the location, so any location
+  # works; the suffix after it can be longer than one letter (SOLA)
+  explicit <- stringr::str_match(
+    ser_in,
+    "^([^@[:space:]]+?)(?:_AT_|@)([[:alnum:]]+)(?:[_.]([[:alpha:]]+))?$"
+  )
+  # MNEMONIC_LOC_F and MNEMONIC__LOC_F: a known location just before the
+  # frequency (or the end), so a mnemonic that contains a location code, such
+  # as SH_JP, is not mistaken for it
+  compact <- stringr::str_match(
+    ser_in,
+    stringr::str_c("^([^@[:space:]]+?)_+(", locs, ")(?:_([DWMQSA]))?$")
+  )
+  parts <- explicit
+  parts[is.na(explicit[, 1]), ] <- compact[is.na(explicit[, 1]), ]
+  if (anyNA(parts[, 1])) {
+    rlang::abort(c(
+      "rename_udaman(): cannot read the location in these names:",
+      rlang::set_names(ser_in[is.na(parts[, 1])], "x")
+    ))
+  }
+  suffix <- if (is.null(freq)) parts[, 4] else rep(freq, length(ser_in))
+  if (to == "udaman" && anyNA(suffix)) {
+    rlang::abort(c(
+      "rename_udaman(): no frequency in these names; set `freq`:",
+      rlang::set_names(ser_in[is.na(suffix)], "x")
+    ))
+  }
+  # the separators of each form: location, then suffix
+  sep <- switch(to, udaman = c("@", "."), full = c("_AT_", "_"), compact = c("_", ""))
+  suffix <- if (to == "compact") {
+    rep("", length(ser_in))
   } else {
-    ser_in %>%
-      stringr::str_extract(
-        "_D$|_W$|_M$|_Q$|_S$|_A$|.D$|.W$|.M$|.Q$|.S$|.A$"
-      ) %>%
-      stringr::str_replace("_", ".")
+    dplyr::if_else(is.na(suffix) | suffix == "", "", stringr::str_c(sep[2], suffix))
+  }
+  mnemonics <- if (to == "udaman") parts[, 2] else stringr::str_replace_all(parts[, 2], "%", "P")
+
+  # expand location abbreviations
+  expand_loc <- function(loc) {
+    switch(
+      loc,
+      HI5 = c("HI", "HON", "HAW", "MAU", "KAU"),
+      HI3 = c("HI", "HON", "NBI"),
+      HIALL = c("HI", "HON", "HAW", "MAU", "KAU", "MAUI", "MOL", "LAN"),
+      CNTY = c("HON", "HAW", "MAU", "KAU"),
+      loc
+    )
   }
 
-  # function to expand location abbreviations
-  expand_loc <- function(ser_id) {
-    mnemonic <- stringr::str_extract(ser_id, "[[:alnum:]_]+(?=@)")
-    loc <- stringr::str_extract(ser_id, "(?<=@)[[:alnum:]]+(?=\\.)")
-    freq <- stringr::str_extract(ser_id, "(?<=\\.)[[:alpha:]]")
-    if (loc == "HI5") {
-      loc <- c("HI", "HON", "HAW", "MAU", "KAU")
-    } else if (loc == "HI3") {
-      loc <- c("HI", "HON", "NBI")
-    } else if (loc == "HIALL") {
-      loc <- c("HI", "HON", "HAW", "MAU", "KAU", "MAUI", "MOL", "LAN")
-    } else if (loc == "CNTY") {
-      loc <- c("HON", "HAW", "MAU", "KAU")
+  purrr::pmap(
+    list(mnemonics, parts[, 3], suffix),
+    function(mnemonic, loc, suffix) {
+      stringr::str_c(mnemonic, sep[1], expand_loc(loc), suffix)
     }
-    return(stringr::str_c(mnemonic, "@", loc, ".", freq))
-  }
-
-  ser_ids <- stringr::str_c(mnemonic, loc, freq) %>%
-    purrr::map(expand_loc) %>%
+  ) %>%
     purrr::list_c()
-
-  return(ser_ids)
 }
 
 
@@ -426,14 +448,8 @@ udaman_get <- function(query, public) {
 udaman_names <- function(name, rename, descr, label) {
   out <- switch(
     rename,
-    compact = stringr::str_replace_all(
-      name,
-      c("\\.[A-Z]" = "", "@" = "_", "OCUP%" = "OCUPP")
-    ),
-    full = stringr::str_replace_all(
-      name,
-      c("\\.([A-Z])" = "_\\1", "@" = "_AT_", "OCUP%" = "OCUPP")
-    ),
+    compact = ,
+    full = rename_udaman(name, to = rename),
     no = name,
     rlang::abort("`rename` must be \"compact\", \"full\" or \"no\".")
   )

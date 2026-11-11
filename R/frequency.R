@@ -771,12 +771,20 @@ QtoA <- function(ser_in, aggr = "mean") {
 #'     published and `partial_lag = "3 months"`, Q4 = Q3 x Oct / Jul; with
 #'     October and November, Q4 = Q3 x mean(Oct, Nov) / mean(Jul, Aug). Suits
 #'     trending levels.
+#'   * "hold": the missing observations of the period set to the mean of the
+#'     last `partial_n` observations, then aggregated as a complete period.
+#'     With January to September published and `partial_n = 3`, the year is
+#'     the mean of January to September and three times the mean of July to
+#'     September. Keeps the latest level, so it suits seasonally adjusted
+#'     series. Needs monthly or quarterly data.
 #'
 #'   Incomplete periods before the last are left out. With `na_rm = TRUE`
 #'   every incomplete period is aggregated from the values present, so
 #'   `partial` has no effect. "growth" leaves the last period out when the
 #'   earlier period or its matching observations are missing. Any `partial`
 #'   other than "drop" needs conv_type "mean", "sum" or "uhero".
+#' @param partial_n how many of the last observations "hold" averages
+#'   (default 3). They can reach back into the previous period.
 #' @param partial_lag how far back "growth" looks, as a lubridate period
 #'   string: the default, NULL, is one target period ("3 months" for
 #'   quarters, "1 year" for years). "1 year" compares with the same months a
@@ -811,8 +819,9 @@ agg <- function(
   conv_type = "mean",
   target_freq = "year",
   na_rm = FALSE,
-  partial = c("drop", "average", "growth"),
-  partial_lag = NULL
+  partial = c("drop", "average", "growth", "hold"),
+  partial_lag = NULL,
+  partial_n = 3
 ) {
   partial <- match.arg(partial)
 
@@ -825,7 +834,8 @@ agg <- function(
   # estimate the last period of each series where it is incomplete
   if (partial != "drop") {
     x_mod_agg <- agg_partial(
-      x_mod, x_mod_agg, conv_type, target_freq, partial, partial_lag
+      x_mod, x_mod_agg, conv_type, target_freq, partial, partial_lag,
+      partial_n
     )
   }
 
@@ -984,7 +994,7 @@ aggr_long <- function(x_mod, conv_type, target_freq, na_rm) {
 #'
 #' @param x_mod the input in long form (id, time, value).
 #' @param x_mod_agg its aggregate from aggr_long(), complete periods only.
-#' @param conv_type,target_freq,partial,partial_lag as in agg().
+#' @param conv_type,target_freq,partial,partial_lag,partial_n as in agg().
 #' @return x_mod_agg with one row added per series whose last period is
 #'   incomplete and can be estimated.
 #' @noRd
@@ -994,7 +1004,8 @@ agg_partial <- function(
   conv_type,
   target_freq,
   partial,
-  partial_lag
+  partial_lag,
+  partial_n
 ) {
   ids <- unique(x_mod$id)
   agg_type <- if (stringr::str_detect(stringr::str_to_lower(conv_type), "^u")) {
@@ -1037,6 +1048,16 @@ agg_partial <- function(
     fun <- if (agg_type[[id]] == "sum") sum else mean
     value <- if (partial == "average") {
       mean(now$value)
+    } else if (partial == "hold") {
+      # months (or quarters) between observations, and how many make a period
+      step <- round(as.numeric(diff(utils::tail(obs$time, 2))) / 30.44)
+      months <- c(year = 12, quarter = 3)[target_freq]
+      if (is.na(months) || !step %in% c(1, 3) || months %% step != 0) {
+        stop('agg(partial = "hold") needs monthly or quarterly data.')
+      }
+      n_per <- months[[1]] / step
+      held <- mean(utils::tail(obs$value, partial_n))
+      fun(c(now$value, rep(held, n_per - nrow(now))))
     } else {
       base <- done$value[done$time == back(last_period)]
       before <- obs$value[match(back(now$time), obs$time)]

@@ -117,12 +117,13 @@ mask_keys <- function(x) {
 #'   ids ("0004052037") or EIA series ids ("WTIPUUS"). Several ids are read
 #'   one by one.
 #' @param source "fred", "statcan", "boc", "estat" or "eia"
-#' @param freq NULL (default) keeps the source's frequency; "month" averages
-#'   daily or weekly data to months and drops the current calendar month. A
-#'   month at either end of the data with only some days is still averaged,
-#'   so set `start` to the first of a month.
+#' @param freq NULL (default) keeps the source's frequency. "month" or
+#'   "quarter" averages the data to that frequency, which must be lower than
+#'   the source's (daily, weekly or monthly to months or quarters). See
+#'   Details for which periods are kept.
 #' @param start first date to request (any form `to_ymd()` reads; default
-#'   1940)
+#'   1940). The data run from `start` to the latest date the source has
+#'   published; there is no end date.
 #' @param filters named list of further query parameters. e-Stat: the table's
 #'   category codes, e.g. `list(cdTab = "1", cdCat01 = "0001", cdArea =
 #'   "00000")`. EIA: `route` (e.g. "steo" or "aeo/2025"), `frequency`
@@ -135,7 +136,21 @@ mask_keys <- function(x) {
 #' @return the series, in the chosen format, named by id
 #' @export
 #'
-#' @details Keys come from the environment or the keyring (see
+#' @details With `freq`, each period is the mean of the observations in it,
+#' and these periods are left out:
+#' * the current calendar period, which has not ended yet;
+#' * a period that `start` falls inside of, e.g. the first quarter when
+#'   `start` is February 15;
+#' * for monthly (or quarterly) data, the first or last period of a series
+#'   when it lacks its first or last month: a quarter with October and
+#'   November published but not December. FRED leaves such a quarter out
+#'   too.
+#'
+#' Periods inside a series are kept when an observation is missing; the mean
+#' is over the observations present. A quarter without October averages
+#' November and December, as FRED does.
+#'
+#' Keys come from the environment or the keyring (see
 #' `set_api_key()`); StatCan and the Bank of Canada need none. Downloads are
 #' tried three times. StatCan answers with an empty list during its nightly
 #' maintenance; that gives an error saying so. For e-Stat, the filters must
@@ -144,6 +159,7 @@ mask_keys <- function(x) {
 #' @examplesIf interactive()
 #' get_series_src(c("UNRATE", "CIVPART"), "fred", start = 2020)
 #' get_series_src("DCOILWTICO", "fred", freq = "month", start = 2024)
+#' get_series_src("UNRATE", "fred", freq = "quarter", start = 2024)
 #' get_series_src("v2062810", "statcan")
 #' get_series_src("FXMUSDCAD", "boc", start = 2017)
 #' get_series_src(
@@ -165,8 +181,8 @@ get_series_src <- function(
   source <- match.arg(source)
   format <- match.arg(format)
   start <- if (is.null(start)) as.Date("1940-01-01") else to_ymd(start)
-  if (!is.null(freq) && !identical(freq, "month")) {
-    rlang::abort("`freq` must be NULL or \"month\".")
+  if (!is.null(freq) && !freq %in% c("month", "quarter")) {
+    rlang::abort("`freq` must be NULL, \"month\" or \"quarter\".")
   }
   reader <- switch(
     source,
@@ -178,8 +194,8 @@ get_series_src <- function(
   )
   long <- purrr::map(id, function(i) {
     x <- reader(i, start = start, filters = filters)
-    if (identical(freq, "month")) {
-      x <- monthly_mean(x)
+    if (!is.null(freq)) {
+      x <- period_mean(x, freq, start)
     }
     dplyr::mutate(x, id = i, .before = 1)
   }) %>%
@@ -194,14 +210,47 @@ get_series_src <- function(
 }
 
 
-#' Daily or weekly values averaged to complete months
+#' Values averaged to months or quarters (get_series_src(freq = ))
+#'
+#' @param x tibble of time and value, one series.
+#' @param unit "month" or "quarter".
+#' @param start the first date requested.
+#' @return tibble of time (first day of each period) and value, the periods
+#'   described in get_series_src()'s details.
 #' @noRd
-monthly_mean <- function(x) {
-  x %>%
-    dplyr::filter(!is.na(.data$value)) %>%
-    dplyr::mutate(time = lubridate::floor_date(.data$time, "month")) %>%
-    dplyr::summarise(value = mean(.data$value), .by = "time") %>%
-    dplyr::filter(.data$time < lubridate::floor_date(Sys.Date(), "month"))
+period_mean <- function(x, unit, start) {
+  x <- dplyr::filter(x, !is.na(.data$value))
+  if (nrow(x) == 0) {
+    return(x)
+  }
+  n <- c(month = 1, quarter = 3)[[unit]]
+  # months between observations: 0 for daily or weekly data
+  step <- if (nrow(x) > 1) round(stats::median(as.numeric(diff(x$time))) / 30.44) else 0
+  if (step > n) {
+    rlang::abort(paste0("`freq = \"", unit, "\"` is not lower than the source's frequency."))
+  }
+  out <- x %>%
+    dplyr::mutate(period = lubridate::floor_date(.data$time, unit)) %>%
+    dplyr::summarise(
+      value = mean(.data$value),
+      first = min(.data$time),
+      last = max(.data$time),
+      .by = "period"
+    ) %>%
+    dplyr::arrange(.data$period)
+  keep <- out$period < lubridate::floor_date(Sys.Date(), unit) & out$period >= start
+  if (step >= 1) {
+    # monthly data: the series' first and last periods need their first and
+    # last months
+    i_first <- 1
+    i_last <- nrow(out)
+    keep[i_first] <- keep[i_first] && out$first[i_first] == out$period[i_first]
+    keep[i_last] <- keep[i_last] &&
+      out$last[i_last] >= lubridate::add_with_rollback(
+        out$period[i_last], months(n - step)
+      )
+  }
+  tibble::tibble(time = out$period[keep], value = out$value[keep])
 }
 
 
@@ -346,4 +395,53 @@ read_src_eia <- function(id, start, filters) {
   tibble::tibble(time = as.Date(time), value = as.numeric(dat$value)) %>%
     dplyr::filter(.data$time >= start) %>%
     dplyr::arrange(.data$time)
+}
+
+
+#' Download a table, save it, and read it back, or read the saved copy
+#'
+#' Scripts download their data on a full run and reread it on a rerun, so the
+#' rerun works offline and gives the same numbers. `fetch_cached()` does both.
+#' `fetch` downloads the table; `path` is where the copy is kept.
+#'
+#' @param path CSV file that holds the saved copy. Its folder is created if
+#'   needed.
+#' @param fetch function with no arguments that downloads the table and
+#'   returns a data frame, e.g. `function() get_series_exp(324)`.
+#' @param mode
+#'   * "refresh" (default): download, save to `path`, and read the saved file
+#'     back.
+#'   * "missing": download only when `path` does not exist yet; otherwise
+#'     read it. For large files that change rarely.
+#'   * "offline": only read `path`; stop if it does not exist.
+#' @param ... passed to [readr::read_csv()], e.g. `col_types`.
+#'
+#' @return the table, as read from `path`
+#' @export
+#'
+#' @details The table is always read back from the file, also right after a
+#'   download, so a full run and a later offline rerun see identical values.
+#'   readr writes numbers so that they read back exactly.
+#'
+#' @examplesIf interactive()
+#' from_disk <- FALSE
+#' hist <- fetch_cached(
+#'   "data/raw/324.csv",
+#'   function() get_series_exp(324, rename = "no"),
+#'   mode = if (from_disk) "offline" else "refresh"
+#' )
+fetch_cached <- function(path, fetch, mode = c("refresh", "missing", "offline"), ...) {
+  mode <- match.arg(mode)
+  saved <- file.exists(path)
+  if (mode == "offline" && !saved) {
+    rlang::abort(c(
+      paste0(path, " is not saved yet."),
+      i = 'Run once with mode = "refresh" or "missing" to download it.'
+    ))
+  }
+  if (mode == "refresh" || (mode == "missing" && !saved)) {
+    dir.create(dirname(path), recursive = TRUE, showWarnings = FALSE)
+    readr::write_csv(fetch(), path)
+  }
+  readr::read_csv(path, show_col_types = FALSE, ...)
 }

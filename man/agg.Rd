@@ -9,8 +9,9 @@ agg(
   conv_type = "mean",
   target_freq = "year",
   na_rm = FALSE,
-  partial = c("drop", "average", "growth"),
-  partial_lag = NULL
+  partial = c("drop", "average", "growth", "hold"),
+  partial_lag = NULL,
+  partial_n = 3
 )
 }
 \arguments{
@@ -38,6 +39,12 @@ change from the same observations of that period: with October
 published and \code{partial_lag = "3 months"}, Q4 = Q3 x Oct / Jul; with
 October and November, Q4 = Q3 x mean(Oct, Nov) / mean(Jul, Aug). Suits
 trending levels.
+\item "hold": the missing observations of the period set to the mean of the
+last \code{partial_n} observations, then aggregated as a complete period.
+With January to September published and \code{partial_n = 3}, the year is
+the mean of January to September and three times the mean of July to
+September. Keeps the latest level, so it suits seasonally adjusted
+series. Needs monthly or quarterly data.
 }
 
 Incomplete periods before the last are left out. With \code{na_rm = TRUE}
@@ -50,6 +57,9 @@ other than "drop" needs conv_type "mean", "sum" or "uhero".}
 string: the default, NULL, is one target period ("3 months" for
 quarters, "1 year" for years). "1 year" compares with the same months a
 year earlier, as \code{\link[=ptd_gr]{ptd_gr()}} does.}
+
+\item{partial_n}{how many of the last observations "hold" averages
+(default 3). They can reach back into the previous period.}
 }
 \value{
 aggregated object of the same type as the input
