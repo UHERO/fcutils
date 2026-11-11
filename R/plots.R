@@ -253,6 +253,17 @@ plot_fc <- function(
 
   ser_names <- attr(x_mod, "ser_names")
 
+  # date axis labels by frequency: 2026 for years, 2026Q1 for quarters, the
+  # dygraphs default for months and shorter periods
+  days <- stats::median(as.numeric(diff(sort(unique(x_mod$time)))))
+  date_label <- if (is.na(days) || days < 80) {
+    NULL
+  } else if (days < 300) {
+    getQuarter
+  } else {
+    "function(d) { return d.getFullYear().toString(); }"
+  }
+
   # bars: % change, or the change in points for rates
   gr_fun <- if (rate) {
     if (yoy_gr) tsbox::ts_diffy else tsbox::ts_diff
@@ -288,7 +299,13 @@ plot_fc <- function(
       drawGrid = FALSE,
       independentTicks = TRUE
     ) %>%
-    dygraphs::dyAxis("x", axisLabelFormatter = htmlwidgets::JS(getQuarter)) %>%
+    {
+      if (is.null(date_label)) {
+        .
+      } else {
+        dygraphs::dyAxis(., "x", axisLabelFormatter = htmlwidgets::JS(date_label))
+      }
+    } %>%
     dygraphs::dySeries(
       stringr::str_glue("{ser_names[1]}"),
       axis = "y",

@@ -13,6 +13,9 @@
   data, a first or last period without its first or last month are left
   out; gaps inside a series are averaged over the observations present, as
   FRED does. The help page says so.
+* `plot_fc()` labels the date axis by the data's frequency: 2026 for annual
+  data, 2026Q1 for quarterly, the dygraphs default for monthly and shorter.
+  It used to label every series by quarter.
 * `rename_udaman()` reads any location after `_AT_` or `@` (`GDP_R_AT_CAN`),
   takes any suffix in `freq` (`"SOLA"`; it used to keep only the first
   letter) or none (`freq = ""` gives `UR@US`), and names the series it

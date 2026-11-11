@@ -30,6 +30,16 @@ test_that("plot_fc(rate = TRUE) shows the change in points", {
   expect_equal(pc$x$attrs$labels[3], "value%")
 })
 
+test_that("plot_fc() labels the date axis by frequency", {
+  fmt <- function(x) {
+    dy <- plot_fc(x, rng_start = "2020-01-01", rng_end = "2021-01-01", add_table = FALSE)[[1]]
+    as.character(dy$x$attrs$axes$x$axisLabelFormatter)
+  }
+  expect_match(fmt(make_xts(2020, val = 1:5)), "getFullYear\\(\\)\\.toString")
+  expect_match(fmt(make_xts(2020.1, per = "quarter", val = 1:5)), "\"Q\"")
+  expect_length(fmt(make_xts("2020M1", per = "month", val = 1:15)), 0)
+})
+
 test_that("save_plot_list() saves without pandoc and says so", {
   local_mocked_bindings(find_pandoc = function() FALSE)
   f <- withr::local_tempfile(fileext = ".html")
