@@ -8,6 +8,7 @@ reference:
   - get_series
   - get_series_exp
   - get_series_src
+  - fetch_cached
   - set_api_key
   - set_udaman_token
   - get_var

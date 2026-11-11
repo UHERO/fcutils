@@ -1,3 +1,23 @@
+# fcutils 0.1.6
+
+* `fetch_cached()` downloads a table, saves it as CSV and reads it back, or
+  reads the saved copy: `mode = "refresh"` (download), `"missing"` (download
+  only if there is no saved copy) or `"offline"` (read only). A full run and
+  an offline rerun see identical values.
+* `agg()` takes `partial = "hold"`: the missing observations of the last
+  period are set to the mean of the last `partial_n` observations (default
+  3), so the period keeps the latest level. For seasonally adjusted monthly
+  or quarterly data.
+* `get_series_src()` takes `freq = "quarter"`. With `freq`, the current
+  calendar period, a period that `start` falls inside of, and, for monthly
+  data, a first or last period without its first or last month are left
+  out; gaps inside a series are averaged over the observations present, as
+  FRED does. The help page says so.
+* `rename_udaman()` reads any location after `_AT_` or `@` (`GDP_R_AT_CAN`),
+  takes any suffix in `freq` (`"SOLA"`; it used to keep only the first
+  letter) or none (`freq = ""` gives `UR@US`), and names the series it
+  cannot read instead of failing with an unrelated error.
+
 # fcutils 0.1.5
 
 * `extend(type = "growth")` takes `growth = "pcy"`: anchors and paths as

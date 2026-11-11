@@ -271,19 +271,22 @@ get_var <- function(ser_in, env = parent.frame()) {
 #' @param ser_in series names in any of the forms MNEMONIC_LOC,
 #'   MNEMONIC__LOC_F, MNEMONIC_AT_LOC_F or MNEMONIC@LOC.F. One string may
 #'   hold several names separated by commas, semicolons or spaces.
-#' @param freq frequency of the series ("D", "W", "M", "Q", "S", "A"),
-#'   required if not contained in the series names; it replaces any frequency
-#'   in the names
+#' @param freq what follows the location, replacing any frequency in the
+#'   names: a frequency ("D", "W", "M", "Q", "S", "A"), another suffix such
+#'   as "SOLA" for an AREMOS solution bank, or "" for none (`UR@US`). NULL
+#'   (default) keeps the frequency in the names, which then must have one.
 #'
 #' @return series names following udaman convention "mnemonic@loc.freq"
 #' @export
 #'
-#' @details Recognised locations are HI, HON, HAW, MAU, KAU, MAUI, MOL, LAN,
-#' NBI, US and JP; the location is the one just before the frequency or the
-#' end of the name. HI5, HI3, HIALL and CNTY expand to the matching sets of
-#' counties, so the output can be longer than the input. A name with no
-#' recognised location, or with no frequency when `freq` is NULL, stops with
-#' an error.
+#' @details In MNEMONIC_AT_LOC and MNEMONIC@LOC the location is the part
+#' after `_AT_` or `@`, so any location works (CAN, CA, ...). In MNEMONIC_LOC
+#' and MNEMONIC__LOC the location must be one of HI, HON, HAW, MAU, KAU,
+#' MAUI, MOL, LAN, NBI, US and JP, just before the frequency or the end of
+#' the name. HI5, HI3, HIALL and CNTY expand to the matching sets of
+#' counties, so the output can be longer than the input. A name whose
+#' location cannot be read, or with no frequency when `freq` is NULL, stops
+#' with an error naming it.
 #'
 #' @examples
 #' rename_udaman(c("E_NF_HI", "ECT_HI", "E_TU_HAW"), freq = "M")
@@ -291,6 +294,8 @@ get_var <- function(ser_in, env = parent.frame()) {
 #' rename_udaman(c("E_NF_AT_HI_M", "ECT_AT_HI_M", "VAP_AT_HAW_W"))
 #' rename_udaman(c("E_NF@HI.M", "ECT@HI.M", "VAP@HAW.W"))
 #' rename_udaman(c("SH_US@HI.M", "SH_JP__HON_M"))
+#' rename_udaman(c("EAF_AT_HAW", "GDP_R_AT_CAN"), freq = "SOLA")
+#' rename_udaman(c("UR_AT_US", "GDP_R_AT_US"), freq = "")
 #' rename_udaman(c("E_NF_HI5", "ECT__HIALL", "E_TU@CNTY"), freq = "M")
 #' rename_udaman(c("E_NF_HI5 , ECT__HIALL  E_TU@CNTY", "VAP_HAW ; ECT_HON"), freq = "M")
 #' quarterly_data_example |>
@@ -311,61 +316,56 @@ rename_udaman <- function(ser_in, freq = NULL) {
     ser_in <- stringr::str_split(ser_in, "[,;\\s]+") %>%
       purrr::list_c()
   }
-  ser_in <- stringr::str_replace(ser_in, "_AT_", "__")
-  mnemonic <- ser_in %>%
-    stringr::str_extract(
-      "[[:alnum:]_]+(?=_+HI5|_+HI3|_+HIALL|_+HI|_+CNTY|_+HON|_+HAW|_+MAUI|_+MOL|_+LAN|_+MAU|_+KAU|_+NBI|_+US|_+JP|@)"
-    ) %>%
-    stringr::str_replace("_$", "")
-  loc <- ser_in %>%
-    {
-      ifelse(
-        stringr::str_detect(., "@"),
-        stringr::str_extract(
-          .,
-          "@HI5|@HI3|@HIALL|@HI|@CNTY|@HON|@HAW|@MAUI|@MOL|@LAN|@MAU|@KAU|@NBI|@US|@JP"
-        ),
-        # the location just before the frequency (or the end), so a mnemonic
-        # that contains a location code, such as SH_JP, is not mistaken for it
-        stringr::str_extract(
-          .,
-          "_+(HI5|HI3|HIALL|HI|CNTY|HON|HAW|MAUI|MOL|LAN|MAU|KAU|NBI|US|JP)(?=([_.][DWMQSA])?$)"
-        )
-      )
-    } %>%
-    stringr::str_replace("_+", "@")
-  freq <- if (!is.null(freq)) {
-    stringr::str_replace(freq, "^", ".")
-  } else {
-    ser_in %>%
-      stringr::str_extract(
-        "_D$|_W$|_M$|_Q$|_S$|_A$|.D$|.W$|.M$|.Q$|.S$|.A$"
-      ) %>%
-      stringr::str_replace("_", ".")
+  locs <- "HI5|HI3|HIALL|HI|CNTY|HON|HAW|MAUI|MOL|LAN|MAU|KAU|NBI|US|JP"
+  # MNEMONIC_AT_LOC_F and MNEMONIC@LOC.F name the location, so any location
+  # works; the suffix after it can be longer than one letter (SOLA)
+  explicit <- stringr::str_match(
+    ser_in,
+    "^([[:alnum:]_]+?)(?:_AT_|@)([[:alnum:]]+)(?:[_.]([[:alpha:]]+))?$"
+  )
+  # MNEMONIC_LOC_F and MNEMONIC__LOC_F: a known location just before the
+  # frequency (or the end), so a mnemonic that contains a location code, such
+  # as SH_JP, is not mistaken for it
+  compact <- stringr::str_match(
+    ser_in,
+    stringr::str_c("^([[:alnum:]_]+?)_+(", locs, ")(?:_([DWMQSA]))?$")
+  )
+  parts <- explicit
+  parts[is.na(explicit[, 1]), ] <- compact[is.na(explicit[, 1]), ]
+  if (anyNA(parts[, 1])) {
+    rlang::abort(c(
+      "rename_udaman(): cannot read the location in these names:",
+      rlang::set_names(ser_in[is.na(parts[, 1])], "x")
+    ))
+  }
+  suffix <- if (is.null(freq)) parts[, 4] else rep(freq, length(ser_in))
+  if (anyNA(suffix)) {
+    rlang::abort(c(
+      "rename_udaman(): no frequency in these names; set `freq`:",
+      rlang::set_names(ser_in[is.na(suffix)], "x")
+    ))
+  }
+  suffix <- dplyr::if_else(suffix == "", "", stringr::str_c(".", suffix))
+
+  # expand location abbreviations
+  expand_loc <- function(loc) {
+    switch(
+      loc,
+      HI5 = c("HI", "HON", "HAW", "MAU", "KAU"),
+      HI3 = c("HI", "HON", "NBI"),
+      HIALL = c("HI", "HON", "HAW", "MAU", "KAU", "MAUI", "MOL", "LAN"),
+      CNTY = c("HON", "HAW", "MAU", "KAU"),
+      loc
+    )
   }
 
-  # function to expand location abbreviations
-  expand_loc <- function(ser_id) {
-    mnemonic <- stringr::str_extract(ser_id, "[[:alnum:]_]+(?=@)")
-    loc <- stringr::str_extract(ser_id, "(?<=@)[[:alnum:]]+(?=\\.)")
-    freq <- stringr::str_extract(ser_id, "(?<=\\.)[[:alpha:]]")
-    if (loc == "HI5") {
-      loc <- c("HI", "HON", "HAW", "MAU", "KAU")
-    } else if (loc == "HI3") {
-      loc <- c("HI", "HON", "NBI")
-    } else if (loc == "HIALL") {
-      loc <- c("HI", "HON", "HAW", "MAU", "KAU", "MAUI", "MOL", "LAN")
-    } else if (loc == "CNTY") {
-      loc <- c("HON", "HAW", "MAU", "KAU")
+  purrr::pmap(
+    list(parts[, 2], parts[, 3], suffix),
+    function(mnemonic, loc, suffix) {
+      stringr::str_c(mnemonic, "@", expand_loc(loc), suffix)
     }
-    return(stringr::str_c(mnemonic, "@", loc, ".", freq))
-  }
-
-  ser_ids <- stringr::str_c(mnemonic, loc, freq) %>%
-    purrr::map(expand_loc) %>%
+  ) %>%
     purrr::list_c()
-
-  return(ser_ids)
 }
 
 

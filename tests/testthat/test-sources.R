@@ -51,7 +51,7 @@ test_that("keys never appear in error messages", {
 })
 
 test_that("get_series_src() checks its arguments", {
-  expect_error(get_series_src("X", "fred", freq = "quarter"), "freq")
+  expect_error(get_series_src("X", "fred", freq = "week"), "freq")
   expect_error(get_series_src("X", "nowhere"), "should be one of")
 })
 
@@ -125,4 +125,81 @@ test_that("rename_udaman() takes the location just before the frequency", {
   )
   expect_equal(rename_udaman("ECT_HI", freq = "Q"), "ECT@HI.Q")
   expect_length(rename_udaman("E_NF_HI5", freq = "M"), 5)
+})
+
+test_that("rename_udaman() takes any location after _AT_ and any suffix", {
+  expect_equal(
+    rename_udaman(c("EAF_AT_HAW", "GDP_R_AT_CAN", "YLGVFD_R_AT_KAU"), freq = "SOLA"),
+    c("EAF@HAW.SOLA", "GDP_R@CAN.SOLA", "YLGVFD_R@KAU.SOLA")
+  )
+  expect_equal(rename_udaman(c("UR_AT_US", "SH_JP_AT_HON_Q"), freq = ""), c("UR@US", "SH_JP@HON"))
+  expect_equal(rename_udaman("E_NF_AT_CNTY_M"), c("E_NF@HON.M", "E_NF@HAW.M", "E_NF@MAU.M", "E_NF@KAU.M"))
+  expect_error(rename_udaman("GDP_R_CAN_Q"), "GDP_R_CAN_Q")
+  expect_error(rename_udaman("UR_AT_US"), "set `freq`")
+})
+
+test_that("fetch_cached() downloads, saves and reads back by mode", {
+  path <- file.path(withr::local_tempdir(), "sub", "x.csv")
+  calls <- 0
+  fetch <- function() {
+    calls <<- calls + 1
+    tibble::tibble(time = as.Date("2024-01-01") + 0:1, value = c(1 / 3, 2))
+  }
+  expect_error(fetch_cached(path, fetch, "offline"), "not saved yet")
+  a <- fetch_cached(path, fetch, "missing")
+  expect_equal(calls, 1)
+  expect_equal(a$value, c(1 / 3, 2)) # read back exactly
+  b <- fetch_cached(path, fetch, "missing")
+  expect_equal(calls, 1) # saved copy reused
+  c <- fetch_cached(path, fetch, "offline")
+  expect_equal(c, a)
+  fetch_cached(path, fetch) # "refresh" downloads again
+  expect_equal(calls, 2)
+  expect_type(fetch_cached(path, fetch, "offline", col_types = "cc")$value, "character")
+})
+
+test_that("period_mean() keeps complete periods, gaps inside included", {
+  months <- seq(as.Date("2024-02-01"), as.Date("2025-11-01"), by = "month")
+  x <- tibble::tibble(time = months, value = seq_along(months))
+  q <- period_mean(x, "quarter", as.Date("1940-01-01"))
+  # 2024Q1 lacks January; 2025Q4 lacks December
+  expect_equal(range(q$time), as.Date(c("2024-04-01", "2025-07-01")))
+  expect_equal(q$value[q$time == as.Date("2024-04-01")], mean(3:5))
+  # a gap inside: October 2024 missing, Q4 averages November and December
+  q_gap <- period_mean(x[x$time != as.Date("2024-10-01"), ], "quarter", as.Date("1940-01-01"))
+  expect_equal(q_gap$value[q_gap$time == as.Date("2024-10-01")], mean(10:11))
+  # start inside a quarter drops it
+  q_start <- period_mean(x, "quarter", as.Date("2024-05-15"))
+  expect_equal(min(q_start$time), as.Date("2024-07-01"))
+  # quarterly data to quarters: unchanged, apart from the current quarter
+  qq <- tibble::tibble(time = seq(as.Date("2020-01-01"), by = "quarter", length.out = 8), value = 1:8)
+  expect_equal(period_mean(qq, "quarter", as.Date("1940-01-01")), qq)
+  expect_error(period_mean(qq, "month", as.Date("1940-01-01")), "not lower")
+})
+
+test_that("period_mean() drops the current period of daily data", {
+  days <- seq(lubridate::floor_date(Sys.Date(), "month") - 70, Sys.Date(), by = "day")
+  x <- tibble::tibble(time = days, value = 1)
+  m <- period_mean(x, "month", as.Date("1940-01-01"))
+  expect_true(all(m$time < lubridate::floor_date(Sys.Date(), "month")))
+  # the first month is kept although it starts mid-month: daily data have no
+  # first-month rule, only `start` cuts
+  expect_equal(min(m$time), lubridate::floor_date(min(days), "month"))
+  m2 <- period_mean(x, "month", min(days))
+  expect_equal(min(m2$time) > min(days), lubridate::day(min(days)) != 1)
+})
+
+test_that("FRED: quarterly means match FRED's own quarterly series", {
+  skip_if_offline()
+  skip_without_key("FRED_API_KEY")
+  ours <- get_series_src("PAYEMS", "fred", freq = "quarter", start = 2023, format = "long")
+  fred <- get_series_src(
+    "PAYEMS", "fred", start = 2023, format = "long",
+    filters = list(frequency = "q", aggregation_method = "avg")
+  )
+  both <- dplyr::inner_join(ours, fred, by = c("id", "time"))
+  expect_gt(nrow(both), 8)
+  expect_equal(both$value.x, both$value.y, tolerance = 1e-3)
+  # FRED's last quarter is complete too
+  expect_equal(max(ours$time), max(fred$time[!is.na(fred$value)]))
 })
