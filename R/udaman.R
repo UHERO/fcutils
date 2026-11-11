@@ -35,7 +35,11 @@
 #' get_series_1(ser_id = "VISNS@HI.M")
 get_series_1 <- function(ser_id, expand, rename, descr, public) {
   uhero_data <- udaman_get(
-    stringr::str_c("series?name=", ser_id, "&expand=", expand),
+    # encoded, so a % in a name (OCUP%@HAW.M) reaches udaman intact
+    stringr::str_c(
+      "series?name=", utils::URLencode(ser_id, reserved = TRUE),
+      "&expand=", expand
+    ),
     public
   )
   # extract series info

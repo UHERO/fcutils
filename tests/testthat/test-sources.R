@@ -221,3 +221,13 @@ test_that("rename_udaman() converts udaman names to the R forms", {
   expect_equal(rename_udaman(rename_udaman(x, to = "full")), x)
   expect_error(rename_udaman("E_NF@HI.M", to = "short"))
 })
+
+test_that("get_series() encodes the series name in the request", {
+  query <- NULL
+  local_mocked_bindings(udaman_get = function(q, public) {
+    query <<- q
+    rlang::abort("stop here")
+  })
+  expect_error(get_series("OCUP%@HAW.M"), "stop here")
+  expect_equal(query, "series?name=OCUP%25%40HAW.M&expand=raw")
+})

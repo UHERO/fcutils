@@ -22,6 +22,8 @@
   cannot read instead of failing with an unrelated error. It converts both
   ways: `to = "full"` gives `E_NF_AT_HI_M` and `to = "compact"` gives
   `E_NF_HI`, the forms of `get_series(rename = )`, which now uses it.
+* `get_series()` encodes the series name in its request, so names with a %
+  (`OCUP%@HAW.M`) download; they used to fail with a JSON parse error.
 
 # fcutils 0.1.5
 
