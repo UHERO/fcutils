@@ -10,8 +10,9 @@ agg(
   conv_type = "mean",
   target_freq = "year",
   na_rm = FALSE,
-  partial = c("drop", "average", "growth"),
-  partial_lag = NULL
+  partial = c("drop", "average", "growth", "hold"),
+  partial_lag = NULL,
+  partial_n = 3
 )
 ```
 
@@ -53,6 +54,13 @@ agg(
     October and November, Q4 = Q3 x mean(Oct, Nov) / mean(Jul, Aug).
     Suits trending levels.
 
+  - "hold": the missing observations of the period set to the mean of
+    the last `partial_n` observations, then aggregated as a complete
+    period. With January to September published and `partial_n = 3`, the
+    year is the mean of January to September and three times the mean of
+    July to September. Keeps the latest level, so it suits seasonally
+    adjusted series. Needs monthly or quarterly data.
+
   Incomplete periods before the last are left out. With `na_rm = TRUE`
   every incomplete period is aggregated from the values present, so
   `partial` has no effect. "growth" leaves the last period out when the
@@ -66,6 +74,11 @@ agg(
   for years). "1 year" compares with the same months a year earlier, as
   [`ptd_gr()`](https://uhero.github.io/fcutils/reference/ptd_gr.md)
   does.
+
+- partial_n:
+
+  how many of the last observations "hold" averages (default 3). They
+  can reach back into the previous period.
 
 ## Value
 

@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">fcutils</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.5</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.6</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -49,8 +49,9 @@
 <span>  conv_type <span class="op">=</span> <span class="st">"mean"</span>,</span>
 <span>  target_freq <span class="op">=</span> <span class="st">"year"</span>,</span>
 <span>  na_rm <span class="op">=</span> <span class="cn">FALSE</span>,</span>
-<span>  partial <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"drop"</span>, <span class="st">"average"</span>, <span class="st">"growth"</span><span class="op">)</span>,</span>
-<span>  partial_lag <span class="op">=</span> <span class="cn">NULL</span></span>
+<span>  partial <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"drop"</span>, <span class="st">"average"</span>, <span class="st">"growth"</span>, <span class="st">"hold"</span><span class="op">)</span>,</span>
+<span>  partial_lag <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  partial_n <span class="op">=</span> <span class="fl">3</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -89,6 +90,12 @@ change from the same observations of that period: with October
 published and <code>partial_lag = "3 months"</code>, Q4 = Q3 x Oct / Jul; with
 October and November, Q4 = Q3 x mean(Oct, Nov) / mean(Jul, Aug). Suits
 trending levels.</p></li>
+<li><p>"hold": the missing observations of the period set to the mean of the
+last <code>partial_n</code> observations, then aggregated as a complete period.
+With January to September published and <code>partial_n = 3</code>, the year is
+the mean of January to September and three times the mean of July to
+September. Keeps the latest level, so it suits seasonally adjusted
+series. Needs monthly or quarterly data.</p></li>
 </ul><p>Incomplete periods before the last are left out. With <code>na_rm = TRUE</code>
 every incomplete period is aggregated from the values present, so
 <code>partial</code> has no effect. "growth" leaves the last period out when the
@@ -101,6 +108,11 @@ other than "drop" needs conv_type "mean", "sum" or "uhero".</p></dd>
 string: the default, NULL, is one target period ("3 months" for
 quarters, "1 year" for years). "1 year" compares with the same months a
 year earlier, as <code><a href="ptd_gr.html">ptd_gr()</a></code> does.</p></dd>
+
+
+<dt id="arg-partial-n">partial_n<a class="anchor" aria-label="anchor" href="#arg-partial-n"></a></dt>
+<dd><p>how many of the last observations "hold" averages
+(default 3). They can reach back into the previous period.</p></dd>
 
 </dl></div>
     <div class="section level2">

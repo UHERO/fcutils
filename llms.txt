@@ -66,6 +66,8 @@ get_series(c("VADCNS@HI.Q", "EAFNS@HI.Q", "YLAF@HI.Q", "PRM@HI.Q"), raw  = TRUE,
   : Download series listed in an export table from udaman
 - [`get_series_src()`](https://uhero.github.io/fcutils/reference/get_series_src.md)
   : Download series from outside sources
+- [`fetch_cached()`](https://uhero.github.io/fcutils/reference/fetch_cached.md)
+  : Download a table, save it, and read it back, or read the saved copy
 - [`set_api_key()`](https://uhero.github.io/fcutils/reference/set_api_key.md)
   : Set an API key for a data source
 - [`set_udaman_token()`](https://uhero.github.io/fcutils/reference/set_udaman_token.md)
@@ -74,7 +76,7 @@ get_series(c("VADCNS@HI.Q", "EAFNS@HI.Q", "YLAF@HI.Q", "PRM@HI.Q"), raw  = TRUE,
   Construct a series name from variable components and retrieve the
   series
 - [`rename_udaman()`](https://uhero.github.io/fcutils/reference/rename_udaman.md)
-  : Format series names to udaman format (mnemonic@loc.freq)
+  : Convert series names between udaman and R forms
 - [`extract_data()`](https://uhero.github.io/fcutils/reference/extract_data.md)
   : Parse gets output and extract underlying data (GETS model
   development)

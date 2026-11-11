@@ -29,16 +29,17 @@ get_series_src(
 
 - freq:
 
-  NULL (default) keeps the source's frequency; "month" averages daily or
-  weekly data to months and drops the current calendar month. A month at
-  either end of the data with only some days is still averaged, so set
-  `start` to the first of a month.
+  NULL (default) keeps the source's frequency. "month" or "quarter"
+  averages the data to that frequency, which must be lower than the
+  source's (daily, weekly or monthly to months or quarters). See Details
+  for which periods are kept.
 
 - start:
 
   first date to request (any form
   [`to_ymd()`](https://uhero.github.io/fcutils/reference/to_ymd.md)
-  reads; default 1940)
+  reads; default 1940). The data run from `start` to the latest date the
+  source has published; there is no end date.
 
 - filters:
 
@@ -61,6 +62,23 @@ the series, in the chosen format, named by id
 
 ## Details
 
+With `freq`, each period is the mean of the observations in it, and
+these periods are left out:
+
+- the current calendar period, which has not ended yet;
+
+- a period that `start` falls inside of, e.g. the first quarter when
+  `start` is February 15;
+
+- for monthly (or quarterly) data, the first or last period of a series
+  when it lacks its first or last month: a quarter with October and
+  November published but not December. FRED leaves such a quarter out
+  too.
+
+Periods inside a series are kept when an observation is missing; the
+mean is over the observations present. A quarter without October
+averages November and December, as FRED does.
+
 Keys come from the environment or the keyring (see
 [`set_api_key()`](https://uhero.github.io/fcutils/reference/set_api_key.md));
 StatCan and the Bank of Canada need none. Downloads are tried three
@@ -74,6 +92,7 @@ leave one value per date; monthly and annual time codes are read.
 if (FALSE) { # interactive()
 get_series_src(c("UNRATE", "CIVPART"), "fred", start = 2020)
 get_series_src("DCOILWTICO", "fred", freq = "month", start = 2024)
+get_series_src("UNRATE", "fred", freq = "quarter", start = 2024)
 get_series_src("v2062810", "statcan")
 get_series_src("FXMUSDCAD", "boc", start = 2017)
 get_series_src(

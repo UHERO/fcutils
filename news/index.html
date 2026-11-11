@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">fcutils</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.5</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.6</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -37,6 +37,21 @@
 
     </div>
 
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.1.6" id="fcutils-016">fcutils 0.1.6<a class="anchor" aria-label="anchor" href="#fcutils-016"></a></h2>
+<ul><li>
+<code><a href="../reference/fetch_cached.html">fetch_cached()</a></code> downloads a table, saves it as CSV and reads it back, or reads the saved copy: <code>mode = "refresh"</code> (download), <code>"missing"</code> (download only if there is no saved copy) or <code>"offline"</code> (read only). A full run and an offline rerun see identical values.</li>
+<li>
+<code><a href="../reference/agg.html">agg()</a></code> takes <code>partial = "hold"</code>: the missing observations of the last period are set to the mean of the last <code>partial_n</code> observations (default 3), so the period keeps the latest level. For seasonally adjusted monthly or quarterly data.</li>
+<li>
+<code><a href="../reference/get_series_src.html">get_series_src()</a></code> takes <code>freq = "quarter"</code>. With <code>freq</code>, the current calendar period, a period that <code>start</code> falls inside of, and, for monthly data, a first or last period without its first or last month are left out; gaps inside a series are averaged over the observations present, as FRED does. The help page says so.</li>
+<li>
+<code><a href="../reference/plot_fc.html">plot_fc()</a></code> labels the date axis by the data’s frequency: 2026 for annual data, 2026Q1 for quarterly, the dygraphs default for monthly and shorter. It used to label every series by quarter.</li>
+<li>
+<code><a href="../reference/rename_udaman.html">rename_udaman()</a></code> reads any location after <code>_AT_</code> or <code>@</code> (<code>GDP_R_AT_CAN</code>), takes any suffix in <code>freq</code> (<code>"SOLA"</code>; it used to keep only the first letter) or none (<code>freq = ""</code> gives <code>UR@US</code>), and names the series it cannot read instead of failing with an unrelated error. It converts both ways: <code>to = "full"</code> gives <code>E_NF_AT_HI_M</code> and <code>to = "compact"</code> gives <code>E_NF_HI</code>, the forms of <code>get_series(rename = )</code>, which now uses it.</li>
+<li>
+<code><a href="../reference/get_series.html">get_series()</a></code> encodes the series name in its request, so names with a % (<code>OCUP%@HAW.M</code>) download; they used to fail with a JSON parse error.</li>
+</ul></div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.1.5" id="fcutils-015">fcutils 0.1.5<a class="anchor" aria-label="anchor" href="#fcutils-015"></a></h2>
 <ul><li>

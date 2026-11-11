@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">fcutils</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.5</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.6</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -70,15 +70,16 @@ one by one.</p></dd>
 
 
 <dt id="arg-freq">freq<a class="anchor" aria-label="anchor" href="#arg-freq"></a></dt>
-<dd><p>NULL (default) keeps the source's frequency; "month" averages
-daily or weekly data to months and drops the current calendar month. A
-month at either end of the data with only some days is still averaged,
-so set <code>start</code> to the first of a month.</p></dd>
+<dd><p>NULL (default) keeps the source's frequency. "month" or
+"quarter" averages the data to that frequency, which must be lower than
+the source's (daily, weekly or monthly to months or quarters). See
+Details for which periods are kept.</p></dd>
 
 
 <dt id="arg-start">start<a class="anchor" aria-label="anchor" href="#arg-start"></a></dt>
 <dd><p>first date to request (any form <code><a href="to_ymd.html">to_ymd()</a></code> reads; default
-1940)</p></dd>
+1940). The data run from <code>start</code> to the latest date the source has
+published; there is no end date.</p></dd>
 
 
 <dt id="arg-filters">filters<a class="anchor" aria-label="anchor" href="#arg-filters"></a></dt>
@@ -100,7 +101,18 @@ Bank of Canada: ignored.</p></dd>
     </div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
-    <p>Keys come from the environment or the keyring (see
+    <p>With <code>freq</code>, each period is the mean of the observations in it,
+and these periods are left out:</p><ul><li><p>the current calendar period, which has not ended yet;</p></li>
+<li><p>a period that <code>start</code> falls inside of, e.g. the first quarter when
+<code>start</code> is February 15;</p></li>
+<li><p>for monthly (or quarterly) data, the first or last period of a series
+when it lacks its first or last month: a quarter with October and
+November published but not December. FRED leaves such a quarter out
+too.</p></li>
+</ul><p>Periods inside a series are kept when an observation is missing; the mean
+is over the observations present. A quarter without October averages
+November and December, as FRED does.</p>
+<p>Keys come from the environment or the keyring (see
 <code><a href="set_api_key.html">set_api_key()</a></code>); StatCan and the Bank of Canada need none. Downloads are
 tried three times. StatCan answers with an empty list during its nightly
 maintenance; that gives an error saying so. For e-Stat, the filters must
@@ -112,6 +124,7 @@ leave one value per date; monthly and annual time codes are read.</p>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span> <span class="co"># interactive()</span></span></span>
 <span class="r-in"><span><span class="fu">get_series_src</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"UNRATE"</span>, <span class="st">"CIVPART"</span><span class="op">)</span>, <span class="st">"fred"</span>, start <span class="op">=</span> <span class="fl">2020</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu">get_series_src</span><span class="op">(</span><span class="st">"DCOILWTICO"</span>, <span class="st">"fred"</span>, freq <span class="op">=</span> <span class="st">"month"</span>, start <span class="op">=</span> <span class="fl">2024</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu">get_series_src</span><span class="op">(</span><span class="st">"UNRATE"</span>, <span class="st">"fred"</span>, freq <span class="op">=</span> <span class="st">"quarter"</span>, start <span class="op">=</span> <span class="fl">2024</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu">get_series_src</span><span class="op">(</span><span class="st">"v2062810"</span>, <span class="st">"statcan"</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu">get_series_src</span><span class="op">(</span><span class="st">"FXMUSDCAD"</span>, <span class="st">"boc"</span>, start <span class="op">=</span> <span class="fl">2017</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu">get_series_src</span><span class="op">(</span></span></span>

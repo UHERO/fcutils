@@ -1,11 +1,11 @@
-# Format series names to udaman format (mnemonic@loc.freq)
+# Convert series names between udaman and R forms
 
-Format series names to udaman format (mnemonic@loc.freq)
+Convert series names between udaman and R forms
 
 ## Usage
 
 ``` r
-rename_udaman(ser_in, freq = NULL)
+rename_udaman(ser_in, freq = NULL, to = c("udaman", "full", "compact"))
 ```
 
 ## Arguments
@@ -18,22 +18,34 @@ rename_udaman(ser_in, freq = NULL)
 
 - freq:
 
-  frequency of the series ("D", "W", "M", "Q", "S", "A"), required if
-  not contained in the series names; it replaces any frequency in the
-  names
+  what follows the location, replacing any frequency in the names: a
+  frequency ("D", "W", "M", "Q", "S", "A"), another suffix such as
+  "SOLA" for an AREMOS solution bank, or "" for none (`UR@US`). NULL
+  (default) keeps the frequency in the names. Not used when `to` is
+  "compact", which has no frequency.
+
+- to:
+
+  the form of the output: "udaman" (default, `E_NF@HI.M`), "full"
+  (`E_NF_AT_HI_M`, the R form that keeps the frequency) or "compact"
+  (`E_NF_HI`, no frequency). "full" and "compact" are the forms of
+  `get_series(rename = )`.
 
 ## Value
 
-series names following udaman convention "mnemonic@loc.freq"
+series names in the form `to`
 
 ## Details
 
-Recognised locations are HI, HON, HAW, MAU, KAU, MAUI, MOL, LAN, NBI, US
-and JP; the location is the one just before the frequency or the end of
+In MNEMONIC_AT_LOC and MNEMONIC@LOC the location is the part after
+`_AT_` or `@`, so any location works (CAN, CA, ...). In MNEMONIC_LOC and
+MNEMONIC\_\_LOC the location must be one of HI, HON, HAW, MAU, KAU,
+MAUI, MOL, LAN, NBI, US and JP, just before the frequency or the end of
 the name. HI5, HI3, HIALL and CNTY expand to the matching sets of
-counties, so the output can be longer than the input. A name with no
-recognised location, or with no frequency when `freq` is NULL, stops
-with an error.
+counties, so the output can be longer than the input. A name whose
+location cannot be read stops with an error naming it, and so does a
+name with no frequency when `to` is "udaman" and `freq` is NULL. The R
+forms replace the % of udaman names with P (OCUP% becomes OCUPP).
 
 ## Examples
 
@@ -48,6 +60,10 @@ rename_udaman(c("E_NF@HI.M", "ECT@HI.M", "VAP@HAW.W"))
 #> [1] "E_NF@HI.M" "ECT@HI.M"  "VAP@HAW.W"
 rename_udaman(c("SH_US@HI.M", "SH_JP__HON_M"))
 #> [1] "SH_US@HI.M"  "SH_JP@HON.M"
+rename_udaman(c("EAF_AT_HAW", "GDP_R_AT_CAN"), freq = "SOLA")
+#> [1] "EAF@HAW.SOLA"   "GDP_R@CAN.SOLA"
+rename_udaman(c("UR_AT_US", "GDP_R_AT_US"), freq = "")
+#> [1] "UR@US"    "GDP_R@US"
 rename_udaman(c("E_NF_HI5", "ECT__HIALL", "E_TU@CNTY"), freq = "M")
 #>  [1] "E_NF@HI.M"  "E_NF@HON.M" "E_NF@HAW.M" "E_NF@MAU.M" "E_NF@KAU.M"
 #>  [6] "ECT@HI.M"   "ECT@HON.M"  "ECT@HAW.M"  "ECT@MAU.M"  "ECT@KAU.M" 
@@ -58,6 +74,13 @@ rename_udaman(c("E_NF_HI5 , ECT__HIALL  E_TU@CNTY", "VAP_HAW ; ECT_HON"), freq =
 #>  [6] "ECT@HI.M"   "ECT@HON.M"  "ECT@HAW.M"  "ECT@MAU.M"  "ECT@KAU.M" 
 #> [11] "ECT@MAUI.M" "ECT@MOL.M"  "ECT@LAN.M"  "E_TU@HON.M" "E_TU@HAW.M"
 #> [16] "E_TU@MAU.M" "E_TU@KAU.M" "VAP@HAW.M"  "ECT@HON.M" 
+# from udaman names to the R forms
+rename_udaman(c("E_NF@HI.M", "OCUP%@HAW.M"), to = "full")
+#> [1] "E_NF_AT_HI_M"   "OCUPP_AT_HAW_M"
+rename_udaman(c("E_NF@HI.M", "OCUP%@HAW.M"), to = "compact")
+#> [1] "E_NF_HI"   "OCUPP_HAW"
+rename_udaman("E_NF_HI", freq = "Q", to = "full")
+#> [1] "E_NF_AT_HI_Q"
 quarterly_data_example |>
   dplyr::rename_with(~ rename_udaman(., freq = "Q"), .cols = -1) |>
   names() |>
