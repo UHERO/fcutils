@@ -248,6 +248,23 @@ test_that("agg(partial = 'hold') fills the period at the latest level", {
   )
 })
 
+test_that("agg(partial = 'hold') works for quarters too", {
+  m <- monthly_data_example[, c("time", "VISNS_HI")] |>
+    dplyr::filter(time <= as.Date("2024-11-01"))
+  v <- rlang::set_names(m$VISNS_HI, format(m$time))
+  held <- mean(v[c("2024-09-01", "2024-10-01", "2024-11-01")])
+  expect_equal(
+    utils::tail(agg(m, target_freq = "quarter", partial = "hold")$VISNS_HI, 1),
+    mean(c(v[["2024-10-01"]], v[["2024-11-01"]], held))
+  )
+  # quarterly data to years
+  q <- agg(monthly_data_example[, c("time", "VISNS_HI")], target_freq = "quarter") |>
+    dplyr::filter(time <= as.Date("2024-07-01"))
+  w <- rlang::set_names(q$VISNS_HI, format(q$time))
+  q24 <- w[c("2024-01-01", "2024-04-01", "2024-07-01")]
+  expect_equal(utils::tail(agg(q, partial = "hold")$VISNS_HI, 1), mean(c(q24, mean(q24))))
+})
+
 test_that("agg(partial = 'hold') needs monthly or quarterly data", {
   daily <- tibble::tibble(
     time = seq(as.Date("2024-01-01"), as.Date("2024-02-10"), by = "day"),
