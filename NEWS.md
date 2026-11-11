@@ -19,7 +19,9 @@
 * `rename_udaman()` reads any location after `_AT_` or `@` (`GDP_R_AT_CAN`),
   takes any suffix in `freq` (`"SOLA"`; it used to keep only the first
   letter) or none (`freq = ""` gives `UR@US`), and names the series it
-  cannot read instead of failing with an unrelated error.
+  cannot read instead of failing with an unrelated error. It converts both
+  ways: `to = "full"` gives `E_NF_AT_HI_M` and `to = "compact"` gives
+  `E_NF_HI`, the forms of `get_series(rename = )`, which now uses it.
 
 # fcutils 0.1.5
 

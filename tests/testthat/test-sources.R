@@ -203,3 +203,21 @@ test_that("FRED: quarterly means match FRED's own quarterly series", {
   # FRED's last quarter is complete too
   expect_equal(max(ours$time), max(fred$time[!is.na(fred$value)]))
 })
+
+test_that("rename_udaman() converts udaman names to the R forms", {
+  expect_equal(
+    rename_udaman(c("E_NF@HI.M", "OCUP%@HAW.M", "GDP_R@CAN.Q"), to = "full"),
+    c("E_NF_AT_HI_M", "OCUPP_AT_HAW_M", "GDP_R_AT_CAN_Q")
+  )
+  expect_equal(
+    rename_udaman(c("E_NF@HI.M", "OCUP%@HAW.M", "SH_JP@HON.Q"), to = "compact"),
+    c("E_NF_HI", "OCUPP_HAW", "SH_JP_HON")
+  )
+  expect_equal(rename_udaman("UR@US", to = "full"), "UR_AT_US")
+  expect_equal(rename_udaman("E_NF_HI", freq = "Q", to = "full"), "E_NF_AT_HI_Q")
+  expect_equal(rename_udaman("E_NF_AT_CNTY_M", to = "compact"), c("E_NF_HON", "E_NF_HAW", "E_NF_MAU", "E_NF_KAU"))
+  # round trip
+  x <- c("E_NF@HI.M", "SH_JP@HON.Q", "YLGVFD_R@KAU.A")
+  expect_equal(rename_udaman(rename_udaman(x, to = "full")), x)
+  expect_error(rename_udaman("E_NF@HI.M", to = "short"))
+})

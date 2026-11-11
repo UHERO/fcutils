@@ -2,9 +2,9 @@
 % Please edit documentation in R/udaman.R
 \name{rename_udaman}
 \alias{rename_udaman}
-\title{Format series names to udaman format (mnemonic@loc.freq)}
+\title{Convert series names between udaman and R forms}
 \usage{
-rename_udaman(ser_in, freq = NULL)
+rename_udaman(ser_in, freq = NULL, to = c("udaman", "full", "compact"))
 }
 \arguments{
 \item{ser_in}{series names in any of the forms MNEMONIC_LOC,
@@ -14,13 +14,19 @@ hold several names separated by commas, semicolons or spaces.}
 \item{freq}{what follows the location, replacing any frequency in the
 names: a frequency ("D", "W", "M", "Q", "S", "A"), another suffix such
 as "SOLA" for an AREMOS solution bank, or "" for none (\code{UR@US}). NULL
-(default) keeps the frequency in the names, which then must have one.}
+(default) keeps the frequency in the names. Not used when \code{to} is
+"compact", which has no frequency.}
+
+\item{to}{the form of the output: "udaman" (default, \code{E_NF@HI.M}),
+"full" (\code{E_NF_AT_HI_M}, the R form that keeps the frequency) or
+"compact" (\code{E_NF_HI}, no frequency). "full" and "compact" are the forms
+of \code{get_series(rename = )}.}
 }
 \value{
-series names following udaman convention "mnemonic@loc.freq"
+series names in the form \code{to}
 }
 \description{
-Format series names to udaman format (mnemonic@loc.freq)
+Convert series names between udaman and R forms
 }
 \details{
 In MNEMONIC_AT_LOC and MNEMONIC@LOC the location is the part
@@ -29,8 +35,9 @@ and MNEMONIC__LOC the location must be one of HI, HON, HAW, MAU, KAU,
 MAUI, MOL, LAN, NBI, US and JP, just before the frequency or the end of
 the name. HI5, HI3, HIALL and CNTY expand to the matching sets of
 counties, so the output can be longer than the input. A name whose
-location cannot be read, or with no frequency when \code{freq} is NULL, stops
-with an error naming it.
+location cannot be read stops with an error naming it, and so does a
+name with no frequency when \code{to} is "udaman" and \code{freq} is NULL. The R
+forms replace the \% of udaman names with P (OCUP\% becomes OCUPP).
 }
 \examples{
 rename_udaman(c("E_NF_HI", "ECT_HI", "E_TU_HAW"), freq = "M")
@@ -42,6 +49,10 @@ rename_udaman(c("EAF_AT_HAW", "GDP_R_AT_CAN"), freq = "SOLA")
 rename_udaman(c("UR_AT_US", "GDP_R_AT_US"), freq = "")
 rename_udaman(c("E_NF_HI5", "ECT__HIALL", "E_TU@CNTY"), freq = "M")
 rename_udaman(c("E_NF_HI5 , ECT__HIALL  E_TU@CNTY", "VAP_HAW ; ECT_HON"), freq = "M")
+# from udaman names to the R forms
+rename_udaman(c("E_NF@HI.M", "OCUP\%@HAW.M"), to = "full")
+rename_udaman(c("E_NF@HI.M", "OCUP\%@HAW.M"), to = "compact")
+rename_udaman("E_NF_HI", freq = "Q", to = "full")
 quarterly_data_example |>
   dplyr::rename_with(~ rename_udaman(., freq = "Q"), .cols = -1) |>
   names() |>
