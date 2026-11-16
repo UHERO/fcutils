@@ -231,3 +231,62 @@ test_that("get_series() encodes the series name in the request", {
   expect_error(get_series("OCUP%@HAW.M"), "stop here")
   expect_equal(query, "series?name=OCUP%25%40HAW.M&expand=raw")
 })
+
+# udaman's replies, in the shape its API returns them
+udaman_reply <- function(name, dates = character(), values = character(), meta = TRUE) {
+  series <- list(id = 1, name = name, unitsLabel = "Thousands", geography = list(shortName = if (meta) "Canada"))
+  if (meta) {
+    series <- c(series, list(
+      title = "Labor force", seasonalAdjustment = "not_seasonally_adjusted",
+      sourceDescription = "Statistics Canada", sourceLink = "https://www150.statcan.gc.ca/"
+    ))
+  }
+  tr <- data.frame(transformation = "lvl")
+  tr$dates <- list(as.list(dates))
+  tr$values <- list(as.list(values))
+  list(data = list(
+    series = series,
+    observations = if (meta) list(transformationResults = tr)
+  ))
+}
+
+test_that("get_series(format = \"meta\") describes each series from one request", {
+  calls <- 0
+  local_mocked_bindings(udaman_get = function(q, public) {
+    calls <<- calls + 1
+    switch(
+      sub("series\\?name=([^&]+)&.*", "\\1", q),
+      "LFNS%40CAN.M" = udaman_reply("LFNS@CAN.M", c("2025-01-01", "2025-02-01"), c("21000.5", "21010.0")),
+      "N%40CAN.M" = udaman_reply("N@CAN.M"),
+      "NONE%40CAN.M" = udaman_reply("", meta = FALSE)
+    )
+  })
+  m <- suppressMessages(get_series(c("LFNS@CAN.M", "N@CAN.M", "NONE@CAN.M"), format = "meta"))
+  expect_equal(calls, 3)
+  expect_equal(m$name, c("LFNS@CAN.M", "N@CAN.M", "NONE@CAN.M"))
+  expect_equal(m$exists, c(TRUE, TRUE, FALSE))
+  expect_equal(m$source, c("Statistics Canada", "Statistics Canada", NA))
+  expect_equal(m$adjustment[1], "not_seasonally_adjusted")
+  expect_equal(m$first, as.Date(c("2025-01-01", NA, NA)))
+  expect_equal(m$last, as.Date(c("2025-02-01", NA, NA)))
+  expect_equal(m$obs[[1]]$values, c(21000.5, 21010.0))
+  expect_equal(nrow(m$obs[[2]]), 0)
+  expect_equal(nrow(m$obs[[3]]), 0)
+  expect_equal(nrow(tidyr::unnest(m, "obs")), 2)
+})
+
+test_that("get_series() returns the same values as before the meta format", {
+  local_mocked_bindings(udaman_get = function(q, public) {
+    udaman_reply("LFNS@CAN.M", c("2025-01-01", "2025-02-01"), c("21000.5", "21010.0"))
+  })
+  w <- suppressMessages(get_series("LFNS@CAN.M", descr = TRUE))
+  expect_equal(names(w), c("time", "LFNS_CAN (Labor force, Canada)"))
+  expect_equal(w[[2]], c(21000.5, 21010.0))
+})
+
+test_that("get_series(descr = TRUE) labels a series udaman does not have", {
+  local_mocked_bindings(udaman_get = function(q, public) udaman_reply("", meta = FALSE))
+  w <- suppressMessages(get_series("NONE@CAN.M", descr = TRUE))
+  expect_equal(names(w), c("time", "NONE_CAN (not in udaman)"))
+  expect_true(all(is.na(w[[2]])))
+})

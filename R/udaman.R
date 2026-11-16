@@ -34,23 +34,11 @@
 #' @examplesIf interactive()
 #' get_series_1(ser_id = "VISNS@HI.M")
 get_series_1 <- function(ser_id, expand, rename, descr, public) {
-  uhero_data <- udaman_get(
-    # encoded, so a % in a name (OCUP%@HAW.M) reaches udaman intact
-    stringr::str_c(
-      "series?name=", utils::URLencode(ser_id, reserved = TRUE),
-      "&expand=", expand
-    ),
-    public
-  )
-  # extract series info
-  dates <- uhero_data$data$observations$transformationResults$dates[[1]]
-  values <- uhero_data$data$observations$transformationResults$values[[1]]
-  series <- dplyr::bind_cols(
-    time = lubridate::ymd(dates),
-    values = as.numeric(values)
-  )
-  name <- uhero_data$data$series$name
-  if (name == "") {
+  ser <- udaman_series(ser_id, expand, public)
+  if (ser$exists) {
+    series <- ser$obs
+    name <- ser$name
+  } else {
     series <- dplyr::bind_cols(
       time = seq(
         lubridate::ymd("2000-01-01"),
@@ -63,32 +51,110 @@ get_series_1 <- function(ser_id, expand, rename, descr, public) {
   }
   cat(name, "\n")
   series <- tsbox::ts_regular(series)
-  title <- uhero_data$data$series$title
-  geo <- uhero_data$data$series$geography$shortName
-  colnames(series) <- c(
-    "time",
-    udaman_names(name, rename, descr, stringr::str_c(title, ", ", geo))
-  )
+  label <- if (ser$exists) {
+    parts <- c(ser$title, ser$geo)
+    stringr::str_c(parts[!is.na(parts)], collapse = ", ")
+  } else {
+    "not in udaman"
+  }
+  colnames(series) <- c("time", udaman_names(name, rename, descr, label))
   # return series
   return(series)
+}
+
+
+#' One udaman series: its description and its observations, from one request
+#'
+#' @param ser_id udaman series name (character)
+#' @param expand "true" or "raw"
+#' @param public TRUE for the public API
+#'
+#' @return a list: name, exists (FALSE when udaman has no such series), the
+#'   description fields, and obs, a tibble of time and values (no rows when
+#'   the series is missing or empty)
+#' @noRd
+udaman_series <- function(ser_id, expand, public) {
+  uhero_data <- udaman_get(
+    # encoded, so a % in a name (OCUP%@HAW.M) reaches udaman intact
+    stringr::str_c(
+      "series?name=", utils::URLencode(ser_id, reserved = TRUE),
+      "&expand=", expand
+    ),
+    public
+  )
+  s <- uhero_data$data$series
+  field <- function(x) if (length(x) == 1 && !identical(x, "")) as.character(x) else NA_character_
+  res <- uhero_data$data$observations$transformationResults
+  # the first transformation is the level; absent for a missing series
+  dates <- unlist(res$dates[[1]])
+  values <- unlist(res$values[[1]])
+  list(
+    name = field(s$name),
+    exists = !is.na(field(s$name)),
+    title = field(s$title),
+    geo = field(s$geography$shortName),
+    units = field(s$unitsLabel),
+    adjustment = field(s$seasonalAdjustment),
+    source = field(s$sourceDescription),
+    link = field(s$sourceLink),
+    obs = tibble::tibble(
+      time = lubridate::ymd(dates %||% character()),
+      values = as.numeric(values %||% numeric())
+    )
+  )
+}
+
+
+#' udaman series as a table of descriptions, observations nested
+#'
+#' @param ser_id udaman series names (character)
+#' @noRd
+udaman_meta <- function(ser_id, expand, public) {
+  purrr::map(ser_id, function(id) {
+    ser <- udaman_series(id, expand, public)
+    obs <- dplyr::filter(ser$obs, !is.na(.data$values))
+    tibble::tibble(
+      name = id,
+      exists = ser$exists,
+      title = ser$title,
+      geo = ser$geo,
+      units = ser$units,
+      adjustment = ser$adjustment,
+      source = ser$source,
+      link = ser$link,
+      first = if (nrow(obs) > 0) min(obs$time) else as.Date(NA),
+      last = if (nrow(obs) > 0) max(obs$time) else as.Date(NA),
+      obs = list(ser$obs)
+    )
+  }) %>%
+    purrr::list_rbind()
 }
 
 
 #' Download a set of series from udaman using series names
 #'
 #' @param ser_id_vec vector of series names (character)
-#' @param format "wide" (default) or "long" or "xts"
+#' @param format "wide" (default), "long", "xts" or "meta". "meta" returns
+#'   what udaman holds about each series, with its observations, from the
+#'   same single request per series; see Value.
 #' @param raw TRUE (default) or FALSE (TRUE downloads raw data, FALSE downloads scaled and rounded data)
 #' @param rename "compact" (default), "full", "no". "compact": @ replaced by _
 #'   and no frequency; "full": @ replaced by _AT_ and . by _; "no": no renaming,
-#'   keep UDAMAN names
+#'   keep UDAMAN names. Not used by `format = "meta"`, which keeps udaman's
+#'   names.
 #' @param freq if frequency is missing from series names (or want to modify freq
 #'   in existing names) specify frequency (character), e.g. "M".
 #' @param descr if TRUE add to the udaman series name the series description in parentheses (default: FALSE)
 #' @param public if TRUE use the public API interface - does not require VPN (default: FALSE)
 #'
 #' @return time and data for all series combined in an object specified by the
-#'   format option
+#'   format option. With `format = "meta"`, a tibble with one row per series:
+#'   `name` (udaman's name), `exists` (FALSE when udaman has no such series),
+#'   `title`, `geo`, `units`, `adjustment` (seasonal adjustment), `source`
+#'   and `link` (udaman's source description and link), `first` and `last`
+#'   (dates of the first and last value), and `obs`, a list column of
+#'   tibbles of `time` and `values` (no rows for a missing series).
+#'   `tidyr::unnest(x, obs)` gives the values in long form.
 #' @export
 #'
 #' @details This function requires permission to access UDAMAN.
@@ -106,6 +172,7 @@ get_series_1 <- function(ser_id, expand, rename, descr, public) {
 #' get_series(c("VISNS@HI.M", "VAPNS@HI.M"), format = "xts")
 #' get_series(c("VISNS@HI.M"), format = "xts")
 #' get_series(c("VISNS@HI.M"), format = "xts", descr = TRUE)
+#' get_series(c("VISNS@HI.M", "VAPNS@HI.M"), format = "meta")
 #' get_series(c("E_NF_HI", "ECT_HI", "E_TU_HAW"), freq = "M")
 #' get_series(c("E_NF__HI_M", "ECT__HI_M", "VAP__HI_W"))
 #' get_series(c("E_NF_AT_HI_M", "ECT_AT_HI_M", "VAP_AT_HI_W"))
@@ -121,6 +188,9 @@ get_series <- function(
   public = FALSE
 ) {
   expand <- if (raw) "raw" else "true"
+  if (identical(format, "meta")) {
+    return(udaman_meta(rename_udaman(ser_id_vec, freq = freq), expand, public))
+  }
   ser_tbl <- ser_id_vec %>%
     rename_udaman(., freq = freq) %>%
     purrr::map(

@@ -7,6 +7,7 @@
 #' @importFrom rlang !!
 #' @importFrom rlang .data
 #' @importFrom rlang sym
+#' @importFrom rlang %||%
 #' @importFrom tibble tibble
 #' @importFrom tsbox %ts-%
 #' @importFrom tsbox %ts*%
