@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">fcutils</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.6</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.6.1</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -64,7 +64,9 @@
 
 
 <dt id="arg-format">format<a class="anchor" aria-label="anchor" href="#arg-format"></a></dt>
-<dd><p>"wide" (default) or "long" or "xts"</p></dd>
+<dd><p>"wide" (default), "long", "xts" or "meta". "meta" returns
+what udaman holds about each series, with its observations, from the
+same single request per series; see Value.</p></dd>
 
 
 <dt id="arg-raw">raw<a class="anchor" aria-label="anchor" href="#arg-raw"></a></dt>
@@ -74,7 +76,8 @@
 <dt id="arg-rename">rename<a class="anchor" aria-label="anchor" href="#arg-rename"></a></dt>
 <dd><p>"compact" (default), "full", "no". "compact": @ replaced by _
 and no frequency; "full": @ replaced by <em>AT</em> and . by _; "no": no renaming,
-keep UDAMAN names</p></dd>
+keep UDAMAN names. Not used by <code>format = "meta"</code>, which keeps udaman's
+names.</p></dd>
 
 
 <dt id="arg-freq">freq<a class="anchor" aria-label="anchor" href="#arg-freq"></a></dt>
@@ -93,7 +96,13 @@ in existing names) specify frequency (character), e.g. "M".</p></dd>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
     <p>time and data for all series combined in an object specified by the
-format option</p>
+format option. With <code>format = "meta"</code>, a tibble with one row per series:
+<code>name</code> (udaman's name), <code>exists</code> (FALSE when udaman has no such series),
+<code>title</code>, <code>geo</code>, <code>units</code>, <code>adjustment</code> (seasonal adjustment), <code>source</code>
+and <code>link</code> (udaman's source description and link), <code>first</code> and <code>last</code>
+(dates of the first and last value), and <code>obs</code>, a list column of
+tibbles of <code>time</code> and <code>values</code> (no rows for a missing series).
+<code>tidyr::unnest(x, obs)</code> gives the values in long form.</p>
     </div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
@@ -115,6 +124,7 @@ keyring::key_set_with_value(service = "udaman_token", password = "-ABCDEFGHIJKLM
 <span class="r-in"><span><span class="fu">get_series</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"VISNS@HI.M"</span>, <span class="st">"VAPNS@HI.M"</span><span class="op">)</span>, format <span class="op">=</span> <span class="st">"xts"</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu">get_series</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"VISNS@HI.M"</span><span class="op">)</span>, format <span class="op">=</span> <span class="st">"xts"</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu">get_series</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"VISNS@HI.M"</span><span class="op">)</span>, format <span class="op">=</span> <span class="st">"xts"</span>, descr <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu">get_series</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"VISNS@HI.M"</span>, <span class="st">"VAPNS@HI.M"</span><span class="op">)</span>, format <span class="op">=</span> <span class="st">"meta"</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu">get_series</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"E_NF_HI"</span>, <span class="st">"ECT_HI"</span>, <span class="st">"E_TU_HAW"</span><span class="op">)</span>, freq <span class="op">=</span> <span class="st">"M"</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu">get_series</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"E_NF__HI_M"</span>, <span class="st">"ECT__HI_M"</span>, <span class="st">"VAP__HI_W"</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu">get_series</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"E_NF_AT_HI_M"</span>, <span class="st">"ECT_AT_HI_M"</span>, <span class="st">"VAP_AT_HI_W"</span><span class="op">)</span><span class="op">)</span></span></span>

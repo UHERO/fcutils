@@ -24,7 +24,9 @@ get_series(
 
 - format:
 
-  "wide" (default) or "long" or "xts"
+  "wide" (default), "long", "xts" or "meta". "meta" returns what udaman
+  holds about each series, with its observations, from the same single
+  request per series; see Value.
 
 - raw:
 
@@ -35,7 +37,8 @@ get_series(
 
   "compact" (default), "full", "no". "compact": @ replaced by \_ and no
   frequency; "full": @ replaced by *AT* and . by \_; "no": no renaming,
-  keep UDAMAN names
+  keep UDAMAN names. Not used by `format = "meta"`, which keeps udaman's
+  names.
 
 - freq:
 
@@ -55,7 +58,13 @@ get_series(
 ## Value
 
 time and data for all series combined in an object specified by the
-format option
+format option. With `format = "meta"`, a tibble with one row per series:
+`name` (udaman's name), `exists` (FALSE when udaman has no such series),
+`title`, `geo`, `units`, `adjustment` (seasonal adjustment), `source`
+and `link` (udaman's source description and link), `first` and `last`
+(dates of the first and last value), and `obs`, a list column of tibbles
+of `time` and `values` (no rows for a missing series).
+`tidyr::unnest(x, obs)` gives the values in long form.
 
 ## Details
 
@@ -78,6 +87,7 @@ get_series(c("VISNS@HI.M", "VISUSNS@HI.M"), freq = "Q")
 get_series(c("VISNS@HI.M", "VAPNS@HI.M"), format = "xts")
 get_series(c("VISNS@HI.M"), format = "xts")
 get_series(c("VISNS@HI.M"), format = "xts", descr = TRUE)
+get_series(c("VISNS@HI.M", "VAPNS@HI.M"), format = "meta")
 get_series(c("E_NF_HI", "ECT_HI", "E_TU_HAW"), freq = "M")
 get_series(c("E_NF__HI_M", "ECT__HI_M", "VAP__HI_W"))
 get_series(c("E_NF_AT_HI_M", "ECT_AT_HI_M", "VAP_AT_HI_W"))

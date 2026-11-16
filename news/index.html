@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">fcutils</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.6</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.6.1</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -37,6 +37,13 @@
 
     </div>
 
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.1.6.1" id="fcutils-0161">fcutils 0.1.6.1<a class="anchor" aria-label="anchor" href="#fcutils-0161"></a></h2>
+<ul><li>
+<code>get_series(format = "meta")</code> returns what udaman holds about each series, one row per series: whether it exists, its title, geography, units, seasonal adjustment, source description and link, the dates of its first and last values, and its observations in the list column <code>obs</code> (<code>tidyr::unnest(x, obs)</code> gives them in long form). Values and description come from the same single request per series. The other formats return what they did before.</li>
+<li>
+<code>get_series(descr = TRUE)</code> labels a series udaman does not have “not in udaman”; it used to fail with “Can’t use NA as column index”.</li>
+</ul></div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.1.6" id="fcutils-016">fcutils 0.1.6<a class="anchor" aria-label="anchor" href="#fcutils-016"></a></h2>
 <ul><li>

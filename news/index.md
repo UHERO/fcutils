@@ -1,5 +1,17 @@
 # Changelog
 
+## fcutils 0.1.6.1
+
+- `get_series(format = "meta")` returns what udaman holds about each
+  series, one row per series: whether it exists, its title, geography,
+  units, seasonal adjustment, source description and link, the dates of
+  its first and last values, and its observations in the list column
+  `obs` (`tidyr::unnest(x, obs)` gives them in long form). Values and
+  description come from the same single request per series. The other
+  formats return what they did before.
+- `get_series(descr = TRUE)` labels a series udaman does not have “not
+  in udaman”; it used to fail with “Can’t use NA as column index”.
+
 ## fcutils 0.1.6
 
 - [`fetch_cached()`](https://uhero.github.io/fcutils/reference/fetch_cached.md)
