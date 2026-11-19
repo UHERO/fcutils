@@ -38,9 +38,10 @@
 #'   Stineman spline: smooth turns without overshooting)
 #' @param last last date that counts as history (default: the last
 #'   observation of x). Values of x after `last` are replaced.
-#' @param hold_last if TRUE (default), the last anchor is held to the end of
-#'   the bank, so a spline flattens into it. If FALSE, the interpolation runs
-#'   only to the last anchor and its value is then carried forward. With
+#' @param flat_end if TRUE (default), a spline arrives flat at the last
+#'   anchor: the anchor's value is set through the end of the bank before
+#'   interpolating. If FALSE, the spline runs only to the last anchor. Either
+#'   way the last anchor's value is carried forward after it, and with
 #'   `interp = "linear"` both give the same result.
 #' @param smooth NULL, or a list with `span` and optionally `from` and `to`:
 #'   smooth the forecast with loess before compounding (the growth rate for
@@ -131,7 +132,7 @@ extend <- function(
   method = c("ratio", "diff"),
   interp = c("linear", "stine"),
   last = NULL,
-  hold_last = TRUE,
+  flat_end = TRUE,
   smooth = NULL
 ) {
   type <- match.arg(type)
@@ -191,7 +192,7 @@ extend <- function(
     type,
     level = {
       lev <- if (is.null(path)) {
-        anchor_series(xs, anchors, last, interp, hold_last, per)
+        anchor_series(xs, anchors, last, interp, flat_end, per)
       } else {
         tsbox::ts_bind(xs[p("", last)], single_xts(path)[p(next_period, "")])
       }
@@ -203,7 +204,7 @@ extend <- function(
     growth = {
       rate <- if (growth == "pca") tsbox::ts_pca else tsbox::ts_pcy
       g <- if (is.null(path)) {
-        anchor_series(rate(xs), anchors, last, interp, hold_last, per)
+        anchor_series(rate(xs), anchors, last, interp, flat_end, per)
       } else {
         single_xts(path)
       }
@@ -367,7 +368,7 @@ value_at <- function(x, date) {
 
 #' History up to last, then the anchors, gaps interpolated, over the bank
 #' @noRd
-anchor_series <- function(x, anchors, last, interp, hold_last, per) {
+anchor_series <- function(x, anchors, last, interp, flat_end, per) {
   x <- tsbox::ts_bind(x, make_xts(per = per)) %>%
     tsbox::ts_span(end = bank_end())
   x[paste0(last + 1, "/")] <- NA
@@ -393,7 +394,7 @@ anchor_series <- function(x, anchors, last, interp, hold_last, per) {
     )
   }
   x[pos] <- values
-  if (hold_last && length(dates) > 0) {
+  if (flat_end && length(dates) > 0) {
     x[paste0(max(dates), "/")] <- values[which.max(dates)]
   }
   x <- if (interp == "linear") {

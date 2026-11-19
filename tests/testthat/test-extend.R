@@ -41,7 +41,7 @@ test_that("stale anchors are dropped with a message", {
 test_that("annual spline without holding the last anchor", {
   ref_bank()
   r <- ref()
-  out <- extend(r$inputs$lfp_jp_a, val = r$inputs$lfp_asm, interp = "stine", hold_last = FALSE)
+  out <- extend(r$inputs$lfp_jp_a, val = r$inputs$lfp_asm, interp = "stine", flat_end = FALSE)
   same_values(out, from_start(r$expected$lfp_a_stine_nohold, r$inputs$lfp_jp_a))
 })
 
@@ -184,10 +184,10 @@ test_that("anchors must start a period within the bank", {
   expect_error(extend(ur, "2200Q1" ~ 4.4), "within the bank")
 })
 
-test_that("hold_last = FALSE carries the last anchor forward with linear too", {
+test_that("flat_end = FALSE carries the last anchor forward with linear too", {
   ref_bank()
   ur <- make_xts(2024.1, val = c(3.8, 4.0, 4.2, 4.1))
   held <- extend(ur, 2026.4 ~ 4.4, 2028.4 ~ 4.0)
-  expect_equal(extend(ur, 2026.4 ~ 4.4, 2028.4 ~ 4.0, hold_last = FALSE), held)
+  expect_equal(extend(ur, 2026.4 ~ 4.4, 2028.4 ~ 4.0, flat_end = FALSE), held)
   expect_false(anyNA(held[p(2024.1, "")]))
 })
