@@ -15,7 +15,7 @@ extend(
   method = c("ratio", "diff"),
   interp = c("linear", "stine"),
   last = NULL,
-  hold_last = TRUE,
+  flat_end = TRUE,
   smooth = NULL
 )
 }
@@ -57,9 +57,10 @@ Stineman spline: smooth turns without overshooting)}
 \item{last}{last date that counts as history (default: the last
 observation of x). Values of x after \code{last} are replaced.}
 
-\item{hold_last}{if TRUE (default), the last anchor is held to the end of
-the bank, so a spline flattens into it. If FALSE, the interpolation runs
-only to the last anchor and its value is then carried forward. With
+\item{flat_end}{if TRUE (default), a spline arrives flat at the last
+anchor: the anchor's value is set through the end of the bank before
+interpolating. If FALSE, the spline runs only to the last anchor. Either
+way the last anchor's value is carried forward after it, and with
 \code{interp = "linear"} both give the same result.}
 
 \item{smooth}{NULL, or a list with \code{span} and optionally \code{from} and \code{to}:
