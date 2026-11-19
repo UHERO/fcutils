@@ -17,7 +17,7 @@ continues with the growth or the changes of another series
 
     <a class="navbar-brand me-2" href="../index.html">fcutils</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.6.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.6.2</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -70,7 +70,7 @@ continues with the growth or the changes of another series
 <span>  method <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"ratio"</span>, <span class="st">"diff"</span><span class="op">)</span>,</span>
 <span>  interp <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"linear"</span>, <span class="st">"stine"</span><span class="op">)</span>,</span>
 <span>  last <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  hold_last <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  flat_end <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  smooth <span class="op">=</span> <span class="cn">NULL</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
@@ -136,10 +136,11 @@ Stineman spline: smooth turns without overshooting)</p></dd>
 observation of x). Values of x after <code>last</code> are replaced.</p></dd>
 
 
-<dt id="arg-hold-last">hold_last<a class="anchor" aria-label="anchor" href="#arg-hold-last"></a></dt>
-<dd><p>if TRUE (default), the last anchor is held to the end of
-the bank, so a spline flattens into it. If FALSE, the interpolation runs
-only to the last anchor and its value is then carried forward. With
+<dt id="arg-flat-end">flat_end<a class="anchor" aria-label="anchor" href="#arg-flat-end"></a></dt>
+<dd><p>if TRUE (default), a spline arrives flat at the last
+anchor: the anchor's value is set through the end of the bank before
+interpolating. If FALSE, the spline runs only to the last anchor. Either
+way the last anchor's value is carried forward after it, and with
 <code>interp = "linear"</code> both give the same result.</p></dd>
 
 

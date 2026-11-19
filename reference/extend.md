@@ -21,7 +21,7 @@ extend(
   method = c("ratio", "diff"),
   interp = c("linear", "stine"),
   last = NULL,
-  hold_last = TRUE,
+  flat_end = TRUE,
   smooth = NULL
 )
 ```
@@ -88,12 +88,13 @@ extend(
   last date that counts as history (default: the last observation of x).
   Values of x after `last` are replaced.
 
-- hold_last:
+- flat_end:
 
-  if TRUE (default), the last anchor is held to the end of the bank, so
-  a spline flattens into it. If FALSE, the interpolation runs only to
-  the last anchor and its value is then carried forward. With
-  `interp = "linear"` both give the same result.
+  if TRUE (default), a spline arrives flat at the last anchor: the
+  anchor's value is set through the end of the bank before
+  interpolating. If FALSE, the spline runs only to the last anchor.
+  Either way the last anchor's value is carried forward after it, and
+  with `interp = "linear"` both give the same result.
 
 - smooth:
 

@@ -1,5 +1,14 @@
 # Changelog
 
+## fcutils 0.1.6.2
+
+- [`extend()`](https://uhero.github.io/fcutils/reference/extend.md): the
+  argument `hold_last` is renamed `flat_end`, with no alias, so it is
+  not confused with `last` (the end of history). `flat_end = TRUE` (the
+  default) makes a spline arrive flat at the last anchor. Calls that
+  pass `hold_last` stop with “unused argument”; write `flat_end`
+  instead.
+
 ## fcutils 0.1.6.1
 
 - `get_series(format = "meta")` returns what udaman holds about each
