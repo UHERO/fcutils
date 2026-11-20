@@ -415,6 +415,14 @@ read_src_eia <- function(id, start, filters) {
 #'     read it. For large files that change rarely.
 #'   * "offline": only read `path`; stop if it does not exist.
 #' @param ... passed to [readr::read_csv()], e.g. `col_types`.
+#' @param on_error what a failed download does:
+#'   * "stop" (default): the error stops the script.
+#'   * "cache": warn, naming `path`, the date it was saved and the error, and
+#'     read the saved copy instead. For tables a script can run without, such
+#'     as outside forecasts kept for comparison. With no saved copy, the
+#'     error stops the script.
+#'
+#'   A failed download never overwrites the saved copy.
 #'
 #' @return the table, as read from `path`
 #' @export
@@ -430,8 +438,15 @@ read_src_eia <- function(id, start, filters) {
 #'   function() get_series_exp(324, rename = "no"),
 #'   mode = if (from_disk) "offline" else "refresh"
 #' )
-fetch_cached <- function(path, fetch, mode = c("refresh", "missing", "offline"), ...) {
+fetch_cached <- function(
+  path,
+  fetch,
+  mode = c("refresh", "missing", "offline"),
+  ...,
+  on_error = c("stop", "cache")
+) {
   mode <- match.arg(mode)
+  on_error <- match.arg(on_error)
   saved <- file.exists(path)
   if (mode == "offline" && !saved) {
     rlang::abort(c(
@@ -441,7 +456,16 @@ fetch_cached <- function(path, fetch, mode = c("refresh", "missing", "offline"),
   }
   if (mode == "refresh" || (mode == "missing" && !saved)) {
     dir.create(dirname(path), recursive = TRUE, showWarnings = FALSE)
-    readr::write_csv(fetch(), path)
+    tab <- tryCatch(fetch(), error = function(e) {
+      if (on_error == "stop" || !saved) stop(e)
+      rlang::warn(c(
+        paste0("Download for ", path, " failed; using the copy saved on ",
+               format(file.mtime(path), "%Y-%m-%d"), "."),
+        x = conditionMessage(e)
+      ))
+      NULL
+    })
+    if (!is.null(tab)) readr::write_csv(tab, path)
   }
   readr::read_csv(path, show_col_types = FALSE, ...)
 }
