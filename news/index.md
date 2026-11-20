@@ -1,5 +1,14 @@
 # Changelog
 
+## fcutils 0.1.6.3
+
+- `fetch_cached(on_error = "cache")`: when the download fails, warn
+  (naming the file, the date it was saved and the error) and read the
+  saved copy instead of stopping. For tables a script can run without,
+  such as outside forecasts kept for comparison. The default, `"stop"`,
+  behaves as before. With no saved copy, the error still stops the
+  script.
+
 ## fcutils 0.1.6.2
 
 - [`extend()`](https://uhero.github.io/fcutils/reference/extend.md): the

@@ -8,7 +8,13 @@ kept.
 ## Usage
 
 ``` r
-fetch_cached(path, fetch, mode = c("refresh", "missing", "offline"), ...)
+fetch_cached(
+  path,
+  fetch,
+  mode = c("refresh", "missing", "offline"),
+  ...,
+  on_error = c("stop", "cache")
+)
 ```
 
 ## Arguments
@@ -37,6 +43,19 @@ fetch_cached(path, fetch, mode = c("refresh", "missing", "offline"), ...)
   passed to
   [`readr::read_csv()`](https://readr.tidyverse.org/reference/read_delim.html),
   e.g. `col_types`.
+
+- on_error:
+
+  what a failed download does:
+
+  - "stop" (default): the error stops the script.
+
+  - "cache": warn, naming `path`, the date it was saved and the error,
+    and read the saved copy instead. For tables a script can run
+    without, such as outside forecasts kept for comparison. With no
+    saved copy, the error stops the script.
+
+  A failed download never overwrites the saved copy.
 
 ## Value
 
