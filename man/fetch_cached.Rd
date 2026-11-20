@@ -4,7 +4,13 @@
 \alias{fetch_cached}
 \title{Download a table, save it, and read it back, or read the saved copy}
 \usage{
-fetch_cached(path, fetch, mode = c("refresh", "missing", "offline"), ...)
+fetch_cached(
+  path,
+  fetch,
+  mode = c("refresh", "missing", "offline"),
+  ...,
+  on_error = c("stop", "cache")
+)
 }
 \arguments{
 \item{path}{CSV file that holds the saved copy. Its folder is created if
@@ -24,6 +30,17 @@ read it. For large files that change rarely.
 }}
 
 \item{...}{passed to \code{\link[readr:read_delim]{readr::read_csv()}}, e.g. \code{col_types}.}
+
+\item{on_error}{what a failed download does:
+\itemize{
+\item "stop" (default): the error stops the script.
+\item "cache": warn, naming \code{path}, the date it was saved and the error, and
+read the saved copy instead. For tables a script can run without, such
+as outside forecasts kept for comparison. With no saved copy, the
+error stops the script.
+}
+
+A failed download never overwrites the saved copy.}
 }
 \value{
 the table, as read from \code{path}

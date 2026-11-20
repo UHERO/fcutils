@@ -158,6 +158,26 @@ test_that("fetch_cached() downloads, saves and reads back by mode", {
   expect_type(fetch_cached(path, fetch, "offline", col_types = "cc")$value, "character")
 })
 
+test_that("fetch_cached(on_error) stops or falls back to the saved copy", {
+  path <- file.path(withr::local_tempdir(), "x.csv")
+  good <- function() tibble::tibble(time = as.Date("2024-01-01"), value = 1)
+  bad <- function() stop("HTTP 404")
+  # no saved copy: the error stops either way
+  expect_error(fetch_cached(path, bad), "HTTP 404")
+  expect_error(fetch_cached(path, bad, on_error = "cache"), "HTTP 404")
+  expect_false(file.exists(path))
+  saved <- fetch_cached(path, good)
+  # with a saved copy: "stop" still stops, "cache" warns and reads it
+  expect_error(fetch_cached(path, bad), "HTTP 404")
+  expect_warning(
+    out <- fetch_cached(path, bad, on_error = "cache"),
+    "failed; using the copy saved on"
+  )
+  expect_equal(out, saved)
+  # the failed downloads left the saved copy as it was
+  expect_equal(fetch_cached(path, good, "offline"), saved)
+})
+
 test_that("period_mean() keeps complete periods, gaps inside included", {
   months <- seq(as.Date("2024-02-01"), as.Date("2025-11-01"), by = "month")
   x <- tibble::tibble(time = months, value = seq_along(months))
